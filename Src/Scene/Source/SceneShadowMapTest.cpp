@@ -1,5 +1,5 @@
 #include "SceneShadowMapTest.h"
-#include "SceneManager.h"
+//#include "SceneManager.h"
 
 #include "./Application/Application.h"
 #include "./Application/Input.h"
@@ -89,21 +89,21 @@ SceneF::SceneF(SceneManager* manager, D3D::DevicePtr& device):Scene(manager, dev
         MeshComponent::MeshID::kSkinnedMesh,
         m_pRenderer,
         m_pFromShadowForSkinnedMesh,
-        "./Data/Models/ufooo/yh_g_walk.fbx"
+        "./Data/Models/Female/Idle.fbx"
     );
-    m_pPlayer->GetComponent<MeshComponent>()->AddShaderResource(device, L"./Data/Models/ufooo/yh_g.fbm/g_n.png");
-    m_pPlayer->GetComponent<MeshComponent>()->AddShaderResource(device, L"./Data/Models/ufooo/yh_g.fbm/g_h.png");
+    //m_pPlayer->GetComponent<MeshComponent>()->AddShaderResource(device, L"./Data/Models/ufooo/yh_g.fbm/g_n.png");
+    //m_pPlayer->GetComponent<MeshComponent>()->AddShaderResource(device, L"./Data/Models/ufooo/yh_g.fbm/g_h.png");
 
     m_pPlayer->SetAdditiveRotation(-90.0f, 0.0f, 0.0f);
     m_pPlayer->SetScale(0.05f, 0.05f, 0.05f);
     //m_pPlayer->SetPosition(Vector3(0, 2, 0));
     m_pPlayer->SetPosition(Vector3(0, 4, 0));
 
-    m_pPlayer->GetComponent<MeshComponent>()->AddMotion("Walking", "./Data/Models/ufooo/yh_g_walk.fbx");
+    //m_pPlayer->GetComponent<MeshComponent>()->AddMotion("Walking", "./Data/Models/ufooo/yh_g_walk.fbx");
 
-    //m_pPlayer->GetComponent<MeshComponent>()->AddMotion("Walking", "./Data/Models/Female/Walking.fbx");
-    //m_pPlayer->GetComponent<MeshComponent>()->AddMotion("Idle", "./Data/Models/Female/Idle.fbx");
-    //m_pPlayer->GetComponent<MeshComponent>()->AddMotion("Running", "./Data/Models/Female/Running.fbx");
+    m_pPlayer->GetComponent<MeshComponent>()->AddMotion("Walking", "./Data/Models/Female/Walking.fbx");
+    m_pPlayer->GetComponent<MeshComponent>()->AddMotion("Idle", "./Data/Models/Female/Idle.fbx");
+    m_pPlayer->GetComponent<MeshComponent>()->AddMotion("Running", "./Data/Models/Female/Running.fbx");
     m_pActorManager->AddActor(m_pPlayer);
 
     m_pField = Actor::Initialize(ActorID::kNonPlayer);
@@ -115,6 +115,7 @@ SceneF::SceneF(SceneManager* manager, D3D::DevicePtr& device):Scene(manager, dev
         m_pFromShadowShader,
         L"\0"
     );
+    m_pField->GetComponent<MeshComponent>()->SetColor(Vector4(0.8f, 0.7f, 0.3f, 1.0f));
     m_pActorManager->AddActor(m_pField);
 
 
@@ -123,6 +124,10 @@ SceneF::SceneF(SceneManager* manager, D3D::DevicePtr& device):Scene(manager, dev
 
     m_pRenderer->AddShaderForShadow(m_pToShadowShader);
     m_pPlayer->GetComponent<MeshComponent>()->SetShader(m_pToShadowForSkinnedMesh, true);
+}
+
+void SceneF::InitializeScene()
+{
 }
 
 //----------------------------------------------------------------------------------------------------------------------------
@@ -134,23 +139,23 @@ void SceneF::Update(float elapsed_time)
     //m_pLight->Update(elapsed_time);
     m_pLightController->Update(elapsed_time);
     
-    //if (InputPtr->OnKeyTrigger("2"))
-    //{
-    //    m_pPlayer->GetComponent<MeshComponent>()->Play("Idle");
-    //}
     if (InputPtr->OnKeyTrigger("2"))
     {
-        m_pPlayer->GetComponent<MeshComponent>()->Play("default");
+        m_pPlayer->GetComponent<MeshComponent>()->Play("Idle");
     }
+    //if (InputPtr->OnKeyTrigger("2"))
+    //{
+    //    m_pPlayer->GetComponent<MeshComponent>()->Play("default");
+    //}
 
     if (InputPtr->OnKeyTrigger("3"))
     {
         m_pPlayer->GetComponent<MeshComponent>()->Play("Walking");
     }
-    //if (InputPtr->OnKeyTrigger("4"))
-    //{
-    //    m_pPlayer->GetComponent<MeshComponent>()->Play("Running");
-    //}
+    if (InputPtr->OnKeyTrigger("4"))
+    {
+        m_pPlayer->GetComponent<MeshComponent>()->Play("Running");
+    }
     
 
     m_pActorManager->Update(elapsed_time);

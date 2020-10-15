@@ -1,4 +1,5 @@
 #include "SceneManager.h"
+
 #include "Scene01.h"
 #include "SceneTitle.h"
 #include "SceneA.h"
@@ -7,23 +8,19 @@
 #include "SceneD.h"
 #include "SceneE.h"
 #include "SceneShadowMapTest.h"
-
+#include "SceneLoading.h"
 #include "./Utilities/Log.h"
 
 
 //----------------------------------------------------------------------------------------------------------------------------
 
-SceneManager::SceneManager(
-	Microsoft::WRL::ComPtr<ID3D11Device> device)
+SceneManager::SceneManager(D3D::DevicePtr& p_device)
 	:mCurrentScene(SceneID::SCENE_E),
 	mNextScene(SceneID::SCENE_E),
 	mClearFlag(false),
-	m_pDevice(device)
+	m_pDevice(p_device)
 {
-	Log::Info("Initializing Scene...");
-	mSceneStack.emplace(std::make_unique<SceneE>(this, m_pDevice));
-	mSceneStack.top()->SetSceneID(mCurrentScene);
-	Log::Info("Initialized %s", mSceneStack.top()->GetSceneName().c_str());
+
 }
 
 //----------------------------------------------------------------------------------------------------------------------------
@@ -38,7 +35,34 @@ SceneManager::~SceneManager()
 
 //----------------------------------------------------------------------------------------------------------------------------
 
-void SceneManager::Execute(float elapsed_time)
+void SceneManager::InitializeLoadingScene()
+{
+	Log::Info("Initializing Scene...");
+	m_pLoadingScene = std::make_unique<SceneLoading>(this, m_pDevice);
+
+}
+
+//----------------------------------------------------------------------------------------------------------------------------
+
+void SceneManager::InitializeCurrentScene()
+{
+	mSceneStack.emplace(std::make_unique<SceneE>(this, m_pDevice));
+	mSceneStack.top()->SetSceneID(mCurrentScene);
+	mSceneStack.top()->InitializeScene();
+	Log::Info("Initialized %s", mSceneStack.top()->GetSceneName().c_str());
+
+}
+
+//----------------------------------------------------------------------------------------------------------------------------
+
+void SceneManager::ExecuteLoadingScene(float elapsed_time)
+{
+	m_pLoadingScene->Update(elapsed_time);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------
+
+void SceneManager::ExecuteCurrentScene(float elapsed_time)
 {
 	mSceneStack.top()->ChangeScene();
 
@@ -47,7 +71,14 @@ void SceneManager::Execute(float elapsed_time)
 
 //----------------------------------------------------------------------------------------------------------------------------
 
-void SceneManager::Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time)
+void SceneManager::RenderLoadingScene(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time)
+{
+	m_pLoadingScene->Render(p_graphics, elapsed_time);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------
+
+void SceneManager::RenderCurrentScene(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time)
 {
 	mSceneStack.top()->Render(p_graphics, elapsed_time);
 

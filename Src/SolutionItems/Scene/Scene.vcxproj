@@ -33,7 +33,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -78,6 +78,9 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)Build\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)Build\Temp\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(SolutionDir)Src\;$(SolutionDir)Src\Scene;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -93,6 +96,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)Src\3rdParty\DirectXTK-master\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -110,6 +114,9 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)Src\3rdParty\DirectXTK-master\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -117,6 +124,9 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalLibraryDirectories>$(SolutionDir)Src\3rdParty\DirectXTex\Bin\Desktop_2019\Win32\Release;$(SolutionDir)Src\3rdParty\DirectXTK-master\Bin\Desktop_2019\Win32\Release;$(SolutionDir)Src\3rdParty\DirectXTK-master\Audio\Bin\Desktop_2019\Win32\Release;$(SolutionDir)Src\3rdParty\FBX SDK\2016.1.2\lib\vs2015\x86\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -155,6 +165,7 @@
     <ClInclude Include="..\..\Scene\SceneD.h" />
     <ClInclude Include="..\..\Scene\SceneE.h" />
     <ClInclude Include="..\..\Scene\SceneHelper.h" />
+    <ClInclude Include="..\..\Scene\SceneLoading.h" />
     <ClInclude Include="..\..\Scene\SceneManager.h" />
     <ClInclude Include="..\..\Scene\SceneShadowMapTest.h" />
     <ClInclude Include="..\..\Scene\SceneTitle.h" />
@@ -167,6 +178,7 @@
     <ClCompile Include="..\..\Scene\Source\SceneC.cpp" />
     <ClCompile Include="..\..\Scene\Source\SceneD.cpp" />
     <ClCompile Include="..\..\Scene\Source\SceneE.cpp" />
+    <ClCompile Include="..\..\Scene\Source\SceneLoading.cpp" />
     <ClCompile Include="..\..\Scene\Source\SceneManager.cpp" />
     <ClCompile Include="..\..\Scene\Source\SceneShadowMapTest.cpp" />
     <ClCompile Include="..\..\Scene\Source\SceneTitle.cpp" />

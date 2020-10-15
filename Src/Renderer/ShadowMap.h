@@ -24,7 +24,10 @@ private:
 
 	struct CBufferForShadow
 	{
-		DirectX::XMFLOAT4X4 shadow_view_projection;
+		DirectX::XMFLOAT4X4 shadowVP;
+		//DirectX::XMFLOAT4X4 nearProjection;
+		//DirectX::XMFLOAT4X4 midProjection;
+		//DirectX::XMFLOAT4X4 farProjection;
 	};
 
 private:

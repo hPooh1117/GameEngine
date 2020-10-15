@@ -21,7 +21,7 @@ public:
 	void LoadTexture(Microsoft::WRL::ComPtr<ID3D11Device>& device, const wchar_t* filename);
 
 	void Emit(const Vector3& position, float scale, float lifespan, unsigned int number = 10);
-	void update(float elapsed_time);
+	void Update(float elapsed_time);
 
 	void Render(
 		Microsoft::WRL::ComPtr<ID3D11DeviceContext>& imm_context,

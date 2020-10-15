@@ -4,13 +4,16 @@
 #include "./Application/Helper.h"
 #include "./Application/Input.h"
 
+#include "./Renderer/D3D_Helper.h"
+
 #include "./Utilities/Vector.h"
 
 class GraphicsEngine;
 
-
 class Scene
 {
+public:
+
 protected:
     SceneManager*                                 m_pManager;
     int                                           mTimer;
@@ -34,8 +37,10 @@ protected:
 public:
     Scene(SceneManager* manager,
         Microsoft::WRL::ComPtr<ID3D11Device>& device);
+    //Scene(D3D::DevicePtr& device);
     virtual ~Scene() = default;
 
+    virtual void InitializeScene() = 0;
     virtual void Update(float elapsed_time) = 0;
     virtual void Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time) = 0;
     

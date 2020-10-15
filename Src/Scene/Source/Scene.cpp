@@ -1,4 +1,6 @@
 #include "Scene.h"
+
+
 #include "./Engine/ActorManager.h"
 #include "./Engine/CameraController.h"
 #include "./Engine/UIRenderer.h"
@@ -38,7 +40,24 @@ Scene::Scene(SceneManager* manager,
 
     m_pRenderer = std::make_shared<MeshRenderer>(device, m_pCameraController);
 
-};
+
+}
+//Scene::Scene(D3D::DevicePtr& device)
+//    :mTimer(0),
+//    mState(0),
+//    mChangeFlag(false),
+//    mFadeoutTimer(0.0f),
+//    mCurrentScene(SceneID::SCENE01),
+//    mNextScene(SceneID::SCENE01),
+//    m_pActorManager(std::make_unique<ActorManager>()),
+//    m_pBlender(std::make_unique<Blender>(device)),
+//    m_pCameraController(std::make_shared<CameraController>()),
+//    m_pLightController(std::make_shared<LightController>(device)),
+//    m_pSkyBox(nullptr),
+//    m_pUIRenderer(std::make_shared<UIRenderer>())
+//{
+//    m_pRenderer = std::make_shared<MeshRenderer>(device, m_pCameraController);
+//};
 
 
 

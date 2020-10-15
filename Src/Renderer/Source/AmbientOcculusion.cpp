@@ -20,11 +20,12 @@ AmbientOcclusion::AmbientOcclusion(D3D::DevicePtr& p_device)
 			static_cast<float>(SCREEN_WIDTH) / NOISE_TEX_RESOLUTION.x, 
 			static_cast<float>(SCREEN_HEIGHT) / NOISE_TEX_RESOLUTION.y)),
 	mSampleRadius(SAMPLE_RADIUS),
-	mPower(1.0f)
+	mPower(1.2f),
+	mBias(0.0f)
 {
 	//m_pAOTex = std::make_shared<Texture>();
 	//m_pAOTex->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16_FLOAT);
-
+	//
 	//m_pRTV = m_pAOTex->GetRenderTargetV();
 	//{
 	//	//深度ステンシル設定
@@ -41,28 +42,28 @@ AmbientOcclusion::AmbientOcclusion(D3D::DevicePtr& p_device)
 	//	texDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 	//	texDesc.CPUAccessFlags = 0;
 	//	texDesc.MiscFlags = 0;
-
+	//
 	//	auto result = p_device->CreateTexture2D(
 	//		&texDesc,
 	//		nullptr,
 	//		texture2D.GetAddressOf()
 	//	);
 	//	_ASSERT_EXPR_A(SUCCEEDED(result), hr_trace(result));
-
+	//
 	//	// 深度ステンシルビュー
 	//	D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
 	//	ZeroMemory(&dsvDesc, sizeof(D3D11_DEPTH_STENCIL_VIEW_DESC));
 	//	dsvDesc.Format = texDesc.Format;
 	//	dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 	//	dsvDesc.Texture2D.MipSlice = 0;
-
+	//
 	//	result = p_device->CreateDepthStencilView(
 	//		texture2D.Get(),
 	//		&dsvDesc,
 	//		m_pDSV.GetAddressOf()
 	//	);
 	//	_ASSERT_EXPR_A(SUCCEEDED(result), hr_trace(result));
-
+	//
 	//}
 
 	D3D11_BUFFER_DESC cbDesc = {};
@@ -182,7 +183,7 @@ void AmbientOcclusion::Activate(std::unique_ptr<GraphicsEngine>& p_graphics, std
 	cb.screenSize = DirectX::XMFLOAT2(static_cast<float>(SCREEN_WIDTH), static_cast<float>(SCREEN_HEIGHT));
 	cb.noiseScale = DirectX::XMFLOAT2(mNoiseScale.x, mNoiseScale.y);
 	cb.kernelSize = static_cast<float>(MAX_SAMPLES);
-	cb.dummy2 = 500.0f;
+	cb.ambientBias = mBias;
 	cb.radius = mSampleRadius;
 	cb.power = mPower;
 	memcpy( cb.samplePos, mSamplePos, sizeof(DirectX::XMFLOAT4) * MAX_SAMPLES );
@@ -197,6 +198,16 @@ void AmbientOcclusion::Activate(std::unique_ptr<GraphicsEngine>& p_graphics, std
 
 void AmbientOcclusion::Deactivate(std::unique_ptr<GraphicsEngine>& p_graphics)
 {
+}
+
+void AmbientOcclusion::RenderUI()
+{
+	using namespace ImGui;
+	SliderFloat("Intensity", &mPower, 0.0f, 5.0f);
+
+	SliderFloat("Sample Radius", &mSampleRadius, 0.1f, 5.0f);
+
+	SliderFloat("Ambient Bias", &mBias, 0.0f, 5.0f);
 }
 
 AmbientOcclusion::~AmbientOcclusion()

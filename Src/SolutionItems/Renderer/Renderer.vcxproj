@@ -33,7 +33,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -79,6 +79,9 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)Build\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)Build\Temp\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(SolutionDir)\Src\Renderer\;$(SolutionDir)\Src\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -94,6 +97,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)Src\3rdParty\DirectXTex;$(SolutionDir)Src\3rdParty\DirectXTK-master\Inc;$(SolutionDir)Src\3rdParty\FBX SDK\2016.1.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -109,6 +113,9 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)Src\3rdParty\DirectXTex;$(SolutionDir)Src\3rdParty\DirectXTK-master\Inc;$(SolutionDir)Src\3rdParty\FBX SDK\2016.1.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -116,6 +123,9 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalLibraryDirectories>$(SolutionDir)Src\3rdParty\DirectXTex\Bin\Desktop_2019\Win32\Release;$(SolutionDir)Src\3rdParty\DirectXTK-master\Bin\Desktop_2019\Win32\Release;$(SolutionDir)Src\3rdParty\DirectXTK-master\Audio\Bin\Desktop_2019\Win32\Release;$(SolutionDir)Src\3rdParty\FBX SDK\2016.1.2\lib\vs2015\x86\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -148,6 +158,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\Renderer\AmbientOcculusion.h" />
     <ClInclude Include="..\..\Renderer\Blender.h" />
+    <ClInclude Include="..\..\Renderer\Blur.h" />
     <ClInclude Include="..\..\Renderer\D3D_Helper.h" />
     <ClInclude Include="..\..\Renderer\FbxLoader.h" />
     <ClInclude Include="..\..\Renderer\FbxMeshInfo.h" />
@@ -172,6 +183,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\Renderer\Source\AmbientOcculusion.cpp" />
     <ClCompile Include="..\..\Renderer\Source\Blender.cpp" />
+    <ClCompile Include="..\..\Renderer\Source\Blur.cpp" />
     <ClCompile Include="..\..\Renderer\Source\FbxLoader.cpp" />
     <ClCompile Include="..\..\Renderer\Source\GeometricPrimitiveSelf.cpp" />
     <ClCompile Include="..\..\Renderer\Source\GraphicsEngine.cpp" />
@@ -188,6 +200,32 @@
     <ClCompile Include="..\..\Renderer\Source\SwapChain.cpp" />
     <ClCompile Include="..\..\Renderer\Source\Texture.cpp" />
     <ClCompile Include="..\..\Renderer\Source\VertexDecleration.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\..\Shaders\Phong_ps.hlsl">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PSmain</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PSmain</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)Data\Shaders\%(Filename).cso</ObjectFileOutput>
+      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)Data\Shaders\%(Filename).cod</AssemblerOutputFile>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)Data\Shaders\%(Filename).cso</ObjectFileOutput>
+      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)Data\Shaders\%(Filename).cod</AssemblerOutputFile>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AssemblyCode</AssemblerOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AssemblyCode</AssemblerOutput>
+    </FxCompile>
+    <FxCompile Include="..\..\Shaders\Phong_vs.hlsl">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">VSmain</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">VSmain</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)Data\Shaders\%(Filename).cso</ObjectFileOutput>
+      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)Data\Shaders\%(Filename).cod</AssemblerOutputFile>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)Data\Shaders\%(Filename).cso</ObjectFileOutput>
+      <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)Data\Shaders\%(Filename).cod</AssemblerOutputFile>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AssemblyCode</AssemblerOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AssemblyCode</AssemblerOutput>
+    </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

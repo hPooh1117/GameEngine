@@ -1,7 +1,12 @@
 #include "Shader.h"
+
+#include <memory>
 #include <d3dcompiler.h>
+
 #include "ResourceManager.h"
 #include "VertexDecleration.h"
+
+#include "./Utilities/Log.h"
 
 #pragma comment(lib, "d3dcompiler.lib")
 
@@ -9,7 +14,7 @@ Shader::Shader()
 {
 }
 
-// @brief compile hlsl files and create shader object
+// @brief compile hlsl files and Create shader object
 bool Shader::createShader(
     Microsoft::WRL::ComPtr<ID3D11Device>& device,
     std::wstring vs_filename,
@@ -25,16 +30,16 @@ bool Shader::createShader(
     Microsoft::WRL::ComPtr<ID3DBlob> psBlob = nullptr;
 
 
-    //// compile and create vertex shader
-    result = ResourceManager::compileHLSLFile(vs_filename, vs_funcname, "vs_5_0", vsBlob);
+    //// compile and Create vertex shader
+    result = ResourceManager::CompileHLSLFile(vs_filename, vs_funcname, "vs_5_0", vsBlob);
     device->CreateVertexShader(vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), NULL, m_vs.GetAddressOf());
 
-    // create input layouts
+    // Create input layouts
     VertexDecleration::CreateInputElements(device, m_input_layout, vsBlob, type);
 
 
-    // compile and create pixel shader
-    result = ResourceManager::compileHLSLFile(ps_filename, ps_funcname, "ps_5_0", psBlob);
+    // compile and Create pixel shader
+    result = ResourceManager::CompileHLSLFile(ps_filename, ps_funcname, "ps_5_0", psBlob);
     result = device->CreatePixelShader(
         psBlob->GetBufferPointer(),
         psBlob->GetBufferSize(),
@@ -58,7 +63,7 @@ bool Shader::createGeometryShader(
 
     Microsoft::WRL::ComPtr<ID3DBlob> gsBlob = nullptr;
 
-    result = ResourceManager::compileHLSLFile(gs_name, gs_func, "gs_5_0", gsBlob);
+    result = ResourceManager::CompileHLSLFile(gs_name, gs_func, "gs_5_0", gsBlob);
     device->CreateGeometryShader(gsBlob->GetBufferPointer(), gsBlob->GetBufferSize(), NULL, m_gs.GetAddressOf());
 
     return true;
@@ -75,11 +80,46 @@ bool Shader::createHullAndDomain(
     Microsoft::WRL::ComPtr<ID3DBlob> hsBlob = nullptr;
     Microsoft::WRL::ComPtr<ID3DBlob> dsBlob = nullptr;
 
-    result = ResourceManager::compileHLSLFile(hlsl_name, hs_func, "hs_5_0", hsBlob);
+    result = ResourceManager::CompileHLSLFile(hlsl_name, hs_func, "hs_5_0", hsBlob);
     device->CreateHullShader(hsBlob->GetBufferPointer(), hsBlob->GetBufferSize(), NULL, m_hs.GetAddressOf());
 
-    result = ResourceManager::compileHLSLFile(hlsl_name, ds_func, "ds_5_0", dsBlob);
+    result = ResourceManager::CompileHLSLFile(hlsl_name, ds_func, "ds_5_0", dsBlob);
     device->CreateDomainShader(dsBlob->GetBufferPointer(), dsBlob->GetBufferSize(), NULL, m_ds.GetAddressOf());
+
+    return true;
+}
+
+bool Shader::CreateShader(
+    Microsoft::WRL::ComPtr<ID3D11Device>& device, 
+    const std::wstring& vs_name, 
+    const std::wstring& ps_name,
+    VEDType type)
+{
+    HRESULT result = S_OK;
+
+    Microsoft::WRL::ComPtr<ID3DBlob> vsBlob;
+    Microsoft::WRL::ComPtr<ID3DBlob> psBlob;
+
+    result = D3DReadFileToBlob(vs_name.c_str(), vsBlob.GetAddressOf());
+    result = device->CreateVertexShader(vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), nullptr, m_vs.GetAddressOf());
+    if (FAILED(result))
+    {
+        Log::Error("[SHADER] Couldn't Create Vertex Shader." );
+        return false;
+    }
+
+    VertexDecleration::CreateInputElements(device, m_input_layout, vsBlob, type);
+    
+    result = D3DReadFileToBlob(ps_name.c_str(), psBlob.GetAddressOf());
+    result = device->CreatePixelShader(psBlob->GetBufferPointer(), psBlob->GetBufferSize(), nullptr, m_ps.GetAddressOf());
+    if (FAILED(result))
+    {
+        Log::Error("[SHADER] Couldn't Create Pixel Shader.");
+        return false;
+    }
+
+    Log::Info("[SHADER] Create Vertex Shader.");
+    Log::Info("[SHADER] Create Pixel Shader.");
 
     return true;
 }

@@ -1,6 +1,8 @@
 #include "VertexDecleration.h"
 #include <vector>
 
+#include "./Utilities/Log.h"
+
 const std::string VertexDecleration::SEMANTIC_NAMES[VertexDecleration::SEMANTICS_TYPE_MAX] = {
 	"POSITION", "NORMAL", "TEXCOORD", "COLOR",
 	"WEIGHTS", "BONES", "NDC_TRANSFORM", "TEXCOORD_TRANSFORM",
@@ -80,4 +82,9 @@ void VertexDecleration::CreateInputElements(
 		vsBlob->GetBufferSize(),
 		input_layout.GetAddressOf()
 	);
+
+	if (FAILED(result))
+	{
+		Log::Error("[VED] Couldn't Create Input Layout.");
+	}
 }

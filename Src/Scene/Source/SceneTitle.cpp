@@ -1,5 +1,5 @@
 #include "SceneTitle.h"
-#include "SceneManager.h"
+//#include "SceneManager.h"
 
 #include "./Application/Application.h"
 
@@ -259,6 +259,10 @@ SceneTitle::SceneTitle(SceneManager* manager, Microsoft::WRL::ComPtr<ID3D11Devic
     std::shared_ptr<UIClient> trace = std::static_pointer_cast<TraceCamera>(m_pCameraController->GetCameraPtr(1));
     m_pUIRenderer->SetInQueue("Trace", trace);
 #endif
+}
+
+void SceneTitle::InitializeScene()
+{
 }
 
 //----------------------------------------------------------------------------------------------------------------------------

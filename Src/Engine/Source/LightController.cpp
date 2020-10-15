@@ -77,11 +77,15 @@ void LightController::UpdateDirectionalLights(float elapsed_time)
 	}
 
 	mLightDirection.x = -sinf(mAngle);
-	mLightDirection.y = -0.5f;
+	mLightDirection.y = -0.25f;
 	mLightDirection.z = -cosf(mAngle);
 
-	float d = sqrtf(mLightDirection.x * mLightDirection.x + mLightDirection.y * mLightDirection.y + mLightDirection.z * mLightDirection.z);
-	if (d > 0) mLightDirection /= d;
+	float d = sqrtf(mLightDirection.x * mLightDirection.x + mLightDirection.z * mLightDirection.z);
+	if (d > 0)
+	{
+		mLightDirection.x /= d;
+		mLightDirection.z /= d;
+	}
 
 }
 

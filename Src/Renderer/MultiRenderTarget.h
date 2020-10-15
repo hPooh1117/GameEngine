@@ -24,21 +24,29 @@ private:
 		kDiffuse,
 		kSpecular,
 		kAmbient,
-
+		kPostEffect,
 		kResult,
-
+		kNoAO,
 		kNumAll,
+	};
+
+	enum ShaderType
+	{
+		ESimpleQuad,
+		EPreLighting,
+		EScreen,
 	};
 
 public:
 	static constexpr UINT NUMBER_OF_GBUFFER = 5;
 	static constexpr UINT NUMBER_OF_LIGHTMAP = 3;
+	static constexpr UINT NUMBER_OF_SCREEN = 3;
 
 private:
 	std::array<D3D::RenderTargetVPtr, NUMBER_OF_GBUFFER> m_pRTVs;
 	std::array<D3D::RenderTargetVPtr, NUMBER_OF_LIGHTMAP> m_pRTVsForLights;
 	D3D::RenderTargetVPtr m_pRTVForLight;
-	D3D::RenderTargetVPtr m_pRTVForScreen;
+	std::array<D3D::RenderTargetVPtr, NUMBER_OF_SCREEN> m_pRTVForScreens;
 	D3D::DepthStencilVPtr m_pDSV;
 	D3D::Texture2DPtr m_pTexForDSV;
 
@@ -58,6 +66,8 @@ private:
 	std::unique_ptr<Texture> m_pAmbientLightMap;
 
 	std::unique_ptr<Texture> m_pScreenMap;
+	std::unique_ptr<Texture> m_pPostEffectMap;
+	std::unique_ptr<Texture> m_pNoAO;
 
 	int                      mCurrentType;
 public:

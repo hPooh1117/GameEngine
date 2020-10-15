@@ -16,8 +16,8 @@ MultiRenderTarget::MultiRenderTarget(D3D::DevicePtr& p_device):mCurrentType(GBuf
 	// テクスチャ初期化
 	//
 	m_pColorMap = std::make_unique<Texture>();
-	m_pColorMap->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R32G32B32A32_FLOAT);
-
+	m_pColorMap->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB);
+	
 	m_pNormalMap = std::make_unique<Texture>();
 	m_pNormalMap->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R32G32B32A32_FLOAT);
 
@@ -47,6 +47,12 @@ MultiRenderTarget::MultiRenderTarget(D3D::DevicePtr& p_device):mCurrentType(GBuf
 	m_pScreenMap = std::make_unique<Texture>();
 	m_pScreenMap->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT);
 
+	m_pPostEffectMap = std::make_unique<Texture>();
+	m_pPostEffectMap->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT);
+
+	m_pNoAO = std::make_unique<Texture>();
+	m_pNoAO->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT);
+
 	m_pColor = std::make_unique<Sprite>(p_device);
 
 
@@ -62,7 +68,9 @@ MultiRenderTarget::MultiRenderTarget(D3D::DevicePtr& p_device):mCurrentType(GBuf
 	m_pRTVsForLights.at(1) = m_pSpecularLightMap->GetRenderTargetV();
 	m_pRTVsForLights.at(2) = m_pAmbientLightMap->GetRenderTargetV();
 
-	m_pRTVForScreen = m_pScreenMap->GetRenderTargetV();
+	m_pRTVForScreens.at(0) = m_pScreenMap->GetRenderTargetV();
+	m_pRTVForScreens.at(1) = m_pPostEffectMap->GetRenderTargetV();
+	m_pRTVForScreens.at(2) = m_pNoAO->GetRenderTargetV();
 	{
 		// 深度ステンシルビュー作成
 		// 深度ステンシル設定
@@ -113,7 +121,9 @@ void MultiRenderTarget::ActivateGBuffer(std::unique_ptr<GraphicsEngine>& p_graph
 	D3D::DeviceContextPtr immContext = p_graphics->GetImmContextPtr();
 
 	immContext->OMSetRenderTargets(NUMBER_OF_GBUFFER, m_pRTVs.data()->GetAddressOf(), m_pDSV.Get());
-	float clearColor[4] = { 0.1f, 0.1f, 0.1f, 1.0f };
+	//float clearColor[4] = { 0.1f, 0.1f, 0.1f, 1.0f };
+	float clearColor[4] = { 0.796f, 0.796f, 0.796f, 1.0f };
+
 	for (int i = 0; i < NUMBER_OF_GBUFFER; ++i)
 	{
 		immContext->ClearRenderTargetView(m_pRTVs.at(i).Get(), clearColor);
@@ -124,7 +134,7 @@ void MultiRenderTarget::ActivateGBuffer(std::unique_ptr<GraphicsEngine>& p_graph
 		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
 		1.0f, 0);
 
-	p_graphics->SetViewport(SCREEN_WIDTH, SCREEN_HEIGHT);
+	//p_graphics->SetViewport(SCREEN_WIDTH, SCREEN_HEIGHT);
 
 }
 
@@ -135,7 +145,9 @@ void MultiRenderTarget::ActivateDefferedLight(std::unique_ptr<GraphicsEngine>& p
 	D3D::DeviceContextPtr immContext = p_graphics->GetImmContextPtr();
 
 	immContext->OMSetRenderTargets(NUMBER_OF_LIGHTMAP, m_pRTVsForLights.data()->GetAddressOf(), m_pDSV.Get());
-	float clearColor[4] = { 0.1f, 0.1f, 0.1f, 1.0f };
+	//float clearColor[4] = { 0.1f, 0.1f, 0.1f, 1.0f };
+	float clearColor[4] = { 0.796f, 0.796f, 0.796f, 1.0f };
+
 	for (int i = 0; i < NUMBER_OF_LIGHTMAP; ++i)
 	{
 		immContext->ClearRenderTargetView(m_pRTVsForLights.at(i).Get(), clearColor);
@@ -149,7 +161,7 @@ void MultiRenderTarget::ActivateDefferedLight(std::unique_ptr<GraphicsEngine>& p
 		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
 		1.0f, 0);
 
-	p_graphics->SetViewport(SCREEN_WIDTH, SCREEN_HEIGHT);
+	//p_graphics->SetViewport(SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	m_pNormalMap->Set(immContext, 1);
 	m_pPositionMap->Set(immContext, 3);
@@ -168,7 +180,7 @@ void MultiRenderTarget::ActivateDefferedLight(std::unique_ptr<GraphicsEngine>& p
 
 	m_pColor->Render(
 		immContext,
-		m_pShaders.at(1),
+		m_pShaders.at(ShaderType::EPreLighting),
 		m_pColorMap,
 		pos,
 		size,
@@ -184,16 +196,26 @@ void MultiRenderTarget::ActivateScreen(std::unique_ptr<GraphicsEngine>& p_graphi
 {
 	D3D::DeviceContextPtr immContext = p_graphics->GetImmContextPtr();
 
-	immContext->OMSetRenderTargets(1, m_pRTVForScreen.GetAddressOf(), m_pDSV.Get());
-	float clearColor[4] = { 0.1f, 0.1f, 0.1f, 1.0f };
-	immContext->ClearRenderTargetView(m_pRTVForScreen.Get(), clearColor);
+	m_pColorMap->Set(immContext, 0);
+	m_pDiffuseLightMap->Set(immContext, 1);
+	m_pSpecularLightMap->Set(immContext, 2);
+	m_pAmbientLightMap->Set(immContext, 3);
+
+	immContext->OMSetRenderTargets(NUMBER_OF_SCREEN, m_pRTVForScreens.data()->GetAddressOf(), m_pDSV.Get());
+	float clearColor[4] = { 0.796f, 0.796f, 0.796f, 1.0f };
+	//float clearColor[4] = { 0.1f, 0.1f, 0.1f, 1.0f };
+
+	for (int i = 0; i < NUMBER_OF_SCREEN; ++i)
+	{
+		immContext->ClearRenderTargetView(m_pRTVForScreens.at(i).Get(), clearColor);
+	}
 
 	immContext->ClearDepthStencilView(
 		m_pDSV.Get(),
 		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
 		1.0f, 0);
 
-	p_graphics->SetViewport(SCREEN_WIDTH, SCREEN_HEIGHT);
+	//p_graphics->SetViewport(SCREEN_WIDTH, SCREEN_HEIGHT);
 
 }
 
@@ -225,7 +247,7 @@ void MultiRenderTarget::Render(
 	case GBufferType::kAlbedo:
 		m_pColor->Render(
 			imm_context,
-			m_pShaders.at(0),
+			m_pShaders.at(ShaderType::ESimpleQuad),
 			m_pColorMap,
 			pos,
 			size,
@@ -237,7 +259,7 @@ void MultiRenderTarget::Render(
 	case GBufferType::kPosition:
 		m_pColor->Render(
 			imm_context,
-			m_pShaders.at(0),
+			m_pShaders.at(ShaderType::ESimpleQuad),
 			m_pPositionMap,
 			pos,
 			size,
@@ -249,7 +271,7 @@ void MultiRenderTarget::Render(
 	case GBufferType::kNormal:
 		m_pColor->Render(
 			imm_context,
-			m_pShaders.at(0),
+			m_pShaders.at(ShaderType::ESimpleQuad),
 			m_pNormalMap,
 			pos,
 			size,
@@ -261,7 +283,7 @@ void MultiRenderTarget::Render(
 	case GBufferType::kDepth:
 		m_pColor->Render(
 			imm_context,
-			m_pShaders.at(0),
+			m_pShaders.at(ShaderType::ESimpleQuad),
 			m_pDepthMap,
 			pos,
 			size,
@@ -273,7 +295,7 @@ void MultiRenderTarget::Render(
 	case GBufferType::kShadow:
 		m_pColor->Render(
 			imm_context,
-			m_pShaders.at(0),
+			m_pShaders.at(ShaderType::ESimpleQuad),
 			m_pShadowMap,
 			pos,
 			size,
@@ -285,7 +307,7 @@ void MultiRenderTarget::Render(
 	case GBufferType::kDiffuse:
 		m_pColor->Render(
 			imm_context,
-			m_pShaders.at(0),
+			m_pShaders.at(ShaderType::ESimpleQuad),
 			m_pDiffuseLightMap,
 			pos,
 			size,
@@ -297,7 +319,7 @@ void MultiRenderTarget::Render(
 	case GBufferType::kSpecular:
 		m_pColor->Render(
 			imm_context,
-			m_pShaders.at(0),
+			m_pShaders.at(ShaderType::ESimpleQuad),
 			m_pSpecularLightMap,
 			pos,
 			size,
@@ -309,7 +331,7 @@ void MultiRenderTarget::Render(
 	case GBufferType::kAmbient:
 		m_pColor->Render(
 			imm_context,
-			m_pShaders.at(0),
+			m_pShaders.at(ShaderType::ESimpleQuad),
 			m_pAmbientLightMap,
 			pos,
 			size,
@@ -317,12 +339,23 @@ void MultiRenderTarget::Render(
 			size, angle, color
 		);
 		break;
-
-	case GBufferType::kResult:
+	case GBufferType::kPostEffect:
 		m_pColor->Render(
 			imm_context,
-			m_pShaders.at(0),
-			m_pColorMap,
+			m_pShaders.at(ShaderType::ESimpleQuad),
+			m_pPostEffectMap,
+			pos,
+			size,
+			texPos,
+			size, angle, color
+		);
+		break;
+
+	case GBufferType::kNoAO:
+		m_pColor->Render(
+			imm_context,
+			m_pShaders.at(ShaderType::ESimpleQuad),
+			m_pShadowMap,
 			pos,
 			size,
 			texPos,
@@ -333,7 +366,21 @@ void MultiRenderTarget::Render(
 
 		m_pColor->Render(
 			imm_context,
-			m_pShaders.at(0),
+			m_pShaders.at(ShaderType::ESimpleQuad),
+			m_pNoAO,
+			pos,
+			size,
+			texPos,
+			size, angle, color
+		);
+		p_blender->SetBlendState(imm_context, Blender::BLEND_ALPHA);
+
+		break;
+
+	case GBufferType::kResult:
+		m_pColor->Render(
+			imm_context,
+			m_pShaders.at(ShaderType::ESimpleQuad),
 			m_pShadowMap,
 			pos,
 			size,
@@ -341,37 +388,22 @@ void MultiRenderTarget::Render(
 			size, angle, color
 		);
 
+		p_blender->SetBlendState(imm_context, Blender::BLEND_MULTIPLY);
+
 		m_pColor->Render(
 			imm_context,
-			m_pShaders.at(0),
-			m_pAmbientLightMap,
+			m_pShaders.at(ShaderType::ESimpleQuad),
+			m_pScreenMap,
 			pos,
 			size,
 			texPos,
 			size, angle, color
 		);
 
-		m_pColor->Render(
-			imm_context,
-			m_pShaders.at(0),
-			m_pDiffuseLightMap,
-			pos,
-			size,
-			texPos,
-			size, angle, color
-		);
 
-		p_blender->SetBlendState(imm_context, Blender::BLEND_ADD);
 
-		m_pColor->Render(
-			imm_context,
-			m_pShaders.at(0),
-			m_pSpecularLightMap,
-			pos,
-			size,
-			texPos,
-			size, angle, color
-		);
+		p_blender->SetBlendState(imm_context, Blender::BLEND_ALPHA);
+
 		break;
 	}
 
@@ -395,8 +427,8 @@ void MultiRenderTarget::RenderScreen(D3D::DeviceContextPtr& imm_context, std::un
 	// 画像の合成
 	m_pColor->Render(
 		imm_context,
-		m_pShaders.at(0),
-		m_pScreenMap,
+		m_pShaders.at(ShaderType::EScreen),
+		m_pColorMap,
 		pos,
 		size,
 		texPos,
@@ -417,7 +449,9 @@ void MultiRenderTarget::RenderUI()
 	RadioButton("Shadow",         &mCurrentType,       GBufferType::kShadow     );         
 	RadioButton("Diffuse Light",  &mCurrentType,       GBufferType::kDiffuse    );         
 	RadioButton("Specular Light", &mCurrentType,       GBufferType::kSpecular   );       
-	RadioButton("Ambient",        &mCurrentType,       GBufferType::kAmbient    );               
+	RadioButton("Ambient",        &mCurrentType,       GBufferType::kAmbient    );       
+	RadioButton("PostEffect",     &mCurrentType,       GBufferType::kPostEffect );
+	RadioButton("Result(NoAO)",   &mCurrentType,       GBufferType::kNoAO       );
 	RadioButton("Result",         &mCurrentType,       GBufferType::kResult     );                 
 }
 

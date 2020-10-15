@@ -170,7 +170,7 @@ PS_Input_Last VSmainS2(VS_InputS input)
 	// 出力値設定
 	output.position = P;
 	output.w_pos = wPos;
-	output.color = mat_color;
+	output.color = mat_color * input.color;
 	output.texcoord = input.texcoord;
 	output.w_normal = wN;
 
@@ -211,7 +211,7 @@ PS_Input_Last VSmainSkinning(VS_InputS input)
 	// 出力値設定
 	output.position = mul(p, matWVP);
 	output.w_pos = wPos;
-	output.color = mat_color;
+	output.color = mat_color * input.color;
 	output.texcoord = input.texcoord;
 	output.w_normal = wN;
 

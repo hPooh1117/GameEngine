@@ -4,6 +4,7 @@
 #include <DirectXMath.h>
 #include "D3D_Helper.h"
 #include "./Utilities/Vector.h"
+#include "./Engine/UIClient.h"
 
 class GraphicsEngine;
 class Shader;
@@ -14,11 +15,11 @@ class ShadowMap;
 class CameraController;
 
 
-class AmbientOcclusion
+class AmbientOcclusion : public UIClient
 {
 private:
 	static constexpr unsigned int MAX_SAMPLES = 16;
-	static constexpr float SAMPLE_RADIUS = 0.5f;
+	static constexpr float SAMPLE_RADIUS = 0.25f;
 	static const Vector2 NOISE_TEX_RESOLUTION;
 
 private:
@@ -35,6 +36,7 @@ private:
 	Vector2                  mNoiseScale;
 	float                    mSampleRadius;
 	float                    mPower;
+	float                    mBias;
 private:
 	struct CBufferForAO
 	{
@@ -47,7 +49,7 @@ private:
 		float               radius;
 		float               power;
 		float               kernelSize;
-		float               dummy2;
+		float               ambientBias;
 		DirectX::XMFLOAT4   samplePos[MAX_SAMPLES];
 	};
 
@@ -55,5 +57,7 @@ public:
 	AmbientOcclusion(D3D::DevicePtr& p_device);
 	void Activate(std::unique_ptr<GraphicsEngine>& p_graphics, std::shared_ptr<CameraController>& p_camera);
 	void Deactivate(std::unique_ptr<GraphicsEngine>& p_graphics);
+
+	virtual void RenderUI() override;
 	~AmbientOcclusion();
 };

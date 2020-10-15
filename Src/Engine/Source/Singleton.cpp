@@ -15,7 +15,7 @@ void SingletonFinalizer::addFinalizer(FinalizerFunc func)
     gFinalizers[gNumFinalizersSize++] = func;
 }
 
-void SingletonFinalizer::finalize()
+void SingletonFinalizer::Finalize()
 {
     std::lock_guard<std::mutex> lock(gMutex);
     for (int i = gNumFinalizersSize - 1; i >= 0; --i)

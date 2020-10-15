@@ -30,7 +30,7 @@ public:
     {
     }
 
-    virtual void update(float elapsed_time) = 0;
+    virtual void Update(float elapsed_time) = 0;
 
 
     inline void Set(const Vector3& pos, const Vector3& target, const Vector3& up)

@@ -97,7 +97,7 @@ float3 GetShadow(Texture2D st, SamplerState ss, float3 tex, float3 scolor, float
 float3 HalfLambert(float3 N, float3 L, float3 C, float3 Kd)
 {
     float D = dot(N, -L);
-    D = (D + 1.0) * 0.5;
+    D = max(D, 0) * 0.5 + 0.5;
     D = D * D;
 
     return Kd * C * D;

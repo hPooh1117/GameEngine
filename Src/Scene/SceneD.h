@@ -14,8 +14,10 @@ class SceneD : public Scene
 public:
     SceneD(SceneManager* manager, Microsoft::WRL::ComPtr<ID3D11Device>& device);
 
-    virtual void Update(float elapsed_time);
-    virtual void Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time);
+    virtual void InitializeScene() override;
+
+    virtual void Update(float elapsed_time) override;
+    virtual void Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time) override;
 
     ~SceneD();
 

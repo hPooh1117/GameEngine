@@ -7,7 +7,7 @@ class OrthoView : public Camera
 {
 public:
 	OrthoView(const Vector3& pos);
-	virtual void update(float elapsed_time);
+	virtual void Update(float elapsed_time);
 
 	void SetOrtho(float width, float height, float min, float max);
 	//virtual DirectX::XMMATRIX getViewProj(Microsoft::WRL::ComPtr<ID3D11DeviceContext>& imm_context);

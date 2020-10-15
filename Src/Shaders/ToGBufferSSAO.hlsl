@@ -31,23 +31,12 @@ PS_Input_Shadow_AO VSmain(VS_Input input)
 	output.position = mul(P, matWVP);
 	output.w_pos = wPos.xyz;
 	output.w_normal = N;
-	output.color = mat_color;
+	output.color = mat_color * input.color;
 	output.texcoord = input.texcoord;
 
-	// 正規化デバイス座標系
-	float4 wvpPos;
-	wvpPos.xyz = wPos.xyz;
-	wvpPos.w = 1;
-	wvpPos = mul(light_view_projection, wvpPos);
-	wvpPos /= wvpPos.w;
 
-	// テクスチャ座標系
-	wvpPos.y = -wvpPos.y;
-	wvpPos.xy = 0.5f * wvpPos.xy + 0.5f;
-
-	output.v_shadow = wvpPos.xyz;
 	output.depth = output.position.zw;
-	//output.v_shadow = GetShadowTex(light_view_projection, wPos.xyz);
+	output.v_shadow = GetShadowTex(light_view_projection, wPos.xyz);
 	return output;
 }
 
@@ -124,10 +113,15 @@ PS_Output_AO PSmain(PS_Input_Shadow_AO input)
 	output.color = diffuse_texture.Sample(decal_sampler, input.texcoord) * input.color;
 	output.normal = float4(N, 1);
 	output.position = P;
-	//output.position = mul(inv_proj, input.position);
-	//output.position /= output.position.w;
+
 	output.shadow = float4(GetShadow(shadow_texture, shadow_sampler, input.v_shadow, shadow_color, bias), 1);
-	output.depth = float4(input.depth.x / input.depth.y, input.depth.y, 0, 1);
+
+	// Plan A (Failed to calcurate world position on next pass)
+	//float depth = input.position.z / input.position.w;
+	//output.depth = float4(depth, depth, depth, 1.0f);
+
+	// Plan B
+	output.depth = float4(input.depth.x / input.depth.y, 0, 0, 1);
 	//output.depth.r = LinearizeDepth(output.depth.r, 0.1, 100.0);
 	return output;
 }

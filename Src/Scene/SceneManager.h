@@ -3,9 +3,11 @@
 #include <memory>
 #include "SceneHelper.h"
 #include "./Application/Helper.h"
+#include "./Renderer/D3D_Helper.h"
 
 class GraphicsEngine;
 class Scene;
+
 class SceneManager
 {
 public:
@@ -13,20 +15,26 @@ public:
 
 private:
     std::stack<std::unique_ptr<Scene>>    mSceneStack;
+    std::unique_ptr<Scene>                m_pLoadingScene;
     SceneID                               mCurrentScene;
     SceneID                               mNextScene;
     bool                                  mClearFlag;
 
 private:
-    Microsoft::WRL::ComPtr<ID3D11Device>  m_pDevice;
+    D3D::DevicePtr  m_pDevice;
 
 public:
-    SceneManager(Microsoft::WRL::ComPtr<ID3D11Device> device);
+    SceneManager(D3D::DevicePtr& p_device);
     ~SceneManager();
 
+    void InitializeLoadingScene();
+    void InitializeCurrentScene();
 
-    void Execute(float elapsed_time);
-    void Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time);
+    void ExecuteLoadingScene(float elapsed_time);
+    void ExecuteCurrentScene(float elapsed_time);
+
+    void RenderLoadingScene(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time);
+    void RenderCurrentScene(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time);
 
 
 

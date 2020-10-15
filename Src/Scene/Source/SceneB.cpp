@@ -1,5 +1,5 @@
 #include "SceneB.h"
-#include "SceneManager.h"
+//#include "SceneManager.h"
 
 #include "./Application/Application.h"
 #include "./Application/Input.h"
@@ -194,12 +194,16 @@ SceneB::SceneB(SceneManager * manager, Microsoft::WRL::ComPtr<ID3D11Device>& dev
     //m_pCat->GetComponent<MeshComponent>()->setShader(mpToShadow, true);
 }
 
+void SceneB::InitializeScene()
+{
+}
+
 void SceneB::Update(float elapsed_time)
 {
 
     m_pCameraController->Update(elapsed_time);
 
-    //m_pCamera->update(elapsed_time);
+    //m_pCamera->Update(elapsed_time);
     //m_pLight->Update(elapsed_time);
     m_pLightController->Update(elapsed_time);
 

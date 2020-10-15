@@ -1,35 +1,11 @@
-#include "phong_obj.hlsli"
-#include "function.hlsli"
-//struct PS_Input
-//{
-//    float4 pos : SV_POSITION;
-//    float4 color : COLOR;
-//    float2 texcoord : TEXCOORD1;
-//    float3 w_pos : TEXCOORD2;
-//    float3 w_normal : TEXCOORD3;
-//};
+#include "H_DataFormat.hlsli"
+#include "H_Functions.hlsli"
+#include "H_DirectionalLight.hlsli"
+
 //
-//cbuffer CBPerMatrix : register(bo)
-//{
-//    row_major float4x4 world;
-//    row_major float4x4 mat_WVP;
-//};
+// pixel shader
 //
-//cbuffer CBPerLight : register(b2)
-//{
-//    float4 light_dir;
-//    float4 material_color;
-//    float4 ambient_color;
-//    float4 light_color;
-//    float4 eye_pos;
-//};
-
-
-Texture2D diffuse_texture:register(t0);
-SamplerState decal_sampler:register(s0);
-
-
-float4 main(PS_Input input) : SV_TARGET
+float4 PSmain(PS_Input input) : SV_TARGET
 {
     float4 color = diffuse_texture.Sample(decal_sampler, input.texcoord);
     float3 N = normalize(input.w_normal);

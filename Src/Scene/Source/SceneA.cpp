@@ -1,5 +1,5 @@
 #include "SceneA.h"
-#include "SceneManager.h"
+//#include "SceneManager.h"
 
 #include "./Application/Application.h"
 
@@ -26,7 +26,7 @@ using namespace DirectX;
 
 SceneA::SceneA(SceneManager * manager, Microsoft::WRL::ComPtr<ID3D11Device>& device):Scene(manager, device)
 {
-    mNextScene = SceneID::SCENE_B;
+    mNextScene = SceneID::SCENE_C;
 
     // Initialize sprite font
     mFont = std::make_unique<Sprite>(device, L"./Data/Fonts/font0.png");
@@ -38,12 +38,19 @@ SceneA::SceneA(SceneManager * manager, Microsoft::WRL::ComPtr<ID3D11Device>& dev
 
 
     m_pPhong = std::make_shared<Shader>();
-    m_pPhong->createShader(
+    m_pPhong->CreateShader(
         device,
-        L"./Src/Shaders/Phong.hlsl",
-        L"./Src/Shaders/Phong.hlsl",
-        "VSmain", "PSmain", VEDType::VED_DEFAULT
+        L"./Data/Shaders/Phong_vs.cso",
+        L"./Data/Shaders/Phong_ps.cso",
+        VEDType::VED_DEFAULT
     );
+    //m_pPhong->createShader(
+    //    device,
+    //    L"./Src/Shaders/Phong.hlsl",
+    //    L"./Src/Shaders/Phong.hlsl",
+    //    "VSmain",  "PSmain", VEDType::VED_DEFAULT
+    //);
+
     m_line_shader = std::make_shared<Shader>();
     m_line_shader->createShader(
         device,
@@ -122,6 +129,7 @@ SceneA::SceneA(SceneManager * manager, Microsoft::WRL::ComPtr<ID3D11Device>& dev
         device,
         L"./Data/Images/canyon.jpg"
     );
+
     m_pSphere->SetScale(5.0f, 5.0f, 5.0f);
     m_pActorManager->AddActor(m_pSphere);
 
@@ -135,6 +143,7 @@ SceneA::SceneA(SceneManager * manager, Microsoft::WRL::ComPtr<ID3D11Device>& dev
     );
     m_pEarth->SetPosition(Vector3(5, 1, 0));
     m_pEarth->SetScale(5.0f, 5.0f, 5.0f);
+    m_pEarth->SetAdditiveRotation(-180.0f, 0.0f, 0.0f);
 
     m_pEarth->GetComponent<MeshComponent>()->AddShaderResource(device,
         L"./Data/Images/earthnormal.jpg");
@@ -190,6 +199,10 @@ SceneA::SceneA(SceneManager * manager, Microsoft::WRL::ComPtr<ID3D11Device>& dev
     m_pCameraController->SetTarget(m_pSphere);
 
     m_pUIRenderer->SetInQueue("Light", m_pLightController);
+}
+
+void SceneA::InitializeScene()
+{
 }
 
 void SceneA::Update(float elapsed_time)

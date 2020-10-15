@@ -26,7 +26,7 @@ cbuffer CBPerAO : register(b5)
 	float    radius;
 	float    power;
 	float    kernelSize;
-	float    dummy2;
+	float    ambient_bias;
 	float4   sample_pos[MAX_SAMPLES];
 }
 

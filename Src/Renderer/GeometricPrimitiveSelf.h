@@ -62,7 +62,7 @@ private:
 
 public:
     BasicCube(D3D::DevicePtr& device, const wchar_t* filename);
-    bool loadTex(
+    bool LoadTexture(
         D3D::DevicePtr& device,
         const wchar_t* filename);
 
@@ -96,7 +96,7 @@ public:
         unsigned int stacks = 8,
         float radius = 0.5f
     );
-    bool loadTex(
+    bool LoadTexture(
         D3D::DevicePtr& device,
         const wchar_t* filename);
     virtual void SetRenderState(D3D::DeviceContextPtr& imm_context) override;

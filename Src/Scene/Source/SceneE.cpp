@@ -6,7 +6,6 @@
 
 #include "./Engine/MainCamera.h"
 #include "./Engine/CameraController.h"
-#include "./Engine/DirectionalLight.h" // TODO: Will be Deleted
 #include "./Engine/LightController.h"
 #include "./Engine/Actor.h"
 #include "./Engine/ActorManager.h"
@@ -31,54 +30,55 @@
 SceneE::SceneE(SceneManager* manager, D3D::DevicePtr& device) :Scene(manager, device)
 {
 	mNextScene = SceneID::SCENE_F;
+    mSceneNameTable[static_cast<unsigned int>(SceneID::SCENE_E)] = "SceneE";
 
 //--------------------------------------------------------------------------------
 // FORWARD
 //--------------------------------------------------------------------------------
-	m_pToShadowShader = std::make_shared<Shader>();
-	m_pToShadowShader->createShader(
-		device,
+    m_pToShadowShader = std::make_shared<Shader>();
+    m_pToShadowShader->createShader(
+        device,
         L"./Src/Shaders/ShadowMap.hlsl",
         L"./Src/Shaders/ShadowMap.hlsl",
         "VSshadow", "PSshadow", VEDType::VED_DEFAULT);
 
-	m_pFromShadowShader = std::make_shared<Shader>();
-	m_pFromShadowShader->createShader(
-		device,
-		L"./Src/Shaders/ShadowMap.hlsl",
-		L"./Src/Shaders/ShadowMap.hlsl",
-		"VSmain2", "PSmainEx", VEDType::VED_DEFAULT);
+    m_pFromShadowShader = std::make_shared<Shader>();
+    m_pFromShadowShader->createShader(
+        device,
+        L"./Src/Shaders/ShadowMap.hlsl",
+        L"./Src/Shaders/ShadowMap.hlsl",
+        "VSmain2", "PSmainEx", VEDType::VED_DEFAULT);
 
-	m_pToShadow = std::make_shared<Shader>();
-	m_pToShadow->createShader(
-		device,
+    m_pToShadow = std::make_shared<Shader>();
+    m_pToShadow->createShader(
+        device,
         L"./Src/Shaders/ShadowMap.hlsl",
         L"./Src/Shaders/ShadowMap.hlsl",
         "VSshadowS", "PSshadow", VEDType::VED_SKINNED_MESH);
-	m_pFromShadow = std::make_shared<Shader>();
-	m_pFromShadow->createShader(
-		device,
+    m_pFromShadow = std::make_shared<Shader>();
+    m_pFromShadow->createShader(
+        device,
         L"./Src/Shaders/ShadowMap.hlsl",
         L"./Src/Shaders/ShadowMap.hlsl",
         "VSmainS2", "PSmainEx", VEDType::VED_SKINNED_MESH);
 
-	m_pToShadowForMotion = std::make_shared<Shader>();
-	m_pToShadowForMotion->createShader(
-		device,
+    m_pToShadowForMotion = std::make_shared<Shader>();
+    m_pToShadowForMotion->createShader(
+        device,
         L"./Src/Shaders/ShadowMap.hlsl",
         L"./Src/Shaders/ShadowMap.hlsl",
         "VSshadowSkinning", "PSshadow", VEDType::VED_SKINNED_MESH);
-	m_pFromShadowForMotion = std::make_shared<Shader>();
-	m_pFromShadowForMotion->createShader(
-		device,
+    m_pFromShadowForMotion = std::make_shared<Shader>();
+    m_pFromShadowForMotion->createShader(
+        device,
         L"./Src/Shaders/ShadowMap.hlsl",
         L"./Src/Shaders/ShadowMap.hlsl",
         "VSmainSkinning", "PSmainEx", VEDType::VED_SKINNED_MESH);
 
-  
-//--------------------------------------------------------------------------------
-// DEFFERED
-//--------------------------------------------------------------------------------
+
+    //--------------------------------------------------------------------------------
+    // DEFFERED
+    //--------------------------------------------------------------------------------
     m_pFromGBuffer = std::make_shared<Shader>();
     m_pFromGBuffer->createShader(
         device,
@@ -115,25 +115,53 @@ SceneE::SceneE(SceneManager* manager, D3D::DevicePtr& device) :Scene(manager, de
         L"./Src/Shaders/SSAO.hlsl",
         "VSmain", "PSmain", VEDType::VED_SPRITE);
 
-
-//----------------------------------------------------------------------------------------
-// テクスチャ初期化
-//----------------------------------------------------------------------------------------
+    m_pScreenShader = std::make_shared<Shader>();
+    m_pScreenShader->createShader(
+        device,
+        L"./Src/Shaders/Screen.hlsl",
+        L"./Src/Shaders/Screen.hlsl",
+        "VSmain", "PSmain", VEDType::VED_SPRITE
+    );
+    //----------------------------------------------------------------------------------------
+    // テクスチャ初期化
+    //----------------------------------------------------------------------------------------
     m_pMRT = std::make_shared<MultiRenderTarget>(device);
     m_pMRT->SetShader(m_pFromGBuffer);
     m_pMRT->SetShader(m_pDefferedLightShader);
+    m_pMRT->SetShader(m_pScreenShader);
     m_pShadowMap = std::make_unique<ShadowMap>(device);
-    m_pAO = std::make_unique<AmbientOcclusion>(device);
+    m_pAO = std::make_shared<AmbientOcclusion>(device);
 
-//----------------------------------------------------------------------------------------
-// プレファブ初期化
-//----------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------
+    // プレファブ初期化
+    //----------------------------------------------------------------------------------------
 
     m_pLightController->Init(0, 0);
 
+    InitializeActors();
 
 
-//----------------------------------------------------------------------------------------
+    // 追跡カメラのターゲット設定
+    m_pCameraController->SetTarget(m_pShiba);
+
+    m_pRenderer->AddShaderForShadow(m_pToShadowShader);
+    //m_pOswell->GetComponent<MeshComponent>()->SetShader(m_pToShadowForMotion, true);
+    //m_pCat->GetComponent<MeshComponent>()->SetShader(m_pToShadow, true);
+    //m_pShiba->GetComponent<MeshComponent>()->SetShader(m_pToShadow, true);
+
+    RegistUIClients();
+
+}
+
+void SceneE::InitializeScene()
+{
+}
+
+//----------------------------------------------------------------------------------------------------------------------------
+
+void SceneE::InitializeActors()
+{
+    //----------------------------------------------------------------------------------------
 // アクター・コンポーネント初期化
 //----------------------------------------------------------------------------------------
     m_pCat = Actor::Initialize(ActorID::kNonPlayer);
@@ -147,6 +175,7 @@ SceneE::SceneE(SceneManager* manager, D3D::DevicePtr& device) :Scene(manager, de
     //m_pCat->SetScale(0.5f, 0.5f, 0.5f);
     m_pCat->SetScale(2, 4, 2);
     //m_pCat->SetAdditiveRotation(-90.0f, 0.0f, 0.0f);
+    m_pCat->GetComponent<MeshComponent>()->SetColor(Vector4(0.7f, 0.2f, 0.3f, 1.0f));
     m_pCat->SetRotationQuaternion(0, 0, 0);
     m_pActorManager->AddActor(m_pCat);
 
@@ -185,28 +214,53 @@ SceneE::SceneE(SceneManager* manager, D3D::DevicePtr& device) :Scene(manager, de
 
     m_pField = Actor::Initialize(ActorID::kFloor);
     m_pField->AddComponent(
-        MeshComponent::MeshID::kStaticMesh,
+        MeshComponent::MeshID::kBasicCube,
         m_pRenderer,
         m_pToGBuffer,
-        L"./Data/Models/OBJ/Field/field.obj"
+        L"\0"
     );
     m_pField->SetPosition(Vector3(0, 0, 0));
-    m_pField->SetScale(10, 10, 10);
+    m_pField->SetScale(50, 0.5f, 50);
     //m_pField->GetComponent<MeshComponent>()->SetWireframeMode();
     m_pActorManager->AddActor(m_pField);
 
 
-    // 追跡カメラのターゲット設定
-    m_pCameraController->SetTarget(m_pShiba);
+    std::shared_ptr<Actor> m_pWall = Actor::Initialize(ActorID::kNonPlayer0);
+    m_pWall->AddComponent(
+        MeshComponent::MeshID::kBasicCube,
+        m_pRenderer,
+        m_pToGBuffer,
+        L"\0"
+    );
+    m_pWall->SetPosition(Vector3(0, 25, 25));
+    m_pWall->SetScale(50, 50, 0.5f);
 
-    m_pRenderer->AddShaderForShadow(m_pToShadowShader);
-    //m_pOswell->GetComponent<MeshComponent>()->SetShader(m_pToShadowForMotion, true);
-    //m_pCat->GetComponent<MeshComponent>()->SetShader(m_pToShadow, true);
-    //m_pShiba->GetComponent<MeshComponent>()->SetShader(m_pToShadow, true);
+    m_pActorManager->AddActor(m_pWall);
 
-    m_pUIRenderer->SetInQueue("GBuffer", std::static_pointer_cast<UIClient>(m_pMRT));
-    m_pUIRenderer->SetInQueue("Light", m_pLightController);
-    m_pUIRenderer->SetInQueue("Camera", m_pCameraController);
+    std::shared_ptr<Actor> m_pWall1 = Actor::Initialize(ActorID::kNonPlayer0 + 1);
+    m_pWall1->AddComponent(
+        MeshComponent::MeshID::kBasicCube,
+        m_pRenderer,
+        m_pToGBuffer,
+        L"\0"
+    );
+    m_pWall1->SetPosition(Vector3(-25, 25, 0));
+    m_pWall1->SetScale(0.5f, 50.0f, 50.0f);
+
+    m_pActorManager->AddActor(m_pWall1);
+
+    std::shared_ptr<Actor> m_pWall2 = Actor::Initialize(ActorID::kNonPlayer0 + 2);
+    m_pWall2->AddComponent(
+        MeshComponent::MeshID::kBasicCube,
+        m_pRenderer,
+        m_pToGBuffer,
+        L"\0"
+    );
+    m_pWall2->SetPosition(Vector3(25, 25, 0));
+    m_pWall2->SetScale(0.5f, 50.0f, 50.0f);
+
+    m_pActorManager->AddActor(m_pWall2);
+
 }
 
 //----------------------------------------------------------------------------------------------------------------------------
@@ -227,6 +281,16 @@ void SceneE::Update(float elapsed_time)
     m_pActorManager->Update(elapsed_time);
 
     
+}
+
+//----------------------------------------------------------------------------------------------------------------------------
+
+void SceneE::RegistUIClients()
+{
+    m_pUIRenderer->SetInQueue("GBuffer", std::static_pointer_cast<UIClient>(m_pMRT));
+    m_pUIRenderer->SetInQueue("Ambient Occlusion", m_pAO);
+    m_pUIRenderer->SetInQueue("Light", m_pLightController);
+    m_pUIRenderer->SetInQueue("Camera", m_pCameraController);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------
@@ -266,10 +330,20 @@ void SceneE::Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_t
 
     m_pMRT->Deactivate(p_graphics);
 
+
+//---------------------------------------------------------------------------------------------
+// ポストプロセス
+//---------------------------------------------------------------------------------------------
+    m_pMRT->ActivateScreen(p_graphics);
+
+    m_pMRT->RenderScreen(immContext, m_pBlender);
+
+    m_pMRT->Deactivate(p_graphics);
+
     immContext->OMSetDepthStencilState(p_graphics->GetDepthStencilPtr(GraphicsEngine::DS_FALSE).Get(), 1);
 
 //---------------------------------------------------------------------------------------------
-// 描画処理
+// 最終描画処理
 //---------------------------------------------------------------------------------------------
     m_pMRT->Render(immContext, m_pBlender);
 
@@ -282,5 +356,6 @@ void SceneE::Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_t
 SceneE::~SceneE()
 {
 }
+
 
 //----------------------------------------------------------------------------------------------------------------------------

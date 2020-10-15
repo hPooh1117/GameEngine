@@ -78,8 +78,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shaders", "Shaders", "{CA61
 		Src\Shaders\phong.hlsli = Src\Shaders\phong.hlsli
 		Src\Shaders\phong_obj.hlsli = Src\Shaders\phong_obj.hlsli
 		Src\Shaders\phong_obj_vs.hlsl = Src\Shaders\phong_obj_vs.hlsl
-		Src\Shaders\phong_ps.hlsl = Src\Shaders\phong_ps.hlsl
-		Src\Shaders\phong_vs.hlsl = Src\Shaders\phong_vs.hlsl
+		Src\Shaders\Phong_ps.hlsl = Src\Shaders\Phong_ps.hlsl
+		Src\Shaders\Phong_vs.hlsl = Src\Shaders\Phong_vs.hlsl
 		Src\Shaders\PhongForPointLight.hlsl = Src\Shaders\PhongForPointLight.hlsl
 		Src\Shaders\PhongForSpotLight.hlsl = Src\Shaders\PhongForSpotLight.hlsl
 		Src\Shaders\plane_batch.hlsli = Src\Shaders\plane_batch.hlsli
@@ -94,6 +94,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shaders", "Shaders", "{CA61
 		Src\Shaders\primitive_batch_vs.hlsl = Src\Shaders\primitive_batch_vs.hlsl
 		Src\Shaders\primitive_ps.hlsl = Src\Shaders\primitive_ps.hlsl
 		Src\Shaders\primitive_vs.hlsl = Src\Shaders\primitive_vs.hlsl
+		Src\Shaders\Screen.hlsl = Src\Shaders\Screen.hlsl
 		Src\Shaders\ShadowMap.hlsl = Src\Shaders\ShadowMap.hlsl
 		Src\Shaders\skinned_mesh.hlsli = Src\Shaders\skinned_mesh.hlsli
 		Src\Shaders\skinned_mesh_animation_vs.hlsl = Src\Shaders\skinned_mesh_animation_vs.hlsl
@@ -120,6 +121,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shaders", "Shaders", "{CA61
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Component", "Src\SolutionItems\Component\Component.vcxproj", "{A399E72D-047C-4547-B455-43AB1E235BF9}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenderPass", "Src\SolutionItems\RenderPass\RenderPass.vcxproj", "{9E8B1135-310F-4D26-B93F-70DA076AA17D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -215,6 +218,18 @@ Global
 		{A399E72D-047C-4547-B455-43AB1E235BF9}.Release|x64.Build.0 = Release|x64
 		{A399E72D-047C-4547-B455-43AB1E235BF9}.Release|x86.ActiveCfg = Release|Win32
 		{A399E72D-047C-4547-B455-43AB1E235BF9}.Release|x86.Build.0 = Release|Win32
+		{9E8B1135-310F-4D26-B93F-70DA076AA17D}.Debug|x64.ActiveCfg = Debug|x64
+		{9E8B1135-310F-4D26-B93F-70DA076AA17D}.Debug|x64.Build.0 = Debug|x64
+		{9E8B1135-310F-4D26-B93F-70DA076AA17D}.Debug|x86.ActiveCfg = Debug|Win32
+		{9E8B1135-310F-4D26-B93F-70DA076AA17D}.Debug|x86.Build.0 = Debug|Win32
+		{9E8B1135-310F-4D26-B93F-70DA076AA17D}.Profile|x64.ActiveCfg = Release|x64
+		{9E8B1135-310F-4D26-B93F-70DA076AA17D}.Profile|x64.Build.0 = Release|x64
+		{9E8B1135-310F-4D26-B93F-70DA076AA17D}.Profile|x86.ActiveCfg = Release|Win32
+		{9E8B1135-310F-4D26-B93F-70DA076AA17D}.Profile|x86.Build.0 = Release|Win32
+		{9E8B1135-310F-4D26-B93F-70DA076AA17D}.Release|x64.ActiveCfg = Release|x64
+		{9E8B1135-310F-4D26-B93F-70DA076AA17D}.Release|x64.Build.0 = Release|x64
+		{9E8B1135-310F-4D26-B93F-70DA076AA17D}.Release|x86.ActiveCfg = Release|Win32
+		{9E8B1135-310F-4D26-B93F-70DA076AA17D}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

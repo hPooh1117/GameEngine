@@ -57,9 +57,7 @@ float4 PSmain2(PS_Input input) : SV_TARGET
 {
 	float3 DS = light_texture.Sample(light_sampler, input.texcoord).xyz;
 
-	float3 A = ambient_texture.Sample(ambient_sampler, input.texcoord).xyz;
 
 
-
-	return float4(DS + A, 1);
+	return float4(DS, 1);
 }

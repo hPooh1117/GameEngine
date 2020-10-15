@@ -164,7 +164,9 @@ void GraphicsEngine::ActivateRenderTarget()
 
     // Unit1 7-②　レンダーターゲットのクリア
     //float ClearColor[4] = { 0.796f, 0.796f, 0.597f, 1.0f }; //R, G, B, A
-    float ClearColor[4] = { 0.1f, 0.1f, 0.1f, 1.0f }; //R, G, B, A
+    //float ClearColor[4] = { 0.1f, 0.1f, 0.1f, 1.0f }; //R, G, B, A
+    float ClearColor[4] = { 0.796f, 0.796f, 0.796f, 1.0f };
+
 
     m_pImmContext->ClearRenderTargetView(m_pSwapChain->getRenderTargetView().Get(), ClearColor);
 

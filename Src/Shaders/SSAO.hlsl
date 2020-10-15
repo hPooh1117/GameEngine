@@ -191,11 +191,12 @@ PS_Output_SSAO PSmain(PS_Input input)
 	float depth = depthBufferColor.r;
 	//depth = LinearizeDepth(depth, 0.1, 100.0);
 	float4 projP = float4(input.projPos.xy, depth, 1);
+	//projP *= depthBufferColor.g;
 	float4 viewP = mul(projP, inv_proj);
 	//viewP /= viewP.w;
 	//float4 wPos = mul(viewP, inv_view);
 	float4 wPos = mul(projP, inv_viewproj);
-	wPos /= wPos.w;
+	wPos.xyz /= wPos.w;
 	viewP /= viewP.w;
 
 	float3 P = wPos.xyz;
@@ -204,14 +205,13 @@ PS_Output_SSAO PSmain(PS_Input input)
 	float3 E = normalize(eye_pos.xyz - P);
 	float3 L = normalize(light_dir.xyz);
 
-	float3 A = /*ambient_color.rgb*/float3(0.8, 0.8, 0.8);
 
 	float3 C = light_color.rgb;
 	float3 Kd = float3(1, 1, 1);
-	float3 D = diffuse(N, L, C, Kd);
+	float3 D = HalfLambert(N, L, C, Kd);
 
-	float3 Ks = float3(1, 1, 1);
-	float3 S = blinnPhongSpecular(N, L, C, E, Ks, 20);
+	float3 Ks = float3(0.8, 0.8, 0.8);
+	float3 S = blinnPhongSpecular(N, L, C, E, Ks, 5);
 
 	output.diffuse = float4(D, 1);
 	output.specular = float4(S, 1);
@@ -242,7 +242,7 @@ PS_Output_SSAO PSmain(PS_Input input)
 		sampleDepth = sampleViewPos.z / sampleViewPos.w;
 
 		float rangeCheck = smoothstep(0.0, 1.0, radius / abs(viewP.z - sampleDepth));
-		occlusion += rangeCheck * step(sampleDepth, samplePos.z) * NdotS;
+		occlusion += rangeCheck * step(sampleDepth, samplePos.z + ambient_bias) * NdotS;
 	}
 
 	occlusion = 1.0 - (occlusion / kernelSize);

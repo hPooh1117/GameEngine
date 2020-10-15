@@ -2,14 +2,14 @@
 
 #include <map>
 #include <wrl/client.h>
-#include <memory>
 #include "WICTextureLoader.h"
 #include <d3dcompiler.h>
 #include <unordered_map>
 #include <tuple>
-
+#include <fstream>
 
 #include "./Utilities/misc.h"
+#include "./Utilities/Log.h"
 #include "DirectXTex.h"
 
 
@@ -140,6 +140,47 @@ HRESULT ResourceManager::CreateVSFromFile(Microsoft::WRL::ComPtr<ID3D11Device>& 
     return hr;
 }
 
+HRESULT ResourceManager::CreateVSFromFile(D3D::DevicePtr& device, const std::string& vs_name, D3D::VShaderPtr& vs)
+{
+    static std::map<std::string, D3D::VShaderPtr> cache;
+
+    // search another fragment
+    auto it = cache.find(vs_name);
+    if (it != cache.end())
+    {
+        vs = it->second;
+        
+        return S_OK;
+    }
+
+    // if another fragment doesn't exist, open csoFile.
+    // 頂点シェーダーのHLSLファイルの入力
+    FILE* fp = nullptr;
+    fopen_s(&fp, vs_name.c_str(), "rb");
+    fseek(fp, 0, SEEK_END);
+    long csoSize = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
+    std::unique_ptr<unsigned char[]> csoData;
+    csoData = std::make_unique<unsigned char[]>(csoSize);
+    fread(csoData.get(), csoSize, 1, fp);
+    fclose(fp);
+
+
+
+    HRESULT hr = device->CreateVertexShader(csoData.get(), csoSize, nullptr, vs.GetAddressOf());
+    if (FAILED(hr))
+    {
+        Log::Error("[RESOURCE MANAGER] Couldn't Create Vertex Shader. (%s)", vs_name.c_str());
+    }
+
+
+    // insert new element
+    cache.insert(std::make_pair(vs_name, vs));
+
+    return hr;
+
+}
+
 
 struct pair_hash
 {
@@ -153,7 +194,7 @@ struct pair_hash
     }
 };
 
-HRESULT ResourceManager::compileHLSLFile(
+HRESULT ResourceManager::CompileHLSLFile(
     std::wstring & filename,
     std::string & func, 
     std::string shaderModel,
@@ -200,6 +241,42 @@ HRESULT ResourceManager::compileHLSLFile(
 
 }
 
+//HRESULT ResourceManager::FetchDataFromCSO(
+//    const std::wstring&                 filename,
+//    std::shared_ptr<wchar_t[]>&         data, 
+//    unsigned int&                       size)
+//{
+//    auto result = S_OK;
+//
+//    typedef std::pair <std::shared_ptr<wchar_t[]>, unsigned int> CsoData;
+//    static std::unordered_map < std::wstring, CsoData> cache;
+//
+//
+//    auto it = cache.find(filename);
+//    if (it != cache.end())
+//    {
+//        data = it->second.first;
+//        size = it->second.second;
+//        return S_OK;
+//    }
+//
+//    std::wifstream file(filename);
+//
+//    file.seekg(0, std::ios_base::end);
+//    size = file.tellg();
+//    file.seekg(0);
+//    std::shared_ptr<wchar_t[]> csodata = std::make_shared<wchar_t[]>(size);
+//    file.read(csodata.get(), size);
+//    file.close();
+//    data.reset();
+//    data = csodata;
+//
+//    CsoData fragment = std::make_pair(data, size);
+//    cache.emplace(filename, fragment);
+//
+//    return result;
+//}
+
 
 
 
@@ -233,6 +310,46 @@ HRESULT ResourceManager::CreatePSFromFile(Microsoft::WRL::ComPtr<ID3D11Device>& 
     _ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
     cache.insert(std::make_pair(csoname, *ps));
+
+    return hr;
+}
+
+HRESULT ResourceManager::CreatePSFromFile(D3D::DevicePtr& device, const std::string& ps_name, D3D::PShaderPtr& ps)
+{
+    static std::map<std::string, D3D::PShaderPtr> cache;
+
+    // search another fragment
+    auto it = cache.find(ps_name);
+    if (it != cache.end())
+    {
+        ps = it->second;
+
+        return S_OK;
+    }
+
+    // if another fragment doesn't exist, open csoFile.
+    // 頂点シェーダーのHLSLファイルの入力
+    FILE* fp = nullptr;
+    fopen_s(&fp, ps_name.c_str(), "rb");
+    fseek(fp, 0, SEEK_END);
+    long csoSize = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
+    std::unique_ptr<unsigned char[]> csoData;
+    csoData = std::make_unique<unsigned char[]>(csoSize);
+    fread(csoData.get(), csoSize, 1, fp);
+    fclose(fp);
+
+
+
+    HRESULT hr = device->CreatePixelShader(csoData.get(), csoSize, nullptr, ps.GetAddressOf());
+    if (FAILED(hr))
+    {
+        Log::Error("[RESOURCE MANAGER] Couldn't Create Pixel Shader. (%s)", ps_name.c_str());
+    }
+
+
+    // insert new element
+    cache.insert(std::make_pair(ps_name, ps));
 
     return hr;
 }
@@ -302,7 +419,7 @@ HRESULT ResourceManager::CreateDummyTexture(
     subresource_data.SysMemSlicePitch = 4;
 
     ID3D11Texture2D *texture2d;
-    hr = device->CreateTexture2D(&texture2d_desc, nullptr, &texture2d);
+    hr = device->CreateTexture2D(&texture2d_desc, &subresource_data, &texture2d);
     _ASSERT_EXPR(SUCCEEDED(hr), hr_trace(hr));
 
     D3D11_SHADER_RESOURCE_VIEW_DESC shader_resource_view_desc = {};

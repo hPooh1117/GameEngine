@@ -45,7 +45,7 @@ private:
 	Vector4 mLightDirection;
 	float   mAngle;
 	Vector4 mAmbientColor = { 0.1f, 0.1f, 0.1f, 0 };
-	Vector4 mLightColor = { 0.8f, 0.8f, 0.8f, 1.0f };
+	Vector4 mLightColor = { 0.9f, 0.9f, 0.9f, 1.0f };
 	
 	float   mTessFactor = 1.0f;
 	float   mEnvironmentMapAlpha;

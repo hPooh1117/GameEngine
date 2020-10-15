@@ -9,7 +9,7 @@ OrthoView::OrthoView(const Vector3& pos) :Camera(pos)
 	mFar = 100.0f;
 }
 
-void OrthoView::update(float elapsed_time)
+void OrthoView::Update(float elapsed_time)
 {
 }
 

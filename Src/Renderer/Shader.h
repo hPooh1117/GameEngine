@@ -4,9 +4,11 @@
 #include <string>
 #include "VertexDecleration.h"
 
+
+
 // @class Shader
 // @brief All shader data including vertex, pixel (, geometric, hull ) are compiled here.
-// @brief And then create shader object like ID3D11xxxShader.
+// @brief And then Create shader object like ID3D11xxxShader.
 // @param none
 class Shader
 {
@@ -45,6 +47,13 @@ public:
         std::string hs_func,
         std::string ds_func
     );
+
+    bool CreateShader(
+        Microsoft::WRL::ComPtr<ID3D11Device>& device,
+        const std::wstring& vs_name,
+        const std::wstring& ps_name,
+        VEDType type
+        );
 
     void activateShaders(Microsoft::WRL::ComPtr<ID3D11DeviceContext>& imm_context);
     ~Shader();

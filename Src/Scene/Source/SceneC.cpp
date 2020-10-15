@@ -1,5 +1,5 @@
 #include "SceneC.h"
-#include "SceneManager.h"
+//#include "SceneManager.h"
 
 #include "./Application/Application.h"
 #include "./Application/Input.h"
@@ -340,6 +340,10 @@ SceneC::SceneC(SceneManager* manager, Microsoft::WRL::ComPtr<ID3D11Device>& devi
     //m_pUIRenderer = std::make_unique<UIRenderer>();
     //m_pUIRenderer->SetInQueue("SpotLight", ui);
     m_pUIRenderer->SetInQueue("Light", m_pLightController);
+}
+
+void SceneC::InitializeScene()
+{
 }
 
 void SceneC::Update(float elapsed_time)

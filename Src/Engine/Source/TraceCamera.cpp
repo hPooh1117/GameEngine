@@ -11,12 +11,12 @@ using namespace DirectX;
 TraceCamera::TraceCamera() : Camera(DISTANCE)
 {
 	mNear = 0.1f;
-	mFar = 100.0f;
+	mFar = 1000.0f;
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-void TraceCamera::update(float elapsed_time)
+void TraceCamera::Update(float elapsed_time)
 {
 	mDeltaTime = elapsed_time;
 	

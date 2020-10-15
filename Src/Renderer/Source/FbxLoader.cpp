@@ -175,7 +175,7 @@ bool FbxLoader::LoadFbxFile(
 							ResourceManager::CreateFilenameToRefer(texture_unicode, fbx_unicode, texture_unicode);
 
 							subset.diffuse.texture_filename = texture_unicode;
-							// create "diffuse.shader_resource_view" from "filename"
+							// Create "diffuse.shader_resource_view" from "filename"
 							subset.diffuse.texture = std::make_shared<Texture>();
 							subset.diffuse.texture->Load(device, subset.diffuse.texture_filename.c_str());
 
@@ -1106,7 +1106,7 @@ bool FbxLoader::LoadAAA(Microsoft::WRL::ComPtr<ID3D11Device>& device, const std:
 
 					// TODO : ワイド文字列の引数あり出力ができていない。
 
-					std::wstring output = L"[Info]: [FBX LOADER] Complete!! Loaded TEXTURE( Name : " + subset.diffuse.texture_filename + L" )";
+					std::wstring output = L"[INFO]: [FBX LOADER] Complete!! Loaded TEXTURE( Name : " + subset.diffuse.texture_filename + L" )";
 					std::wcout << output << std::endl;
 					OutputDebugString(output.c_str());
 					//Log::InfoW(L"[FBX LOADER] Complete Loading!! TEXTURE( Name : %ws )", subset.diffuse.texture_filename);

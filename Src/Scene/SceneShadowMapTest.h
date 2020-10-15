@@ -9,8 +9,10 @@ class SceneF : public Scene
 public:
 public:
 	SceneF(SceneManager* manager, D3D::DevicePtr& device);
-	virtual void Update(float elapsed_time);
-	virtual void Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time);
+	virtual void InitializeScene() override;
+
+	virtual void Update(float elapsed_time) override;
+	virtual void Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time) override;
 	~SceneF() = default;
 
 private:

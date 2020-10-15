@@ -2,6 +2,7 @@
 #include <d3d11.h>
 #include <wrl.h>
 #include <string>
+#include <memory>
 
 #ifdef _DEBUG
 #pragma comment(lib, "DirectXTex.lib")
@@ -31,17 +32,38 @@ public:
         ID3D11InputLayout**, 
         D3D11_INPUT_ELEMENT_DESC*,
         UINT);
+    static HRESULT CreateVSFromFile(
+        D3D::DevicePtr& device,
+        const std::string& vs_name,
+        D3D::VShaderPtr& vs
+    );
 
-    static HRESULT compileHLSLFile(
+    static HRESULT CompileHLSLFile(
         std::wstring& filename,
         std::string& func, 
         std::string shaderModel,
         Microsoft::WRL::ComPtr<ID3DBlob>& shaderBlob);
 
+    
+
+    //static HRESULT FetchDataFromCSO(
+    //    const std::wstring& filename,
+    //    std::shared_ptr<wchar_t[]>& data,
+    //    unsigned int& size
+    //);
+
+    
+
     static HRESULT CreatePSFromFile(
         Microsoft::WRL::ComPtr<ID3D11Device>& device, 
         const char*,
         ID3D11PixelShader**);
+
+    static HRESULT CreatePSFromFile(
+        D3D::DevicePtr& device,
+        const std::string& ps_name,
+        D3D::PShaderPtr& ps
+    );
 
 
     static HRESULT CreateFilenameToRefer(

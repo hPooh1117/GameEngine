@@ -10,7 +10,7 @@ class Application : public Window
 {
 private:
     std::unique_ptr<GraphicsEngine> m_pGraphicsEngine;
-    std::unique_ptr<GameSystem> m_pGameSystem;
+    //std::unique_ptr<GameSystem> m_pGameSystem;
     
 
 public:

@@ -78,6 +78,9 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)Build\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)Build\Temp\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)Src\;$(SolutionDir)Src\Application\</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -91,6 +94,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -106,12 +110,16 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)Src\3rdParty\DirectXTex;$(SolutionDir)Src\3rdParty\DirectXTK-master\Inc;$(SolutionDir)Src\3rdParty\FBX SDK\2016.1.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)Src\3rdParty\DirectXTex\Bin\Desktop_2019\Win32\Release;$(SolutionDir)Src\3rdParty\DirectXTK-master\Bin\Desktop_2019\Win32\Release;$(SolutionDir)Src\3rdParty\DirectXTK-master\Audio\Bin\Desktop_2019\Win32\Release;$(SolutionDir)Src\3rdParty\FBX SDK\2016.1.2\lib\vs2015\x86\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -166,12 +174,14 @@
     <ClInclude Include="..\..\Application\Application.h" />
     <ClInclude Include="..\..\Application\Helper.h" />
     <ClInclude Include="..\..\Application\Input.h" />
+    <ClInclude Include="..\..\Application\ThreadPool.h" />
     <ClInclude Include="..\..\Application\Window.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Application\Source\Application.cpp" />
     <ClCompile Include="..\..\Application\Source\Input.cpp" />
     <ClCompile Include="..\..\Application\Source\main.cpp" />
+    <ClCompile Include="..\..\Application\Source\ThreadPool.cpp" />
     <ClCompile Include="..\..\Application\Source\Window.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

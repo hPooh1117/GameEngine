@@ -21,7 +21,7 @@ private:
 public:
 	TraceCamera();
 
-	virtual void update(float elapsed_time);
+	virtual void Update(float elapsed_time);
 	void SetTarget(const std::shared_ptr<Actor>& target);
 	void ResetCameraPosition();
 	void SetFocusPoint(const Vector3& pos);

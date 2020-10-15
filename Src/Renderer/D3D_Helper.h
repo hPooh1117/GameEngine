@@ -19,6 +19,8 @@ namespace D3D
 	using DepthStencilPtr = Microsoft::WRL::ComPtr<ID3D11DepthStencilState>;
 
 	using BufferPtr = Microsoft::WRL::ComPtr<ID3D11Buffer>;
+	using VShaderPtr = Microsoft::WRL::ComPtr<ID3D11VertexShader>;
+	using PShaderPtr = Microsoft::WRL::ComPtr<ID3D11PixelShader>;
 }
 #endif
 

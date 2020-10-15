@@ -40,6 +40,8 @@ void UIRenderer::RenderImGui(float elapsed_time)
 
 	ImGui::Begin("Test2", &f_open);
 
+	ImGui::Text("Press[0] : Change Scene.");
+	ImGui::Text("Press[C] : Change Camera Mode.");
 
 	ImGui::End();
 

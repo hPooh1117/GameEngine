@@ -3,7 +3,6 @@
 #include <memory>
 #include <DirectXMath.h>
 
-#include "./Renderer/D3D_Helper.h"
 
 class ShadowMap;
 class AmbientOcclusion;
@@ -13,9 +12,17 @@ class SceneE : public Scene
 {
 public:
 	SceneE(SceneManager* manager, D3D::DevicePtr& device);
-	virtual void Update(float elapsed_time);
-	virtual void Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time);
+
+	virtual void InitializeScene() override;
+
+	virtual void Update(float elapsed_time) override;
+	void         RegistUIClients();
+	virtual void Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time) override;
 	~SceneE();
+
+private:
+	void InitializeActors();
+
 
 private:
 	std::shared_ptr<Actor> m_pPlayer;
@@ -26,7 +33,7 @@ private:
 
 private:
 	std::unique_ptr<ShadowMap> m_pShadowMap;
-	std::unique_ptr<AmbientOcclusion> m_pAO;
+	std::shared_ptr<AmbientOcclusion> m_pAO;
 	std::shared_ptr<MultiRenderTarget> m_pMRT;
 
 	// Shadow Map(Forward)
@@ -46,5 +53,5 @@ private:
 	std::shared_ptr<Shader> m_pToGBufferForBump;
 	std::shared_ptr<Shader> m_pToGBufferSkinnedMeshForBump;
 	std::shared_ptr<Shader> m_pDefferedLightShader;
-
+	std::shared_ptr<Shader> m_pScreenShader;
 };

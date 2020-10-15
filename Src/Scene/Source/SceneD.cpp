@@ -114,6 +114,10 @@ SceneD::SceneD(SceneManager* manager, Microsoft::WRL::ComPtr<ID3D11Device>& devi
 
 }
 
+void SceneD::InitializeScene()
+{
+}
+
 //----------------------------------------------------------------------------------------------------------------------------
 
 void SceneD::Update(float elapsed_time)

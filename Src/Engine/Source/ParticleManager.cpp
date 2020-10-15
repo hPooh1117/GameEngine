@@ -107,7 +107,7 @@ void ParticleManager::Emit(const Vector3& position, float scale, float lifespan,
 	}
 }
 
-void ParticleManager::update(float elapsed_time)
+void ParticleManager::Update(float elapsed_time)
 {
 	for (auto& particle : m_particles)
 	{

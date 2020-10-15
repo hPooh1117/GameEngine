@@ -185,10 +185,6 @@ void GeometricPrimitiveSelf::Render(
     imm_context->GSSetConstantBuffers(0, 1, m_pConstantBufferMesh.GetAddressOf());
     imm_context->PSSetConstantBuffers(0, 1, m_pConstantBufferMesh.GetAddressOf());
 
-    float blendalpha = 0.5f;
-    float refract = 0.02f;
-    static float t = 0;
-    t += elapsed_time;
 
     UINT stride = sizeof(Vertex);
     UINT offset = 0;
@@ -291,7 +287,7 @@ BasicCube::BasicCube(
 {
     mTexture = std::make_unique<Texture>();
 
-    loadTex(device, filename);
+    LoadTexture(device, filename);
 
 
     // Set Info of vertices
@@ -358,7 +354,7 @@ BasicCube::BasicCube(
 
 }
 
-bool BasicCube::loadTex(D3D::DevicePtr& device, const wchar_t* filename)
+bool BasicCube::LoadTexture(D3D::DevicePtr& device, const wchar_t* filename)
 {
     if (filename != L"\0")
     {
@@ -519,7 +515,7 @@ BasicSphere::BasicSphere(
     //std::vector<WORD> indices;
     mTexture = std::make_unique<Texture>();
 
-    loadTex(device, filename);
+    LoadTexture(device, filename);
 
     //
     // Compute the vertices stating at the top pole and moving down the stacks.
@@ -649,7 +645,7 @@ BasicSphere::BasicSphere(
     CreateBuffers(device/*, vertices.data(), indices.data(), vertices.size(), indices.size()*/);
 }
 
-bool BasicSphere::loadTex(D3D::DevicePtr& device, const wchar_t* filename)
+bool BasicSphere::LoadTexture(D3D::DevicePtr& device, const wchar_t* filename)
 {
     if (filename != L"\0")
     {

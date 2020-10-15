@@ -7,28 +7,28 @@ class SingletonFinalizer
 public:
     using FinalizerFunc = void(*)();
     static void addFinalizer(FinalizerFunc func);
-    static void finalize();
+    static void Finalize();
 };
 
 template<typename T>
 class Singleton final
 {
 public:
-    static T& get_instance()
+    static T& Get()
     {
-        std::call_once(initFlag, create);
+        std::call_once(initFlag, Create);
         assert(instance);
         return *instance;
     };
 
 private:
-    static void create()
+    static void Create()
     {
         instance = new T;
-        SingletonFinalizer::addFinalizer(&Singleton<T>::destroy);
+        SingletonFinalizer::addFinalizer(&Singleton<T>::Destroy);
     }
 
-    static void destroy()
+    static void Destroy()
     {
         delete instance;
         instance = nullptr;

@@ -1,5 +1,5 @@
 #include "Scene01.h"
-#include "SceneManager.h"
+//#include "SceneManager.h"
 
 #include "./Application/Application.h"
 
@@ -263,6 +263,10 @@ Scene01::Scene01(SceneManager * manager, Microsoft::WRL::ComPtr<ID3D11Device>& d
 }
 
 //----------------------------------------------------------------------------------------------------------------------------
+
+void Scene01::InitializeScene()
+{
+}
 
 void Scene01::Update(float elapsed_time)
 {

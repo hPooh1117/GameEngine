@@ -100,7 +100,7 @@ void ShadowMap::Activate(
 	XMStoreFloat4x4(&mLightViewProj, p_camera->GetOrthoView() * p_camera->GetOrthoProj(immContext));
 
 	CBufferForShadow cb = {};
-	cb.shadow_view_projection = mLightViewProj;
+	cb.shadowVP = mLightViewProj;
 	immContext->UpdateSubresource(m_pCBufferForShadow.Get(), 0, nullptr, &cb, 0, 0);
 	immContext->VSSetConstantBuffers(6, 1, m_pCBufferForShadow.GetAddressOf());
 	immContext->PSSetConstantBuffers(6, 1, m_pCBufferForShadow.GetAddressOf());
@@ -134,7 +134,7 @@ void ShadowMap::Activate(
 	XMStoreFloat4x4(&mLightViewProj, p_camera->GetOrthoView() * p_camera->GetOrthoProj(immContext));
 
 	CBufferForShadow cb = {};
-	cb.shadow_view_projection = mLightViewProj;
+	cb.shadowVP = mLightViewProj;
 	immContext->UpdateSubresource(m_pCBufferForShadow.Get(), 0, nullptr, &cb, 0, 0);
 	immContext->VSSetConstantBuffers(6, 1, m_pCBufferForShadow.GetAddressOf());
 	immContext->PSSetConstantBuffers(6, 1, m_pCBufferForShadow.GetAddressOf());

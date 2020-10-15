@@ -64,7 +64,7 @@ void CameraController::Update(float elapsed_time)
     {
         // 前回カメラも更新
         auto it = m_pCameras[mPrevMode];
-        it->update(elapsed_time);
+        it->Update(elapsed_time);
 
         // ブレンド経過時間を更新
         mBlendingTime++;
@@ -75,7 +75,7 @@ void CameraController::Update(float elapsed_time)
 
     // 現在のカメラを更新
     auto it = m_pCameras[mCurrentMode];
-    it->update(elapsed_time);
+    it->Update(elapsed_time);
 
 }
 
@@ -259,9 +259,12 @@ void CameraController::RenderUI()
 {
     using namespace ImGui;
 
-    Text("Current State : %d", mCurrentMode);
+    Text("Current State : %s", mCurrentMode == kMoveable ? "Moveable" : "Trace");
 
     Text("Blending : %d", m_bIsBlended);
+
+    
+   
 
     MyArrayFromVector pos = MyArrayFromVector(mCameraPos);
     SliderFloat3("Camera Pos", pos.SetArray(), 0.0f, 1.0f);

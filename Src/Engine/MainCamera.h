@@ -14,7 +14,7 @@ private:
 
 public:
     MainCamera(Vector3 pos);
-    virtual void update(float elapsed_time);
+    virtual void Update(float elapsed_time);
 
 private:
     void SwitchMoveEnable();
@@ -24,8 +24,8 @@ public:
     void SetFocusPoint(const Vector3& pos);
     
 
-    inline Vector3& getForwardVector() { return mForward; }
-
+    inline Vector3& GetForwardVector() { return mForward; }
+    inline bool GetMoveability() { return m_bEnableMoving; }
 
     ~MainCamera() = default;
 };

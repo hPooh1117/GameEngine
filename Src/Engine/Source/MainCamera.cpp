@@ -9,10 +9,10 @@ MainCamera::MainCamera(Vector3 pos) :Camera(pos)
 {
 	SetFocusPoint(Vector3(0, -2, 0));
 	mNear = 0.1f;
-	mFar = 100.0f;
+	mFar = 1000.0f;
 }
 
-void MainCamera::update(float elapsed_time)
+void MainCamera::Update(float elapsed_time)
 {
 	mDeltaTime = elapsed_time;
 
