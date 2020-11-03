@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{9e8b1135-310f-4d26-b93f-70da076aa17d}</ProjectGuid>
-    <RootNamespace>RenderPass</RootNamespace>
+    <ProjectGuid>{ebd2a057-c1de-4a2c-8b81-9497e7e0e964}</ProjectGuid>
+    <RootNamespace>RenderPasses</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -73,8 +73,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)Build\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)Build\Temp\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)Src\;$(SolutionDir)Src\RenderPass\;</IncludePath>
+    <IntDir>$(SolutionDir)Build\Temp\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -95,6 +95,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -110,6 +111,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -149,14 +151,19 @@
   <ItemGroup>
     <ClInclude Include="..\..\RenderPass\DefferedPasses.h" />
     <ClInclude Include="..\..\RenderPass\ForwardPasses.h" />
+    <ClInclude Include="..\..\RenderPass\PostProcessPasses.h" />
     <ClInclude Include="..\..\RenderPass\RenderPasses.h" />
+    <ClInclude Include="..\..\RenderPass\ShaderIDTable.h" />
     <ClInclude Include="..\..\RenderPass\ShadowPasses.h" />
+    <ClInclude Include="..\..\RenderPass\SSAOPasses.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\RenderPass\PostProcessPasses.cpp" />
     <ClCompile Include="..\..\RenderPass\Source\DefferedPasses.cpp" />
     <ClCompile Include="..\..\RenderPass\Source\ForwardPasses.cpp" />
     <ClCompile Include="..\..\RenderPass\Source\RenderPasses.cpp" />
     <ClCompile Include="..\..\RenderPass\Source\ShadowPasses.cpp" />
+    <ClCompile Include="..\..\RenderPass\Source\SSAOPasses.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,33 +1,58 @@
 #pragma once
 #include "Mesh.h"
+#include <string>
+#include <array>
 
 class Texture;
-class SkyBox : public Mesh
+class NewTexture;
+
+enum SkyboxTextureID
+{
+    EFootprintCourt,
+    EOldIndustrialHall,
+    ERidgecrestRoad,
+    ESerpentineValley,
+    ETokyoBigSight,
+    EUenoShrine,
+    EWalkOfFame,
+
+    ENUM_SKYBOXID_MAX
+};
+
+class Skybox : public Mesh
 {
 private:
-    std::unique_ptr<Texture> m_pTexture;
-    Microsoft::WRL::ComPtr<ID3D11Buffer>            m_pVertexBuffer;
-    Microsoft::WRL::ComPtr<ID3D11Buffer>            m_pIndexBuffer;
+    static const wchar_t* SKYBOX_TEXTURE[ENUM_SKYBOXID_MAX];
+    static const std::wstring TEXTURE_PATH;
 
+    unsigned int mCurrentID;
+    std::array<std::unique_ptr<NewTexture>, ENUM_SKYBOXID_MAX> mpTextures;
+    std::unique_ptr<Texture> mpTexture;
+
+    Microsoft::WRL::ComPtr<ID3D11Buffer>            mpVertexBuffer;
+    Microsoft::WRL::ComPtr<ID3D11Buffer>            mpIndexBuffer;
+    D3D::SamplerStatePtr                            mpClampSampler;
 public:
-	SkyBox(Microsoft::WRL::ComPtr<ID3D11Device>& device,
+	Skybox(Microsoft::WRL::ComPtr<ID3D11Device>& device,
         const wchar_t* filename = L"\0",
-        unsigned int slices = 12,
-        unsigned int stacks = 12,
-        float radius = 50.0f
+        unsigned int slices = 15,
+        unsigned int stacks = 15,
+        float radius = 1000.0f
     );
 
-    bool loadTex(Microsoft::WRL::ComPtr<ID3D11Device>& device, const wchar_t* filename);
     virtual void CreateBuffers(Microsoft::WRL::ComPtr<ID3D11Device>& device) override;
     virtual void Render(
-        Microsoft::WRL::ComPtr<ID3D11DeviceContext>& imm_context,
-        float elapse_time,
+        D3D::DeviceContextPtr& imm_context,
+        float elapsed_time,
         const DirectX::XMMATRIX& world,
-        const std::shared_ptr<CameraController>& camera,
-        const std::shared_ptr<Shader>& shader,
-        const DirectX::XMFLOAT4& mat_color = DirectX::XMFLOAT4(1, 1, 1, 1),
+        CameraController* camera,
+        Shader* shader,
+        const MaterialData& mat_data,
         bool isShadow = false,
         bool isSolid = true
     ) override;
-    virtual ~SkyBox();
+
+    void RenderUI();
+
+    virtual ~Skybox();
 };

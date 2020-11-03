@@ -6,7 +6,6 @@
 #include "Shader.h"
 #include "Texture.h"
 
-#include "./Engine/MainCamera.h"
 #include "./Engine/CameraController.h"
 
 #include "./Utilities/misc.h"
@@ -43,6 +42,19 @@ GeometricPrimitiveSelf::GeometricPrimitiveSelf(
         );
     _ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
+    hr = device->CreateBuffer(
+        &CD3D11_BUFFER_DESC(
+            sizeof(CBufferForMaterial),
+            D3D11_BIND_CONSTANT_BUFFER,
+            D3D11_USAGE_DEFAULT,
+            0,
+            0,
+            0
+        ),
+        nullptr,
+        m_pConstantBufferMaterial.GetAddressOf()
+    );
+    _ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
 
 
@@ -149,16 +161,16 @@ void GeometricPrimitiveSelf::Render(
     D3D::DeviceContextPtr& imm_context,
     float elapsed_time,
     const DirectX::XMMATRIX& world,
-    const std::shared_ptr<CameraController>& camera,
-    const std::shared_ptr<Shader>& shader,
-    const DirectX::XMFLOAT4& mat_color,
+    CameraController* camera,
+    Shader* shader,
+    const MaterialData& mat_data,
     bool isShadow,
     bool isSolid
 )
 {
     HRESULT hr = S_OK;
 
-    shader->activateShaders(imm_context);
+    if (shader != nullptr) shader->activateShaders(imm_context);
 
     SetRenderState(imm_context);
 
@@ -174,9 +186,16 @@ void GeometricPrimitiveSelf::Render(
     }
 
     CBufferForMesh meshData = {};
-    meshData.m_WVP = WVP;
-    meshData.m_world = W;
-    meshData.m_mat_color = mat_color;
+    meshData.WVP = WVP;
+    meshData.world = W;
+    XMStoreFloat4x4(&meshData.invProj, camera->GetInvProjViewMatrix(imm_context));
+
+    CBufferForMaterial matData = {};
+    matData.mat_color = mat_data.mat_color;
+    matData.metalness = mat_data.metalness;
+    matData.roughness = mat_data.roughness;
+    matData.specularColor = mat_data.specularColor;
+    matData.brdfFactor = mat_data.brdfFactor;
 
     imm_context->UpdateSubresource(m_pConstantBufferMesh.Get(), 0, nullptr, &meshData, 0, 0);
     imm_context->VSSetConstantBuffers(0, 1, m_pConstantBufferMesh.GetAddressOf());
@@ -184,6 +203,13 @@ void GeometricPrimitiveSelf::Render(
     imm_context->DSSetConstantBuffers(0, 1, m_pConstantBufferMesh.GetAddressOf());
     imm_context->GSSetConstantBuffers(0, 1, m_pConstantBufferMesh.GetAddressOf());
     imm_context->PSSetConstantBuffers(0, 1, m_pConstantBufferMesh.GetAddressOf());
+
+    imm_context->UpdateSubresource(m_pConstantBufferMaterial.Get(), 0, nullptr, &matData, 0, 0);
+    imm_context->VSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());
+    imm_context->HSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());
+    imm_context->DSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());
+    imm_context->GSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());
+    imm_context->PSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());
 
 
     UINT stride = sizeof(Vertex);
@@ -282,12 +308,10 @@ void BasicLine::SetRenderState(D3D::DeviceContextPtr& imm_context)
 //
 //******************************************************************************
 BasicCube::BasicCube(
-    D3D::DevicePtr& device, const wchar_t* filename)
+    D3D::DevicePtr& device)
     :GeometricPrimitiveSelf(device)
 {
-    mTexture = std::make_unique<Texture>();
-
-    LoadTexture(device, filename);
+   
 
 
     // Set Info of vertices
@@ -365,7 +389,7 @@ bool BasicCube::LoadTexture(D3D::DevicePtr& device, const wchar_t* filename)
 }
 void BasicCube::SetRenderState(D3D::DeviceContextPtr& imm_context)
 {
-    mTexture->Set(imm_context, 0);
+    //mTexture->Set(imm_context, 0);
 }
 
 
@@ -505,7 +529,6 @@ void BasicCylinder::SetRenderState(D3D::DeviceContextPtr& imm_context)
 //******************************************************************************
 BasicSphere::BasicSphere(
     D3D::DevicePtr& device,
-    const wchar_t* filename,
     unsigned int slices, 
     unsigned int stacks,
     float radius)
@@ -513,9 +536,7 @@ BasicSphere::BasicSphere(
 {
     //std::vector<Vertex> vertices;
     //std::vector<WORD> indices;
-    mTexture = std::make_unique<Texture>();
 
-    LoadTexture(device, filename);
 
     //
     // Compute the vertices stating at the top pole and moving down the stacks.
@@ -647,7 +668,7 @@ BasicSphere::BasicSphere(
 
 bool BasicSphere::LoadTexture(D3D::DevicePtr& device, const wchar_t* filename)
 {
-    if (filename != L"\0")
+    if (filename != L"\0" || filename != L"")
     {
         return mTexture->Load(device, filename);
 
@@ -657,7 +678,7 @@ bool BasicSphere::LoadTexture(D3D::DevicePtr& device, const wchar_t* filename)
 
 void BasicSphere::SetRenderState(D3D::DeviceContextPtr& imm_context)
 {
-    mTexture->Set(imm_context, 0);
+    //mTexture->Set(imm_context, 0);
 }
 
 

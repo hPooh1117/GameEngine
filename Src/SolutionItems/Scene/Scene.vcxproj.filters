@@ -18,9 +18,6 @@
     <ClInclude Include="..\..\Scene\Scene.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Scene\Scene01.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Scene\SceneA.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -42,20 +39,17 @@
     <ClInclude Include="..\..\Scene\SceneShadowMapTest.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Scene\SceneTitle.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Scene\SceneManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Scene\SceneLoading.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Scene\SceneTest.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Scene\Source\Scene01.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Scene\Source\SceneA.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -74,9 +68,6 @@
     <ClCompile Include="..\..\Scene\Source\SceneShadowMapTest.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Scene\Source\SceneTitle.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Scene\Source\Scene.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -84,6 +75,9 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Scene\Source\SceneLoading.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Scene\Source\SceneTest.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>

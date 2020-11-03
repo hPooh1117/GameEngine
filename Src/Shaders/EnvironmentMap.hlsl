@@ -5,6 +5,10 @@
 //--------------------------------------------------
 // テクスチャ
 //--------------------------------------------------
+
+Texture2D diffuse_texture : register(t0);
+SamplerState decal_sampler : register(s0);
+
 Texture2D environment_texture : register(t1);
 SamplerState environment_sampler : register(s1);
 
@@ -144,7 +148,7 @@ float4 PSmain(PS_InputEnv input) : SV_TARGET
 	float3 ref = reflect(-E, N);
 	ref = ref * 0.5 + 0.5;
 	ref.y = -ref.y;
-	float4  envColor = environment_texture.Sample(environment_sampler, ref.xy);
+	float4  envColor = environment_texture.Sample(decal_sampler, ref.xy);
 	color = color * (1.0 - env_alpha) + envColor * env_alpha;
 
 	color *= input.color * float4(A + D + S, 1.0f);

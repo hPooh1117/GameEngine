@@ -124,14 +124,14 @@ Sprite::~Sprite()
 {
 }
 
-// @brief RenderImGui sprite
+// @brief RenderUIQueue sprite
 // @param pos    : Coordinate of lefttop corner in screen space
 // @param size   : width, height of sprite
 // @param angle  : Rotation angle (degree)
 // @param color  : Color of vertices
 void Sprite::Render(
     D3D::DeviceContextPtr& imm_context,
-    std::shared_ptr<Shader>& p_shader,
+    Shader* p_shader,
     const Vector2& pos,
     const Vector2& size,
     const Vector2& tex_pos,
@@ -140,7 +140,7 @@ void Sprite::Render(
     const Vector4& color)
 {
 
-    p_shader->activateShaders(imm_context);
+    if (p_shader != nullptr) p_shader->activateShaders(imm_context);
 
     UINT stride = sizeof(vertex);
     UINT offset = 0;
@@ -220,7 +220,7 @@ void Sprite::Render(
 
 void Sprite::Render(
     D3D::DeviceContextPtr& imm_context,
-    std::shared_ptr<Shader>& p_shader,
+    Shader* p_shader,
     std::unique_ptr<Texture>& p_texture,
     const Vector2& pos,
     const Vector2& size,
@@ -229,7 +229,7 @@ void Sprite::Render(
     const float angle, 
     const Vector4& color)
 {
-    p_shader->activateShaders(imm_context);
+    if (p_shader != nullptr) p_shader->activateShaders(imm_context);
 
     UINT stride = sizeof(vertex);
     UINT offset = 0;
@@ -307,10 +307,80 @@ void Sprite::Render(
 
 }
 
+void Sprite::RenderScreen(D3D::DeviceContextPtr& imm_context, Shader* p_shader, const Vector2& pos, const Vector2& size)
+{
+    if (p_shader != nullptr) p_shader->activateShaders(imm_context);
+
+    UINT stride = sizeof(vertex);
+    UINT offset = 0;
+    D3D11_VIEWPORT viewport;
+    UINT numVp = 1;
+    imm_context->RSGetViewports(&numVp, &viewport);
+
+    vertex vertices[4] = {
+        { XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f), XMFLOAT4(1, 1, 1, 1) },
+        { XMFLOAT3(1.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 1.0f), XMFLOAT4(1, 1, 1, 1) },
+        { XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 0.0f), XMFLOAT4(1, 1, 1, 1) },
+        { XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 0.0f), XMFLOAT4(1, 1, 1, 1) },
+    };
+
+    float radian = 0.0f;
+    Vector2 texSize = { static_cast<float>(SCREEN_WIDTH), static_cast<float>(SCREEN_HEIGHT) };
+
+    float sinValue = sinf(radian);
+    float cosValue = cosf(radian);
+    float mx = (texSize.x * size.x * 0.5f) / texSize.x;
+    float my = (texSize.y * size.y * 0.5f) / texSize.y;
+
+    for (auto i = 0; i < 4; ++i)
+    {
+        vertices[i].position.x *= size.x;
+        vertices[i].position.y *= size.y;
+
+
+        vertices[i].position.x -= mx;
+        vertices[i].position.y -= my;
+
+        float rx = vertices[i].position.x;
+        float ry = vertices[i].position.y;
+        vertices[i].position.x = rx * cosValue - ry * sinValue;
+        vertices[i].position.y = rx * sinValue + ry * cosValue;
+
+        vertices[i].position.x += mx;
+        vertices[i].position.y += my;
+
+        vertices[i].position.x += (pos.x - 0.5f * size.x);
+        vertices[i].position.y += (pos.y - 0.5f * size.y);
+
+        vertices[i].position.x = -1.0f + vertices[i].position.x * 2.0f / viewport.Width;
+        vertices[i].position.y = 1.0f - vertices[i].position.y * 2.0f / viewport.Height;
+
+        vertices[i].texcoord.x = (vertices[i].texcoord.x * texSize.x) / static_cast<UINT>(texSize.x);
+        vertices[i].texcoord.y = (vertices[i].texcoord.y * texSize.y) / static_cast<UINT>(texSize.y);
+    }
+
+    D3D11_MAPPED_SUBRESOURCE mrData = {};
+    //mrData.pData;
+    //mrData.RowPitch;
+    //mrData.DepthPitch;
+
+    // Update VertexBuffer from calcuration result
+    imm_context->Map(m_pVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, NULL, &mrData);
+    memcpy(mrData.pData, vertices, sizeof(vertices));
+    imm_context->Unmap(m_pVertexBuffer.Get(), 0);
+
+    imm_context->IASetVertexBuffers(0, 1, m_pVertexBuffer.GetAddressOf(), &stride, &offset);
+    imm_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+    imm_context->RSSetState(m_pRasterizerState.Get());
+
+    // ⑥プリミティブの描画
+    imm_context->Draw(4, 0);
+}
+
 void Sprite::TextOutput(
     D3D::DeviceContextPtr& imm_context,
     const std::string& str,
-    std::shared_ptr<Shader>& p_shader,
+    Shader* p_shader,
     const Vector2& pos,
     const Vector2& size,
     const Vector4& color)

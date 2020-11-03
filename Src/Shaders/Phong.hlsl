@@ -3,6 +3,8 @@
 #include "H_DirectionalLight.hlsli"
 
 
+Texture2D diffuse_texture : register(t0);
+SamplerState decal_sampler : register(s0);
 
 //--------------------------------------------
 //	エントリーポイント

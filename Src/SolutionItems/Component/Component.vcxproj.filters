@@ -72,9 +72,6 @@
     <ClInclude Include="..\..\Component\MoveRoundTrip.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Component\RayColliderComponent.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Component\SphereColliderComponent.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -129,9 +126,6 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Component\Source\MoveRoundTrip.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Component\Source\RayColliderComponent.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Component\Source\SphereColliderComponent.cpp">

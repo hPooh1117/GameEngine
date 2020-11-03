@@ -1,4 +1,4 @@
-#include "AmbientOcculusion.h"
+#include "AmbientOcclusion.h"
 
 #include "GraphicsEngine.h"
 #include "Texture.h"
@@ -14,58 +14,20 @@
 
 const Vector2 AmbientOcclusion::NOISE_TEX_RESOLUTION = { 8, 8 };
 
-AmbientOcclusion::AmbientOcclusion(D3D::DevicePtr& p_device)
+AmbientOcclusion::AmbientOcclusion()
 	:mNoiseScale(
 		Vector2(
 			static_cast<float>(SCREEN_WIDTH) / NOISE_TEX_RESOLUTION.x, 
 			static_cast<float>(SCREEN_HEIGHT) / NOISE_TEX_RESOLUTION.y)),
 	mSampleRadius(SAMPLE_RADIUS),
 	mPower(1.2f),
-	mBias(0.0f)
+	mBias(0.0f),
+	mBlurSize(5.0f)
 {
-	//m_pAOTex = std::make_shared<Texture>();
-	//m_pAOTex->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16_FLOAT);
-	//
-	//m_pRTV = m_pAOTex->GetRenderTargetV();
-	//{
-	//	//深度ステンシル設定
-	//	D3D::Texture2DPtr texture2D = nullptr;
-	//	D3D11_TEXTURE2D_DESC texDesc = {};
-	//	texDesc.Width = SCREEN_WIDTH;
-	//	texDesc.Height = SCREEN_HEIGHT;
-	//	texDesc.MipLevels = 1;
-	//	texDesc.ArraySize = 1;
-	//	texDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	//	texDesc.SampleDesc.Count = 1;
-	//	texDesc.SampleDesc.Quality = 0;
-	//	texDesc.Usage = D3D11_USAGE_DEFAULT;
-	//	texDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-	//	texDesc.CPUAccessFlags = 0;
-	//	texDesc.MiscFlags = 0;
-	//
-	//	auto result = p_device->CreateTexture2D(
-	//		&texDesc,
-	//		nullptr,
-	//		texture2D.GetAddressOf()
-	//	);
-	//	_ASSERT_EXPR_A(SUCCEEDED(result), hr_trace(result));
-	//
-	//	// 深度ステンシルビュー
-	//	D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
-	//	ZeroMemory(&dsvDesc, sizeof(D3D11_DEPTH_STENCIL_VIEW_DESC));
-	//	dsvDesc.Format = texDesc.Format;
-	//	dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-	//	dsvDesc.Texture2D.MipSlice = 0;
-	//
-	//	result = p_device->CreateDepthStencilView(
-	//		texture2D.Get(),
-	//		&dsvDesc,
-	//		m_pDSV.GetAddressOf()
-	//	);
-	//	_ASSERT_EXPR_A(SUCCEEDED(result), hr_trace(result));
-	//
-	//}
+}
 
+bool AmbientOcclusion::Initialize(D3D::DevicePtr& p_device)
+{
 	D3D11_BUFFER_DESC cbDesc = {};
 	ZeroMemory(&cbDesc, sizeof(D3D11_BUFFER_DESC));
 	cbDesc.ByteWidth = sizeof(CBufferForAO);
@@ -75,7 +37,7 @@ AmbientOcclusion::AmbientOcclusion(D3D::DevicePtr& p_device)
 
 	p_device->CreateBuffer(&cbDesc, nullptr, m_pCBufferForAO.GetAddressOf());
 
-	
+
 	// SSAOの環境遮蔽係数を算出するために使用するサンプル点群の生成
 	//for (int i = 0; i < MAX_SAMPLES; ++i)
 	//{
@@ -108,13 +70,13 @@ AmbientOcclusion::AmbientOcclusion(D3D::DevicePtr& p_device)
 	}
 
 
-	
+
 	// http://alextardif.com/SSAO.html
 	float noiseTextureFloats[192];
 	for (int i = 0; i < 64; ++i)
 	{
 		int index = i * 3;
-		noiseTextureFloats[index]     = (static_cast<float>(rand()) / static_cast<float>(RAND_MAX) - 0.5f) * 2.0f;
+		noiseTextureFloats[index] = (static_cast<float>(rand()) / static_cast<float>(RAND_MAX) - 0.5f) * 2.0f;
 		noiseTextureFloats[index + 1] = (static_cast<float>(rand()) / static_cast<float>(RAND_MAX) - 0.5f) * 2.0f;
 		noiseTextureFloats[index + 2] = 0.0f;
 	}
@@ -125,8 +87,8 @@ AmbientOcclusion::AmbientOcclusion(D3D::DevicePtr& p_device)
 	data.SysMemSlicePitch = 0;
 
 	D3D11_TEXTURE2D_DESC descTex = {};
-	descTex.Width = NOISE_TEX_RESOLUTION.x;
-	descTex.Height = NOISE_TEX_RESOLUTION.y;
+	descTex.Width = static_cast<UINT>(NOISE_TEX_RESOLUTION.x);
+	descTex.Height = static_cast<UINT>(NOISE_TEX_RESOLUTION.y);
 	descTex.MipLevels = descTex.ArraySize = 1;
 	descTex.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	descTex.SampleDesc.Count = 1;
@@ -163,9 +125,11 @@ AmbientOcclusion::AmbientOcclusion(D3D::DevicePtr& p_device)
 		m_pWrapSampler.GetAddressOf()
 	);
 	_ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
+
+	return true;
 }
 
-void AmbientOcclusion::Activate(std::unique_ptr<GraphicsEngine>& p_graphics, std::shared_ptr<CameraController>& p_camera)
+void AmbientOcclusion::Activate(std::unique_ptr<GraphicsEngine>& p_graphics, CameraController* p_camera)
 {
 	D3D::DeviceContextPtr immContext = p_graphics->GetImmContextPtr();
 
@@ -186,14 +150,15 @@ void AmbientOcclusion::Activate(std::unique_ptr<GraphicsEngine>& p_graphics, std
 	cb.ambientBias = mBias;
 	cb.radius = mSampleRadius;
 	cb.power = mPower;
+	cb.blurTimes = mBlurSize;
 	memcpy( cb.samplePos, mSamplePos, sizeof(DirectX::XMFLOAT4) * MAX_SAMPLES );
 
 	immContext->UpdateSubresource(m_pCBufferForAO.Get(), 0, nullptr, &cb, 0, 0);
 	immContext->VSSetConstantBuffers(5, 1, m_pCBufferForAO.GetAddressOf());
 	immContext->PSSetConstantBuffers(5, 1, m_pCBufferForAO.GetAddressOf());
 
-	immContext->PSSetShaderResources(8, 1, m_pNoiseResourceView.GetAddressOf());
-	immContext->PSSetSamplers(8, 1, m_pWrapSampler.GetAddressOf());
+	immContext->PSSetShaderResources(9, 1, m_pNoiseResourceView.GetAddressOf());
+	immContext->PSSetSamplers(9, 1, m_pWrapSampler.GetAddressOf());
 }
 
 void AmbientOcclusion::Deactivate(std::unique_ptr<GraphicsEngine>& p_graphics)
@@ -208,6 +173,12 @@ void AmbientOcclusion::RenderUI()
 	SliderFloat("Sample Radius", &mSampleRadius, 0.1f, 5.0f);
 
 	SliderFloat("Ambient Bias", &mBias, 0.0f, 5.0f);
+
+	int blursize = mBlurSize;
+	SliderInt("Blur Size", &blursize, 0.0f, 10.0f);
+	mBlurSize = static_cast<float>(blursize);
+
+	Separator();
 }
 
 AmbientOcclusion::~AmbientOcclusion()

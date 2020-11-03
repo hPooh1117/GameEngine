@@ -4,6 +4,13 @@
 #include "H_Functions.hlsli"
 #include "H_DirectionalLight.hlsli"
 
+
+Texture2D diffuse_texture : register(t0);
+SamplerState decal_sampler : register(s0);
+
+Texture2D shadow_texture : register(t5);
+SamplerState shadow_sampler : register(s5);
+
 float random(float2 uv)
 {
 	return frac(sin(dot(uv, float2(12.9898, 78.233))) * 43758.5453);

@@ -34,16 +34,16 @@ void CustomLight::Update(float elapsed_time)
 {
     //if (InputPtr->OnKeyDown("Q"))
     //{
-    //    mAngle += 0.001745f * 20;
+    //    mYaw += 0.001745f * 20;
     //}
     //if (InputPtr->OnKeyDown("E"))
     //{
-    //    mAngle -= 0.001745f * 20;
+    //    mYaw -= 0.001745f * 20;
     //}
 
-    //mLightDirection.x = -sinf(mAngle);
+    //mLightDirection.x = -sinf(mYaw);
     //mLightDirection.y = -0.5f;
-    //mLightDirection.z = -cosf(mAngle);
+    //mLightDirection.z = -cosf(mYaw);
 
     //float d = sqrtf(mLightDirection.x * mLightDirection.x + mLightDirection.y * mLightDirection.y + mLightDirection.z * mLightDirection.z);
     //if (d > 0) mLightDirection /= d;

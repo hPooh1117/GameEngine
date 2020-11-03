@@ -176,7 +176,6 @@
     <ClInclude Include="..\..\Component\MoveForwardComponent.h" />
     <ClInclude Include="..\..\Component\MoveRotationComponent.h" />
     <ClInclude Include="..\..\Component\MoveRoundTrip.h" />
-    <ClInclude Include="..\..\Component\RayColliderComponent.h" />
     <ClInclude Include="..\..\Component\SphereColliderComponent.h" />
     <ClInclude Include="..\..\Component\StaticComponent.h" />
   </ItemGroup>
@@ -197,7 +196,6 @@
     <ClCompile Include="..\..\Component\Source\MoveForwardComponent.cpp" />
     <ClCompile Include="..\..\Component\Source\MoveRotationComponent.cpp" />
     <ClCompile Include="..\..\Component\Source\MoveRoundTrip.cpp" />
-    <ClCompile Include="..\..\Component\Source\RayColliderComponent.cpp" />
     <ClCompile Include="..\..\Component\Source\SphereColliderComponent.cpp" />
     <ClCompile Include="..\..\Component\Source\StaticComponent.cpp" />
   </ItemGroup>

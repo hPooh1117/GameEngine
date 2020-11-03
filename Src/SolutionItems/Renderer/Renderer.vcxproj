@@ -156,10 +156,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Renderer\AmbientOcculusion.h" />
+    <ClInclude Include="..\..\Renderer\AmbientOcclusion.h" />
     <ClInclude Include="..\..\Renderer\Blender.h" />
     <ClInclude Include="..\..\Renderer\Blur.h" />
     <ClInclude Include="..\..\Renderer\D3D_Helper.h" />
+    <ClInclude Include="..\..\Renderer\DepthStencilView.h" />
     <ClInclude Include="..\..\Renderer\FbxLoader.h" />
     <ClInclude Include="..\..\Renderer\FbxMeshInfo.h" />
     <ClInclude Include="..\..\Renderer\GeometricPrimitiveSelf.h" />
@@ -167,8 +168,10 @@
     <ClInclude Include="..\..\Renderer\high_resolution_timer.h" />
     <ClInclude Include="..\..\Renderer\Mesh.h" />
     <ClInclude Include="..\..\Renderer\MultiRenderTarget.h" />
+    <ClInclude Include="..\..\Renderer\NewMeshRenderer.h" />
     <ClInclude Include="..\..\Renderer\Plane.h" />
     <ClInclude Include="..\..\Renderer\Primitive.h" />
+    <ClInclude Include="..\..\Renderer\RenderTarget.h" />
     <ClInclude Include="..\..\Renderer\ResourceManager.h" />
     <ClInclude Include="..\..\Renderer\Shader.h" />
     <ClInclude Include="..\..\Renderer\ShadowMap.h" />
@@ -178,18 +181,23 @@
     <ClInclude Include="..\..\Renderer\StaticMesh.h" />
     <ClInclude Include="..\..\Renderer\SwapChain.h" />
     <ClInclude Include="..\..\Renderer\Texture.h" />
+    <ClInclude Include="..\..\Renderer\TextureHolder.h" />
     <ClInclude Include="..\..\Renderer\VertexDecleration.h" />
+    <ClInclude Include="..\..\Renderer\ZPartitioningShadow.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Renderer\Source\AmbientOcculusion.cpp" />
+    <ClCompile Include="..\..\Renderer\Source\AmbientOcclusion.cpp" />
     <ClCompile Include="..\..\Renderer\Source\Blender.cpp" />
     <ClCompile Include="..\..\Renderer\Source\Blur.cpp" />
+    <ClCompile Include="..\..\Renderer\Source\DepthStencilView.cpp" />
     <ClCompile Include="..\..\Renderer\Source\FbxLoader.cpp" />
     <ClCompile Include="..\..\Renderer\Source\GeometricPrimitiveSelf.cpp" />
     <ClCompile Include="..\..\Renderer\Source\GraphicsEngine.cpp" />
     <ClCompile Include="..\..\Renderer\Source\MultiRenderTarget.cpp" />
+    <ClCompile Include="..\..\Renderer\Source\NewMeshRenderer.cpp" />
     <ClCompile Include="..\..\Renderer\Source\Plane.cpp" />
     <ClCompile Include="..\..\Renderer\Source\Primitive.cpp" />
+    <ClCompile Include="..\..\Renderer\Source\RenderTarget.cpp" />
     <ClCompile Include="..\..\Renderer\Source\ResourceManager.cpp" />
     <ClCompile Include="..\..\Renderer\Source\Shader.cpp" />
     <ClCompile Include="..\..\Renderer\Source\ShadowMap.cpp" />
@@ -200,6 +208,8 @@
     <ClCompile Include="..\..\Renderer\Source\SwapChain.cpp" />
     <ClCompile Include="..\..\Renderer\Source\Texture.cpp" />
     <ClCompile Include="..\..\Renderer\Source\VertexDecleration.cpp" />
+    <ClCompile Include="..\..\Renderer\Source\ZPartitioningShadow.cpp" />
+    <ClCompile Include="..\..\Renderer\TextureHolder.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\Shaders\Phong_ps.hlsl">

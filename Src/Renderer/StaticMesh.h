@@ -7,8 +7,7 @@
 #include <string>
 #include "Mesh.h"
 class Texture;
-class Shader;
-// Unit11
+
 class StaticMesh : public Mesh
 {
 public:
@@ -50,12 +49,12 @@ public:
     ~StaticMesh();
     virtual void CreateBuffers(Microsoft::WRL::ComPtr<ID3D11Device>& device) override;
     virtual void Render(
-        Microsoft::WRL::ComPtr<ID3D11DeviceContext>& imm_context,
+        D3D::DeviceContextPtr& imm_context,
         float elapsed_time,
         const DirectX::XMMATRIX& world,
-        const std::shared_ptr<CameraController>& camera,
-        const std::shared_ptr<Shader>& shader,
-        const DirectX::XMFLOAT4& mat_color = DirectX::XMFLOAT4(1, 1, 1, 1),
+        CameraController* camera,
+        Shader* shader,
+        const MaterialData& mat_data,
         bool isShadow = false,
         bool isSolid = true
     ) override;

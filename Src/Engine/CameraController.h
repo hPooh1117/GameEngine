@@ -48,6 +48,11 @@ private:
 	float        mNearPlane;
 	float        mFarPlane;
 
+	float        mOrthoWidth;
+	float        mOrthoHeight;
+	float        mOrthoNear;
+	float        mOrthoFar;
+
 private:
 	Vector3 mCameraPos;      // カメラの位置
 	Vector3 mCameraTarget;   // カメラの目標
@@ -72,7 +77,8 @@ private:
 	
 public:
 	//--< GETTER >----------------------------------------------------------------------
-	inline Vector3& GetCameraPosition() { return mCameraPos; }
+	inline const Vector3& GetCameraPosition() { return mCameraPos; }
+	inline const Vector3& GetCameraTarget() { return mCameraTarget; }
 	DirectX::XMMATRIX GetViewMatrix();
 	DirectX::XMMATRIX GetInvViewMatrix();
 	DirectX::XMMATRIX GetProjMatrix(D3D::DeviceContextPtr& p_imm_context);
@@ -95,3 +101,4 @@ private:
 	CameraController& operator=(const CameraController& other) = delete;
 };
 
+using CameraPtr = std::shared_ptr<CameraController>;

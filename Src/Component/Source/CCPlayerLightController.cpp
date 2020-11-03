@@ -91,7 +91,7 @@ void CCPlayerLightController::UpdateLightState(bool flag)
     }
 
     // ライティング処理に移行
-    if (InputPtr->OnKeyTrigger("Z"))
+    if (InputPtr.OnKeyTrigger("Z"))
     {
         // スポットライト関連の変数を初期化
         m_bIsLighting = true;
@@ -101,7 +101,7 @@ void CCPlayerLightController::UpdateLightState(bool flag)
         mEndLightingTimer.Init();
     }
 
-    if (InputPtr->OnKeyDown("Z") && m_bIsLighting)
+    if (InputPtr.OnKeyDown("Z") && m_bIsLighting)
     {
         mStartLightingTimer.Tick();
 
@@ -112,7 +112,7 @@ void CCPlayerLightController::UpdateLightState(bool flag)
     }
 
     // ライティング終了処理に移行
-    if ((InputPtr->OnKeyUp("Z") || mLightingTimer.IsStopped()) && m_bIsLighting)
+    if ((InputPtr.OnKeyUp("Z") || mLightingTimer.IsStopped()) && m_bIsLighting)
     {
         mEndLightingTimer.Tick();
 

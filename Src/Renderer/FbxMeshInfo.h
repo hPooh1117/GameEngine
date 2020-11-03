@@ -43,8 +43,8 @@ namespace FbxInfo
 
 	struct Subset
 	{
-		u_int index_start = 0;
-		u_int index_count = 0;
+		u_int indexStart = 0;
+		u_int indexCount = 0;
 		Material diffuse = {};
 
 		Subset() = default;
@@ -74,10 +74,12 @@ namespace FbxInfo
 
 	struct Motion
 	{
-		int number_of_frames = 0;
-		float animation_tick = 0.0f;
-		const float sampling_time = 1.0f / 60.0f;
-		bool isLooped = true;
+		static constexpr float  SAMPLE_TIME = 1.0f / 60.0f;
+
+
+		unsigned int   frameSize = 0;
+		float          animeTick = 0.0f;
+		bool           bIsLooped = true;
 		std::vector<std::vector<DirectX::XMFLOAT4X4>> keys;
 
 		Motion() = default;
@@ -109,12 +111,15 @@ struct MyFbxMesh
 {
 public:
 	std::vector<FbxInfo::Vertex> mVertices;
+	std::vector<u_int>           mIndices;
+	std::vector<FbxInfo::Subset> mSubsets;
 
-	std::vector<u_int> mIndices;
-
-	std::vector<FbxInfo::Subset> m_subsets;
-
-	DirectX::XMFLOAT4X4 m_global_transform = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
+	DirectX::XMFLOAT4X4 mGlobalTransform = { 
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		0, 0, 0, 1 
+	};
 
 	std::vector<FbxInfo::BoneData> m_bone_data;
 

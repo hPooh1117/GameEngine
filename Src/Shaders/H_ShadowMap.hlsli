@@ -1,12 +1,10 @@
 //--------------------------------------------
 //	テクスチャ
 //--------------------------------------------
-Texture2D shadow_texture : register(t5);
-SamplerState shadow_sampler : register(s5);
 
-Texture2D ambient_texture : register(t6);
-SamplerState ambient_sampler : register(s6);
-
+//Texture2D ambient_texture : register(t6);
+//SamplerState ambient_sampler : register(s6);
+//
 
 //--------------------------------------------
 //	グローバル変数
@@ -28,6 +26,8 @@ cbuffer CBPerAO : register(b5)
 	float    kernelSize;
 	float    ambient_bias;
 	float4   sample_pos[MAX_SAMPLES];
+	float    blurSize;
+	float3   dummyVector;
 }
 
 
@@ -54,6 +54,6 @@ struct PS_Input_Last
 	float3 w_pos : TEXCOORD2;
 	float2 texcoord : TEXCOOORD3;
 	float3 v_shadow : TEXCOORD4;
-	
+	float2 depth : TEXCOORD5;
 };
 

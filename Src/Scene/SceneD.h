@@ -7,7 +7,6 @@
 
 #include "./Component/ComponentHelper.h"
 
-class SpriteBatch;
 
 class SceneD : public Scene
 {
@@ -23,23 +22,15 @@ public:
 
 private:
 
-    std::shared_ptr<Actor> m_player;
-    std::shared_ptr<Actor> m_non_player;
-    std::shared_ptr<Actor> m_enemy;
-    std::shared_ptr<Actor> m_field;
-    std::shared_ptr<Actor> m_plane;
-    std::array<std::shared_ptr<Actor>, 200> m_actors;
+    std::shared_ptr<Actor> mpPlayer;
+    std::shared_ptr<Actor> mpNonPlayer;
+    std::shared_ptr<Actor> mpEnemy;
+    std::shared_ptr<Actor> mpField;
+    std::shared_ptr<Actor> mpPlane;
+    std::array<std::shared_ptr<Actor>, 200> mpActors;
 
-private:
-    std::unique_ptr<SpriteBatch> mFont;
-    std::shared_ptr<Shader> m_primitive_shader;
-    std::shared_ptr<Shader> m_model_shader;
-    std::shared_ptr<Shader> m_phong_shader;
-    std::shared_ptr<Shader> m_line_shader;
-    std::shared_ptr<Shader> m_plane_shader;
-    std::shared_ptr<Shader> m_particle_shader;
 
-    std::unique_ptr<AudioSystem> m_audio_system;
-    std::unique_ptr<PhysicsManager> m_physics;
-    std::unique_ptr<ParticleManager> m_particle_manager;
+    std::unique_ptr<AudioSystem> mpAudioSystem;
+    std::unique_ptr<PhysicsManager> mpPhysics;
+    std::unique_ptr<ParticleManager> mpParticleManager;
 };

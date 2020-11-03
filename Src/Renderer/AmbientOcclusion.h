@@ -37,6 +37,7 @@ private:
 	float                    mSampleRadius;
 	float                    mPower;
 	float                    mBias;
+	float					 mBlurSize;
 private:
 	struct CBufferForAO
 	{
@@ -51,11 +52,14 @@ private:
 		float               kernelSize;
 		float               ambientBias;
 		DirectX::XMFLOAT4   samplePos[MAX_SAMPLES];
+		float               blurTimes;
+		DirectX::XMFLOAT3   dummy;
 	};
 
 public:
-	AmbientOcclusion(D3D::DevicePtr& p_device);
-	void Activate(std::unique_ptr<GraphicsEngine>& p_graphics, std::shared_ptr<CameraController>& p_camera);
+	AmbientOcclusion();
+	bool Initialize(D3D::DevicePtr& p_device);
+	void Activate(std::unique_ptr<GraphicsEngine>& p_graphics, CameraController* p_camera);
 	void Deactivate(std::unique_ptr<GraphicsEngine>& p_graphics);
 
 	virtual void RenderUI() override;

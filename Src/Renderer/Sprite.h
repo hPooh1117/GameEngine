@@ -38,7 +38,7 @@ public:
     // ÉÅÉìÉoÅ[ä÷êî
     void Render(
         D3D::DeviceContextPtr& imm_context,
-        std::shared_ptr<Shader>& p_shader,
+        Shader* p_shader,
         const Vector2& pos,
         const Vector2& size,
         const Vector2& tex_pos,
@@ -48,7 +48,7 @@ public:
 
     void Render(
         D3D::DeviceContextPtr& imm_context,
-        std::shared_ptr<Shader>& p_shader,
+        Shader* p_shader,
         std::unique_ptr<Texture>& p_texture,
         const Vector2& pos,
         const Vector2& size,
@@ -57,11 +57,17 @@ public:
         const float angle,
         const Vector4& color);
 
+    void RenderScreen(
+        D3D::DeviceContextPtr& imm_context,
+        Shader* p_shader,
+        const Vector2& pos,
+        const Vector2& size);
+
     
     void TextOutput(
         D3D::DeviceContextPtr& imm_context,
         const std::string& str, 
-        std::shared_ptr<Shader>& p_shader,
+        Shader* p_shader,
         const Vector2& pos, 
         const Vector2& size,
         const Vector4& color);

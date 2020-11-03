@@ -4,6 +4,15 @@
 
 Blender::Blender(Microsoft::WRL::ComPtr<ID3D11Device>& device)
 {
+
+}
+
+Blender::~Blender()
+{
+}
+
+bool Blender::Initialize(D3D::DevicePtr& p_device)
+{
     HRESULT hr = S_OK;
 
     // BLEND_NONE
@@ -18,7 +27,7 @@ Blender::Blender(Microsoft::WRL::ComPtr<ID3D11Device>& device)
     bDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
     bDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
     bDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-    hr = device->CreateBlendState(&bDesc, mBlendStates[BLEND_NONE].GetAddressOf());
+    hr = p_device->CreateBlendState(&bDesc, mBlendStates[BLEND_NONE].GetAddressOf());
     _ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
     // BLEND_ALPHA
@@ -32,7 +41,7 @@ Blender::Blender(Microsoft::WRL::ComPtr<ID3D11Device>& device)
     bDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
     bDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
     bDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-    hr = device->CreateBlendState(&bDesc, mBlendStates[BLEND_ALPHA].GetAddressOf());
+    hr = p_device->CreateBlendState(&bDesc, mBlendStates[BLEND_ALPHA].GetAddressOf());
     _ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
 
@@ -47,7 +56,7 @@ Blender::Blender(Microsoft::WRL::ComPtr<ID3D11Device>& device)
     bDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
     bDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
     bDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-    hr = device->CreateBlendState(&bDesc, mBlendStates[BLEND_ADD].GetAddressOf());
+    hr = p_device->CreateBlendState(&bDesc, mBlendStates[BLEND_ADD].GetAddressOf());
     _ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
     // BLEND_SUBSTRACT
@@ -61,7 +70,7 @@ Blender::Blender(Microsoft::WRL::ComPtr<ID3D11Device>& device)
     bDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
     bDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
     bDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-    hr = device->CreateBlendState(&bDesc, mBlendStates[BLEND_SUBTRACT].GetAddressOf());
+    hr = p_device->CreateBlendState(&bDesc, mBlendStates[BLEND_SUBTRACT].GetAddressOf());
     _ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
     // BLEND_REPLACE
@@ -75,7 +84,7 @@ Blender::Blender(Microsoft::WRL::ComPtr<ID3D11Device>& device)
     bDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
     bDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
     bDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-    hr = device->CreateBlendState(&bDesc, mBlendStates[BLEND_REPLACE].GetAddressOf());
+    hr = p_device->CreateBlendState(&bDesc, mBlendStates[BLEND_REPLACE].GetAddressOf());
     _ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
     //BLEND_MULTIPLY
@@ -89,7 +98,7 @@ Blender::Blender(Microsoft::WRL::ComPtr<ID3D11Device>& device)
     bDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
     bDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
     bDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-    hr = device->CreateBlendState(&bDesc, mBlendStates[BLEND_MULTIPLY].GetAddressOf());
+    hr = p_device->CreateBlendState(&bDesc, mBlendStates[BLEND_MULTIPLY].GetAddressOf());
     _ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
     // BLEND_LIGHTEN
@@ -103,7 +112,7 @@ Blender::Blender(Microsoft::WRL::ComPtr<ID3D11Device>& device)
     bDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
     bDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_MAX;
     bDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-    hr = device->CreateBlendState(&bDesc, mBlendStates[BLEND_LIGHTEN].GetAddressOf());
+    hr = p_device->CreateBlendState(&bDesc, mBlendStates[BLEND_LIGHTEN].GetAddressOf());
     _ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
     // BLEND_DARKEN
@@ -117,7 +126,7 @@ Blender::Blender(Microsoft::WRL::ComPtr<ID3D11Device>& device)
     bDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
     bDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_MIN;
     bDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-    hr = device->CreateBlendState(&bDesc, mBlendStates[BLEND_DARKEN].GetAddressOf());
+    hr = p_device->CreateBlendState(&bDesc, mBlendStates[BLEND_DARKEN].GetAddressOf());
     _ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
     // BLEND_SCREEN
@@ -131,13 +140,10 @@ Blender::Blender(Microsoft::WRL::ComPtr<ID3D11Device>& device)
     bDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
     bDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
     bDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-    hr = device->CreateBlendState(&bDesc, mBlendStates[BLEND_SCREEN].GetAddressOf());
+    hr = p_device->CreateBlendState(&bDesc, mBlendStates[BLEND_SCREEN].GetAddressOf());
     _ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
-}
-
-Blender::~Blender()
-{
+    return true;
 }
 
 void Blender::SetBlendState(Microsoft::WRL::ComPtr<ID3D11DeviceContext>& imm_context, const int blendType)

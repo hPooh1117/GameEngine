@@ -1,8 +1,11 @@
 #include "PhysicsManager.h"
+#include "Actor.h"
 #include "ActorManager.h"
 #include <iostream>
 #include "./Component/SphereColliderComponent.h"
 #include "./Component/CapsuleColliderComponent.h"
+
+#include "./Utilities/Log.h"
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
@@ -19,6 +22,7 @@ PhysicsManager::PhysicsManager()
 
 bool PhysicsManager::Init(const std::unique_ptr<ActorManager>& actor_manager, bool b_used_octree)
 {
+    Log::Info("[PHYSICS] Initializing PhysicsManager.");
     if (b_used_octree)
     {
         RegistSphere(actor_manager);
@@ -31,6 +35,7 @@ bool PhysicsManager::Init(const std::unique_ptr<ActorManager>& actor_manager, bo
         }
 
     }
+    Log::Info("[PHYSICS] Initialized.");
 
     return true;
 }

@@ -1,9 +1,9 @@
 #pragma once
+#include <memory>
+
 #include "Window.h"
 
 class GraphicsEngine;
-class GameSystem;
-class InputManager;
 
 
 class Application : public Window
@@ -17,11 +17,11 @@ public:
     Application();
 
 
-    virtual bool Init();
+    virtual bool Init() override;
     
-    virtual void Update(float elapsed_time);
-    virtual void Render(float elapsed_time);
-
+    virtual void Update(float elapsed_time) override;
+    virtual void Render(float elapsed_time) override;
+    virtual void OnSize() override;
 
 
 

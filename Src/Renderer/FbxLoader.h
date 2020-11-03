@@ -16,6 +16,8 @@
 #include <unordered_map>
 #include "FbxMeshInfo.h"
 
+class PerfTimer;
+
 class FbxLoader
 {
 public:
@@ -43,6 +45,7 @@ private:
     unsigned int mNumberOfBones    = 0;
     unsigned int mNumberOfVertices = 0;
 
+    std::unique_ptr<PerfTimer> m_pTimer;
 public:
     FbxLoader();
     bool LoadFbxFile(Microsoft::WRL::ComPtr<ID3D11Device>& device,

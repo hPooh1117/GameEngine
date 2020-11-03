@@ -12,6 +12,7 @@
 #include "./Engine/Actor.h"
 #include "./Engine/ActorManager.h"
 #include "./Engine/MeshRenderer.h"
+#include "./Engine/GameSystem.h"
 
 #include "./Component/MoveRotationComponent.h"
 #include "./Component/MoveRoundTrip.h"
@@ -56,7 +57,7 @@ SceneTitle::SceneTitle(SceneManager* manager, Microsoft::WRL::ComPtr<ID3D11Devic
         // スプライトフォント初期設定
     mFont = std::make_unique<Sprite>(device, L"./Data/Fonts/font0.png");
 
-    //mSkyBox = std::make_unique<SkyBox>(device, L"./Data/Images/canyon.jpg");
+    //mSkyBox = std::make_unique<Skybox>(device, L"./Data/Images/canyon.jpg");
 
     // ライト初期設定
     //m_pLight = std::make_shared<CustomLight>(device);
@@ -125,19 +126,19 @@ SceneTitle::SceneTitle(SceneManager* manager, Microsoft::WRL::ComPtr<ID3D11Devic
     m_pPlayer->AddComponent<CCPlayerMoveForPlanet>()->BeInvalid();
     m_pPlayer->AddComponent<CCPlayerLightController>()->SetConstantFlag(true);
     m_pPlayer->AddComponent(
-        MeshComponent::MeshID::kBasicSphere,
+        MeshComponent::MeshID::EBasicSphere,
         m_pRenderer,
         m_pPhongShader,
         L"\0"
     );
-    //std::shared_ptr<MeshComponent> mesh = m_pPlayer->AddComponent(
-    //    MeshComponent::MeshID::kBasicCapsule,
+    //std::shared_ptr<MeshComponent> mesh = mpPlayer->AddComponent(
+    //    MeshComponent::MeshID::EBasicCapsule,
     //    m_pRenderer,
     //    m_pLambert
     //    );
     m_pPlayer->AddComponent<CCCapsuleCollider>();
 
-    //mesh->SetColliderData(m_pPlayer->GetComponent<CCCapsuleCollider>());
+    //mesh->SetColliderData(mpPlayer->GetComponent<CCCapsuleCollider>());
     //mesh->SetWireframeMode();
     m_pPlayer->GetComponent<CCCapsuleCollider>()->SetOffset(Vector3(0, -0.4f, 0));
     m_pPlayer->GetComponent<CCCapsuleCollider>()->SetScale(Vector3(4.2f, 4.2f, 4.2f));
@@ -148,7 +149,7 @@ SceneTitle::SceneTitle(SceneManager* manager, Microsoft::WRL::ComPtr<ID3D11Devic
     //m_pEnemy->AddComponent<MoveRotationComponent>();
     //m_pEnemy->AddComponent<CCSphereCollider>();
     //m_pEnemy->AddComponent(
-    //    MeshComponent::MeshID::kBasicCube,
+    //    MeshComponent::MeshID::EBasicCube,
     //    m_pRenderer,
     //    m_pPhongShader,
     //    L"\0"
@@ -165,10 +166,10 @@ SceneTitle::SceneTitle(SceneManager* manager, Microsoft::WRL::ComPtr<ID3D11Devic
     //    m_pTarget[i]->SetScale(.025f, .025f, .025f);
     //    m_pTarget[i]->SetRotationQuaternion(90.0f * 0.001745f, 0, 0);
     //    m_pTarget[i]->AddComponent<CCPlanetResident>();
-    //    m_pTarget[i]->AddComponent<CCTargetPulledUp>()->SetPlayer(m_pPlayer);
+    //    m_pTarget[i]->AddComponent<CCTargetPulledUp>()->SetPlayer(mpPlayer);
     //    m_pTarget[i]->AddComponent<CCSphereCollider>()->ResetRadius(0.5f);
     //    m_pTarget[i]->AddComponent(
-    //        MeshComponent::MeshID::kSkinnedMesh,
+    //        MeshComponent::MeshID::ESkinnedMesh,
     //        m_pRenderer,
     //        m_pPhongShader,
     //        "./Data/Models/tank.fbx"
@@ -182,10 +183,10 @@ SceneTitle::SceneTitle(SceneManager* manager, Microsoft::WRL::ComPtr<ID3D11Devic
     m_pTarget->SetScale(.01f, .01f, .01f);
     m_pTarget->SetRotationQuaternion(90.0f * 0.001745f, 0, 0);
     m_pTarget->AddComponent<MoveRotationComponent>();
-    //m_pTarget->AddComponent<CCTargetPulledUp>()->SetPlayer(m_pPlayer);
+    //m_pTarget->AddComponent<CCTargetPulledUp>()->SetPlayer(mpPlayer);
     m_pTarget->AddComponent<CCSphereCollider>()->ResetRadius(0.5f);
     m_pTarget->AddComponent(
-        MeshComponent::MeshID::kSkinnedMesh,
+        MeshComponent::MeshID::ESkinnedMesh,
         m_pRenderer,
         m_pPhongShader,
         "./Data/Models/tank.fbx"
@@ -195,12 +196,12 @@ SceneTitle::SceneTitle(SceneManager* manager, Microsoft::WRL::ComPtr<ID3D11Devic
 
     m_pField = Actor::Initialize(ActorID::kEnemy);
     m_pField->AddComponent(
-        MeshComponent::MeshID::kBasicSphere,
+        MeshComponent::MeshID::EBasicSphere,
         m_pRenderer,
         m_pPhongShader,
         L"\0"
     );
-    //m_pField->GetComponent<MeshComponent>()->SetWireframeMode();
+    //mpField->GetComponent<MeshComponent>()->SetWireframeMode();
     m_pField->SetScale(40.0f, 40.0f, 40.0f);
     m_pField->SetPosition(Vector3(0, -20.0f, 0));
     m_pField->AddComponent<StaticComponent>();
@@ -209,9 +210,9 @@ SceneTitle::SceneTitle(SceneManager* manager, Microsoft::WRL::ComPtr<ID3D11Devic
     m_pActorManager->AddActor(m_pField);
 
 //#ifdef _DEBUG
-//    m_pGrid = Actor::Initialize(ActorID::kPlane);
+//    m_pGrid = Actor::Initialize(ActorID::EPlane);
 //    m_pGrid->AddComponent(
-//        MeshComponent::MeshID::kBasicLine,
+//        MeshComponent::MeshID::EBasicLine,
 //        m_pRenderer,
 //        m_pLineShader
 //    );
@@ -236,28 +237,28 @@ SceneTitle::SceneTitle(SceneManager* manager, Microsoft::WRL::ComPtr<ID3D11Devic
     m_pPlayer->GetComponent<CCPlayerMoveForPlanet>()->RegistActorAsPlanet(m_pField);
     //for (auto i = 0; i < 8; ++i)
     //{
-    //    m_pTarget[i]->GetComponent<CCPlanetResident>()->RegistActorAsPlanet(m_pField);
+    //    m_pTarget[i]->GetComponent<CCPlanetResident>()->RegistActorAsPlanet(mpField);
     //}
-    //m_pTarget->GetComponent<CCPlanetResident>()->RegistActorAsPlanet(m_pField);
+    //m_pTarget->GetComponent<CCPlanetResident>()->RegistActorAsPlanet(mpField);
 
     // UI描画クラスのキューに追加
 #ifdef _DEBUG
     std::shared_ptr<UIClient> player(m_pPlayer->GetComponent<CCPlayerMoveForPlanet>());
-    m_pUIRenderer->SetInQueue("Player Move", player);
+    ENGINE.GetUIRenderer()->SetInQueue("Player Move", player);
     std::shared_ptr<UIClient> lightController(m_pPlayer->GetComponent<CCPlayerLightController>());
-    m_pUIRenderer->SetInQueue("Player Light Controll", lightController);
+    ENGINE.GetUIRenderer()->SetInQueue("Player Light Controll", lightController);
     //std::shared_ptr<UIClient> target(m_pTarget->GetComponent<CCPlanetResident>());
     //m_pUIRenderer->SetInQueue("Target", target);
     //std::shared_ptr<UIClient> pulledUp(m_pTarget->GetComponent<CCTargetPulledUp>());
     //m_pUIRenderer->SetInQueue("Pulled Up", pulledUp);
     //std::shared_ptr<UIClient> light = std::static_pointer_cast<CustomLight>(m_pLight);
     //m_pUIRenderer->SetInQueue("Light", light);
-    m_pUIRenderer->SetInQueue("Light", m_pLightController);
+    ENGINE.GetUIRenderer()->SetInQueue("Light", m_pLightController);
 
     std::shared_ptr<UIClient> camera = m_pCameraController;
-    m_pUIRenderer->SetInQueue("Camera", camera);
+    ENGINE.GetUIRenderer()->SetInQueue("Camera", camera);
     std::shared_ptr<UIClient> trace = std::static_pointer_cast<TraceCamera>(m_pCameraController->GetCameraPtr(1));
-    m_pUIRenderer->SetInQueue("Trace", trace);
+    ENGINE.GetUIRenderer()->SetInQueue("Trace", trace);
 #endif
 }
 
@@ -289,7 +290,7 @@ void SceneTitle::Update(float elapsed_time)
 
     m_pPhysicsManager->DetectCollision(m_pActorManager/*, elapsed_time*/);
 
-    if (InputPtr->OnKeyTrigger("Space"))
+    if (InputPtr.OnKeyTrigger("Space"))
     {
         mChangeFlag = true;
     }
@@ -311,7 +312,7 @@ void SceneTitle::Render(
 
     // 描画用ライト設定
     //m_pLight->Set(immContext, m_pCameraController);
-    m_pLightController->SetDataForGPU(immContext, m_pCameraController);
+    m_pLightController->SetDataForGPU(immContext, m_pCameraController.get());
 
     m_pBlender->SetBlendState(immContext, Blender::BLEND_ALPHA);
 
@@ -324,11 +325,17 @@ void SceneTitle::Render(
 
     static int timer = 0;
     float alpha = static_cast<float>(timer / 8 % 8);
-    mFont->TextOutput(immContext, "Light Up The Tank", m_pSpriteShader, Vector2(SCREEN_WIDTH * 0.32f, SCREEN_HEIGHT * 0.5f), Vector2(32, 32), Vector4(1, 1, 1, 1));
-    mFont->TextOutput(immContext, "Push Space", m_pSpriteShader, Vector2(SCREEN_WIDTH * 0.4f, SCREEN_HEIGHT * 0.9f), Vector2(32, 32), Vector4(0.5f, 0.5f, 0.5f, alpha));
+    //mFont->TextOutput(immContext, "Light Up The Tank", m_pSpriteShader, Vector2(SCREEN_WIDTH * 0.32f, SCREEN_HEIGHT * 0.5f), Vector2(32, 32), Vector4(1, 1, 1, 1));
+    //mFont->TextOutput(immContext, "Push Space", m_pSpriteShader, Vector2(SCREEN_WIDTH * 0.4f, SCREEN_HEIGHT * 0.9f), Vector2(32, 32), Vector4(0.5f, 0.5f, 0.5f, alpha));
+    ENGINE.GetUIRenderer()->SetText("Light Up The Tank");
+    ENGINE.GetUIRenderer()->SetText("Push Space");
+
     timer++;
 #ifdef _DEBUG
-    m_pUIRenderer->RenderImGui(elapsed_time);
+    ENGINE.GetUIRenderer()->SetNextWindowSettings(Vector2(0, 0), Vector2(300, 400));
+    ENGINE.GetUIRenderer()->BeginRenderingNewWindow("Debugging");
+    ENGINE.GetUIRenderer()->RenderUIQueue();
+    ENGINE.GetUIRenderer()->FinishRenderingWindow();
 
 #endif // _DEBUG
 }

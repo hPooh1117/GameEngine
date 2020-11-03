@@ -12,6 +12,7 @@
 #include "./Engine/Actor.h"
 #include "./Engine/ActorManager.h"
 #include "./Engine/MeshRenderer.h"
+#include "./Engine/GameSystem.h"
 
 #include "./Component/MoveRotationComponent.h"
 #include "./Component/MoveRoundTrip.h"
@@ -120,19 +121,19 @@ Scene01::Scene01(SceneManager * manager, Microsoft::WRL::ComPtr<ID3D11Device>& d
     m_pPlayer->AddComponent<CCPlayerMoveForPlanet>();
     m_pPlayer->AddComponent<CCPlayerLightController>();
     m_pPlayer->AddComponent(
-        MeshComponent::MeshID::kSkinnedMesh,
+        MeshComponent::MeshID::ESkinnedMesh,
         m_pRenderer,
         m_pPhongSkinned,
         "./Data/Models/ufooo/yh_ufo.fbx"
     );
-    //std::shared_ptr<MeshComponent> mesh = m_pPlayer->AddComponent(
-    //    MeshComponent::MeshID::kBasicCapsule,
+    //std::shared_ptr<MeshComponent> mesh = mpPlayer->AddComponent(
+    //    MeshComponent::MeshID::EBasicCapsule,
     //    m_pRenderer,
     //    m_pLambert
     //    );
     m_pPlayer->AddComponent<CCCapsuleCollider>();
 
-    //mesh->SetColliderData(m_pPlayer->GetComponent<CCCapsuleCollider>());
+    //mesh->SetColliderData(mpPlayer->GetComponent<CCCapsuleCollider>());
     //mesh->SetWireframeMode();
     m_pPlayer->GetComponent<CCCapsuleCollider>()->SetOffset(Vector3(0, -0.4f, 0));
     m_pPlayer->GetComponent<CCCapsuleCollider>()->SetScale(Vector3(4.2f, 4.2f, 4.2f));
@@ -149,7 +150,7 @@ Scene01::Scene01(SceneManager * manager, Microsoft::WRL::ComPtr<ID3D11Device>& d
     m_pEnemy->AddComponent<CCTargetPulledUp>()->SetPlayer(m_pPlayer);
     m_pEnemy->AddComponent<CCSphereCollider>()->ResetRadius(0.5f);
     m_pEnemy->AddComponent(
-        MeshComponent::MeshID::kSkinnedMesh,
+        MeshComponent::MeshID::ESkinnedMesh,
         m_pRenderer,
         m_pPhongSkinned,
         "./Data/Models/ufooo/yh_g.fbx"
@@ -169,7 +170,7 @@ Scene01::Scene01(SceneManager * manager, Microsoft::WRL::ComPtr<ID3D11Device>& d
         m_pTargets[i]->AddComponent<CCTargetPulledUp>()->SetPlayer(m_pPlayer);
         m_pTargets[i]->AddComponent<CCSphereCollider>()->ResetRadius(0.5f);
         m_pTargets[i]->AddComponent(
-            MeshComponent::MeshID::kSkinnedMesh,
+            MeshComponent::MeshID::ESkinnedMesh,
             m_pRenderer,
             m_pPhongSkinned,
             "./Data/Models/ufooo/yh_cat.fbx"
@@ -186,7 +187,7 @@ Scene01::Scene01(SceneManager * manager, Microsoft::WRL::ComPtr<ID3D11Device>& d
     m_pTarget->AddComponent<CCTargetPulledUp>()->SetPlayer(m_pPlayer);
     m_pTarget->AddComponent<CCSphereCollider>()->ResetRadius(0.5f);
     m_pTarget->AddComponent(
-        MeshComponent::MeshID::kSkinnedMesh,
+        MeshComponent::MeshID::ESkinnedMesh,
         m_pRenderer,
         m_pPhongShader,
         "./Data/Models/ufooo/yh_cat.fbx"
@@ -197,12 +198,12 @@ Scene01::Scene01(SceneManager * manager, Microsoft::WRL::ComPtr<ID3D11Device>& d
 
     m_pField = Actor::Initialize(ActorID::kFloor);
     m_pField->AddComponent(
-        MeshComponent::MeshID::kBasicSphere,
+        MeshComponent::MeshID::EBasicSphere,
         m_pRenderer,
         m_pPhongShader,
         L"./Data/Images/earthmap.jpg"
     );
-    //m_pField->GetComponent<MeshComponent>()->SetWireframeMode();
+    //mpField->GetComponent<MeshComponent>()->SetWireframeMode();
     m_pField->SetScale(40.0f, 40.0f, 40.0f);
     m_pField->SetPosition(Vector3(0, -20.0f, 0));
     m_pField->AddComponent<StaticComponent>();
@@ -213,7 +214,7 @@ Scene01::Scene01(SceneManager * manager, Microsoft::WRL::ComPtr<ID3D11Device>& d
 #ifdef _DEBUG
     m_pGrid = Actor::Initialize(ActorID::kPlane);
     m_pGrid->AddComponent(
-        MeshComponent::MeshID::kBasicLine,
+        MeshComponent::MeshID::EBasicLine,
         m_pRenderer,
         m_pLineShader
     );
@@ -247,18 +248,18 @@ Scene01::Scene01(SceneManager * manager, Microsoft::WRL::ComPtr<ID3D11Device>& d
     // UI描画クラスのキューに追加
 #ifdef _DEBUG
     std::shared_ptr<UIClient> player(m_pPlayer->GetComponent<CCPlayerMoveForPlanet>());
-    m_pUIRenderer->SetInQueue("Player Move", player);
+    ENGINE.GetUIRenderer()->SetInQueue("Player Move", player);
     std::shared_ptr<UIClient> lightController(m_pPlayer->GetComponent<CCPlayerLightController>());
-    m_pUIRenderer->SetInQueue("Player Light Controll", lightController);
+    ENGINE.GetUIRenderer()->SetInQueue("Player Light Controll", lightController);
     //std::shared_ptr<UIClient> target(m_pTarget->GetComponent<CCPlanetResident>());
     //m_pUIRenderer->SetInQueue("Target", target);
     //std::shared_ptr<UIClient> pulledUp(m_pTarget->GetComponent<CCTargetPulledUp>());
     //m_pUIRenderer->SetInQueue("Pulled Up", pulledUp);
-    m_pUIRenderer->SetInQueue("Light", m_pLightController);
+    ENGINE.GetUIRenderer()->SetInQueue("Light", m_pLightController);
     std::shared_ptr<UIClient> camera = m_pCameraController;
-    m_pUIRenderer->SetInQueue("Camera", camera);
+    ENGINE.GetUIRenderer()->SetInQueue("Camera", camera);
     std::shared_ptr<UIClient> trace = std::static_pointer_cast<TraceCamera>(m_pCameraController->GetCameraPtr(1));
-    m_pUIRenderer->SetInQueue("Trace", trace);
+    ENGINE.GetUIRenderer()->SetInQueue("Trace", trace);
 #endif
 }
 
@@ -297,7 +298,7 @@ void Scene01::Render(
 
 // 描画用ライト設定
     //m_pLight->Set(immContext, m_pCameraController);
-    m_pLightController->SetDataForGPU(immContext, m_pCameraController);
+    m_pLightController->SetDataForGPU(immContext, m_pCameraController.get());
 
     m_pBlender->SetBlendState(immContext, Blender::BLEND_ALPHA);
 
@@ -313,14 +314,20 @@ void Scene01::Render(
 
     if (timer < 3600)
     {
-        mFont->TextOutput(immContext, "Arrow key to Move", m_pSpriteShader, Vector2(16, 8), Vector2(16, 16), Vector4(1, 1, 1, 1));
-        mFont->TextOutput(immContext, "Z key to Light Up", m_pSpriteShader, Vector2(16, 8 + 16), Vector2(16, 16), Vector4(1, 1, 1, 1));
+        //mFont->TextOutput(immContext, "Arrow key to Move", m_pSpriteShader, Vector2(16, 8), Vector2(16, 16), Vector4(1, 1, 1, 1));
+        //mFont->TextOutput(immContext, "Z key to Light Up", m_pSpriteShader, Vector2(16, 8 + 16), Vector2(16, 16), Vector4(1, 1, 1, 1));
+        ENGINE.GetUIRenderer()->SetText("Arrow key to Move");
+        ENGINE.GetUIRenderer()->SetText("Z key to Light Up");
+
     }
     timer++;
 
 
 #ifdef _DEBUG
-    m_pUIRenderer->RenderImGui(elapsed_time);
+    ENGINE.GetUIRenderer()->SetNextWindowSettings(Vector2(0, 0), Vector2(300, 400));
+    ENGINE.GetUIRenderer()->BeginRenderingNewWindow("Debugging");
+    ENGINE.GetUIRenderer()->RenderUIQueue();
+    ENGINE.GetUIRenderer()->FinishRenderingWindow();
 #endif
 }
 

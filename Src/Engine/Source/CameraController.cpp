@@ -7,6 +7,7 @@
 #include "Actor.h"
 
 #include "./Application/Input.h"
+#include "./Application/Helper.h"
 
 #include "./Utilities/Util.h"
 #include "./Utilities/MyArrayFromVector.h"
@@ -19,15 +20,19 @@ using namespace DirectX;
 //--------------------------------------------------------------------------------------------------------------------------------
 
 CameraController::CameraController()
+    :mOrthoWidth(60),
+    mOrthoHeight(45),
+    mOrthoNear(0.1f),
+    mOrthoFar(200.0f)
 {
     mCameraNameTable[kMoveable] = "Moveable Camera";
     mCameraNameTable[kTrace] = "Trace Camera";
 
-    m_pCameras[kMoveable] = std::make_shared<MainCamera>(Vector3(0, 5, -20));
+    m_pCameras[kMoveable] = std::make_shared<MainCamera>(Vector3(0, 50, -70));
     m_pCameras[kTrace] = std::make_shared<TraceCamera>();
 
     m_pOrthoView = std::make_shared<OrthoView>(Vector3(0, 0, 0));
-    m_pOrthoView->SetOrtho(15.0f, 15.0f, 0.1f, 200.0f);
+    m_pOrthoView->SetOrtho(mOrthoWidth, mOrthoHeight, mOrthoNear, mOrthoFar);
 
     Log::Info("[CAMERA] Initialized.");
     NotifyCurrentMode();
@@ -50,7 +55,7 @@ bool CameraController::Initialize(Settings::Camera& cameraSettings)
 void CameraController::Update(float elapsed_time)
 {
 #ifdef _DEBUG
-    if (InputPtr->OnKeyTrigger("C"))
+    if (InputPtr.OnKeyTrigger("C"))
     {
         mPrevMode = mCurrentMode;
         if (++mCurrentMode >= kNumMax) mCurrentMode = 0;
@@ -118,6 +123,7 @@ void CameraController::SetMatrix(D3D::DeviceContextPtr& p_imm_context)
     // ŽË‰es—ñXV
     CreateProjectionMatrix(p_imm_context);
 
+    m_pOrthoView->SetOrtho(mOrthoWidth, mOrthoHeight, mOrthoNear, mOrthoFar);
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
@@ -275,6 +281,16 @@ void CameraController::RenderUI()
     MyArrayFromVector up = MyArrayFromVector(mCameraUp);
     SliderFloat3("Camera Up", up.SetArray(), 0.0f, 1.0f);
 
+
+    MyArrayFromVector oPos = MyArrayFromVector(m_pOrthoView->getPosition());
+    SliderFloat3("Ortho Camera Pos", oPos.SetArray(), -1000.0f, 1000.0f);
+
+    SliderFloat("Ortho Width", &mOrthoWidth, 1.0f, 2000.0f);
+    SliderFloat("Ortho Height", &mOrthoHeight, 1.0f, 1000.0f);
+    SliderFloat("Ortho Near", &mOrthoNear, 0.1f, 10.0f);
+    SliderFloat("Ortho Far", &mOrthoFar, 10.0f, 1000.0f);
+
+
     //Text("view0 : %.2f, %.2f, %.2f, %.2f", mView._11, mView._12, mView, mView._14);
     //Text("view1 : %.2f, %.2f, %.2f, %.2f", mView._21, mView._22, mView, mView._24);
     //Text("view2 : %.2f, %.2f, %.2f, %.2f", mView._31, mView._32, mView, mView._34);
@@ -300,7 +316,7 @@ void CameraController::RenderUI()
     //Text("mulview : %.2f, %.2f, %.2f, %.2f", i._21, i._22, i._23, i._24);
     //Text("mulview : %.2f, %.2f, %.2f, %.2f", i._31, i._32, i._33, i._34);
     //Text("mulview : %.2f, %.2f, %.2f, %.2f", i._41, i._42, i._43, i._44);
-
+    Separator();
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------

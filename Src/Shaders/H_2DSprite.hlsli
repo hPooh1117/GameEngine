@@ -1,9 +1,4 @@
-//--------------------------------------------
-//	テクスチャ
-//--------------------------------------------
 
-Texture2D diffuse_texture : register(t0);
-SamplerState decal_sampler : register(s0);
 
 //--------------------------------------------
 //	グローバル変数
@@ -14,6 +9,7 @@ cbuffer CBPerMatrix : register(b0)
 	row_major float4x4 world;
 
 	float4 mat_color;
+	row_major float4x4 inv_projview;
 
 };
 

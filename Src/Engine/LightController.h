@@ -43,7 +43,8 @@ private:
 
 	// Directional Light Settings
 	Vector4 mLightDirection;
-	float   mAngle;
+	float   mPitch;
+	float   mYaw;
 	Vector4 mAmbientColor = { 0.1f, 0.1f, 0.1f, 0 };
 	Vector4 mLightColor = { 0.9f, 0.9f, 0.9f, 1.0f };
 	
@@ -51,9 +52,6 @@ private:
 	float   mEnvironmentMapAlpha;
 	float   mTimer;
 
-	bool    m_bUsingBRDF;
-	float   mRoughness;
-	float   mMetalness;
 
 	// Point Light Settings
 	std::vector<PointLightData> mPointLights;
@@ -70,7 +68,7 @@ public:
 	~LightController() = default;
 
 	//--< CORE INTERFACE >--------------------------------------------------------------
-	bool Init(unsigned int pointLightNum, unsigned int spotLightNum, bool isPBR = false);
+	bool Init(unsigned int pointLightNum, unsigned int spotLightNum);
 	void Update(float elapsed_time);
 
 private:
@@ -81,6 +79,7 @@ public:
 	void ActivatePointLight(unsigned int index, bool b_activate);
 	void ActivateSpotLight(unsigned int index, bool b_activate);
 
+	
 
 	//--< DATA INTERACTION >------------------------------------------------------------
 	void SendLightData(
@@ -109,7 +108,7 @@ public:
 
 	void SetDataForGPU(
 		D3D::DeviceContextPtr& pImmContext, 
-		std::shared_ptr<CameraController>& pCamera); // 消去予定（定数バッファは他の場所で作りたい）
+		CameraController* pCamera); // 消去予定（定数バッファは他の場所で作りたい）
 
 	//--< GETTER >----------------------------------------------------------------------
 	inline const Vector4& GetLightDirection();

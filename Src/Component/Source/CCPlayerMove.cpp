@@ -60,22 +60,22 @@ void CCPlayerMove::MovePlayer()
 
 	mDisplacement = {};
 
-	if (InputPtr->OnKeyDown("Up") || InputPtr->GetThumbLYValue() > 0.0f)
+	if (InputPtr.OnKeyDown("Up") || InputPtr.GetThumbLYValue() > 0.0f)
 	{
 		mDisplacement += forward;
 		//AddForce(mMass * forward * mSpeed);
 	}
-	else if (InputPtr->OnKeyDown("Down") || InputPtr->GetThumbLYValue() < 0.0f)
+	else if (InputPtr.OnKeyDown("Down") || InputPtr.GetThumbLYValue() < 0.0f)
 	{
 		mDisplacement += -forward;
 		//AddForce(mMass * -forward * mSpeed);
 	}
-	if (InputPtr->OnKeyDown("Left") || InputPtr->GetThumbLXValue() < 0.0f)
+	if (InputPtr.OnKeyDown("Left") || InputPtr.GetThumbLXValue() < 0.0f)
 	{
 		mDisplacement += -right;
 		//AddForce(mMass * -right * mSpeed);
 	}
-	else if (InputPtr->OnKeyDown("Right") || InputPtr->GetThumbLXValue() > 0.0f)
+	else if (InputPtr.OnKeyDown("Right") || InputPtr.GetThumbLXValue() > 0.0f)
 	{
 		mDisplacement += right;
 		//AddForce(mMass * right * mSpeed);

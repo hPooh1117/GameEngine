@@ -23,7 +23,7 @@ Swapchain::Swapchain(Microsoft::WRL::ComPtr<ID3D11Device>& device, HWND& hwnd)
         scDesc.SampleDesc.Count = 1;
         scDesc.SampleDesc.Quality = 0;
         scDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-        scDesc.BufferCount = DXGI_MAX_SWAP_CHAIN_BUFFERS;
+        scDesc.BufferCount = 8/*DXGI_MAX_SWAP_CHAIN_BUFFERS*/;
         scDesc.OutputWindow = hwnd;
         scDesc.Windowed = TRUE;
         scDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
@@ -84,10 +84,56 @@ Swapchain::Swapchain(Microsoft::WRL::ComPtr<ID3D11Device>& device, HWND& hwnd)
 
 }
 
+void Swapchain::Resize(D3D::DevicePtr& device, unsigned int width, unsigned int height)
+{
+    if (m_render_target_view) m_render_target_view.Reset();
+    if (m_depth_stencil_view) m_depth_stencil_view.Reset();
+
+    m_swapchain->ResizeBuffers(1, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
+    ReloadBuffers(device, width, height);
+}
+
 bool Swapchain::present(bool vsync)
 {
     m_swapchain->Present(vsync, 0);
     return true;
+}
+
+void Swapchain::ReloadBuffers(D3D::DevicePtr& device, unsigned int width, unsigned int height)
+{
+    ID3D11Texture2D* pTexture2D;
+    auto result = m_swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)(&pTexture2D));
+    pTexture2D->Release();
+    _ASSERT_EXPR(SUCCEEDED(result), hr_trace(result));
+
+    result = device->CreateRenderTargetView(pTexture2D, NULL, m_render_target_view.GetAddressOf());
+    if (FAILED(result))
+    {
+        Log::Error("Couldn't Create RenderTargetView(BackBuffer).");
+    }
+
+    D3D11_TEXTURE2D_DESC txDesc = {};
+    txDesc.Width = width;
+    txDesc.Height = height;
+    txDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    txDesc.Usage = D3D11_USAGE_DEFAULT;
+    txDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+    txDesc.MipLevels = 1;
+    txDesc.SampleDesc.Count = 1;
+    txDesc.SampleDesc.Quality = 0;
+    txDesc.MiscFlags = 0;
+    txDesc.ArraySize = 1;
+    txDesc.CPUAccessFlags = 0;
+
+    result = device->CreateTexture2D(&txDesc, nullptr, &pTexture2D);
+    _ASSERT_EXPR(SUCCEEDED(result), hr_trace(result));
+
+    result = device->CreateDepthStencilView(pTexture2D, NULL, m_depth_stencil_view.GetAddressOf());
+    if (FAILED(result))
+    {
+        Log::Error("Couldn't Create DepthStencilView.");
+    }
+
 }
 
 Microsoft::WRL::ComPtr<ID3D11RenderTargetView>& Swapchain::getRenderTargetView()

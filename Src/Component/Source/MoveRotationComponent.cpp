@@ -49,7 +49,7 @@ void MoveRotationComponent::Update(float elapsed_time)
 	static float yaw = 0.0f;
 	yaw += elapsed_time * 30.0f;
 	
-	Quaternion q = Quaternion::CreateFromEulerAngle(-180.0f * 0.01745f, yaw * 0.01745f, 0);
+	Quaternion q = Quaternion::CreateFromEulerAngle(0.0f, yaw * 0.01745f, 0);
 	m_pOwner.lock()->SetQuaternion(q);
 }
 

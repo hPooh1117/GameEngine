@@ -7,7 +7,7 @@
 #include "VertexDecleration.h"
 
 #include "./Utilities/Log.h"
-
+#include "./Utilities/misc.h"
 #pragma comment(lib, "d3dcompiler.lib")
 
 Shader::Shader()
@@ -32,7 +32,18 @@ bool Shader::createShader(
 
     //// compile and Create vertex shader
     result = ResourceManager::CompileHLSLFile(vs_filename, vs_funcname, "vs_5_0", vsBlob);
-    device->CreateVertexShader(vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), NULL, m_vs.GetAddressOf());
+    if (FAILED(result))
+    {
+        char vsfile_multibyte[256];
+        WideCharToMultiByte(CP_ACP, 0, vs_filename.c_str(), -1, vsfile_multibyte, 256, NULL, NULL);
+
+
+        Log::Error("Couldn't Compile Vertex Shader ( %s )", vsfile_multibyte);
+    }
+
+    result = device->CreateVertexShader(vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), NULL, m_vs.GetAddressOf());
+    _ASSERT_EXPR_A(SUCCEEDED(result), hr_trace(result));
+
 
     // Create input layouts
     VertexDecleration::CreateInputElements(device, m_input_layout, vsBlob, type);
@@ -40,6 +51,14 @@ bool Shader::createShader(
 
     // compile and Create pixel shader
     result = ResourceManager::CompileHLSLFile(ps_filename, ps_funcname, "ps_5_0", psBlob);
+    if (FAILED(result))
+    {
+        char psfile_multibyte[256];
+        WideCharToMultiByte(CP_ACP, 0, ps_filename.c_str(), -1, psfile_multibyte, 256, NULL, NULL);
+
+        Log::Error("Couldn't Compile Pixel Shader ( %s )", psfile_multibyte);
+    }
+
     result = device->CreatePixelShader(
         psBlob->GetBufferPointer(),
         psBlob->GetBufferSize(),
@@ -50,6 +69,7 @@ bool Shader::createShader(
     vsfunc = vs_funcname;
     psfunc = ps_funcname;
 #endif 
+    _ASSERT_EXPR_A(SUCCEEDED(result), hr_trace(result));
 
     return true;
 }

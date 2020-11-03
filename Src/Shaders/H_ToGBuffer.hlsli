@@ -1,11 +1,11 @@
 //---------------------------------
 // テクスチャデータ
 //---------------------------------
-Texture2D position_texture : register(t3);
-SamplerState position_sampler : register(s3);
-
-Texture2D depth_texture : register(t7);
-SamplerState depth_sampler : register(s7);
+//Texture2D position_texture : register(t3);
+//SamplerState position_sampler : register(s3);
+//
+//Texture2D depth_texture : register(t7);
+//SamplerState depth_sampler : register(s7);
 
 
 struct PS_Input_Shadow_AO
@@ -40,13 +40,15 @@ struct PS_Output_AO
 
 struct PS_Output_Light
 {
-	float4 diffuse : SV_TARGET0;
-	float4 specular : SV_TARGET1;
+	float4 prelighting : SV_TARGET0;
+	float4 diffuse : SV_TARGET1;
+	float4 specular : SV_TARGET2;
+	float4 skybox : SV_TARGET3;
 };
 
 struct PS_Output_SSAO
 {
-	float4 diffuse : SV_TARGET0;
-	float4 specular : SV_TARGET1;
-	float4 ambient : SV_TARGET2;
+	float4 result : SV_TARGET0;
+	float4 ambient : SV_TARGET1;
 };
+

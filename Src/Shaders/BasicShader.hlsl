@@ -1,5 +1,9 @@
 #include "H_DataFormat.hlsli"
 
+
+Texture2D diffuse_texture : register(t0);
+SamplerState decal_sampler : register(s0);
+
 //--------------------------------------------
 //	エントリーポイント
 //--------------------------------------------

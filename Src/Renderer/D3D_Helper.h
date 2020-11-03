@@ -17,6 +17,7 @@ namespace D3D
 	using Texture2DPtr = Microsoft::WRL::ComPtr<ID3D11Texture2D>;
 	using DepthStencilVPtr = Microsoft::WRL::ComPtr<ID3D11DepthStencilView>;
 	using DepthStencilPtr = Microsoft::WRL::ComPtr<ID3D11DepthStencilState>;
+	using SwapChainPtr = Microsoft::WRL::ComPtr<IDXGISwapChain>;
 
 	using BufferPtr = Microsoft::WRL::ComPtr<ID3D11Buffer>;
 	using VShaderPtr = Microsoft::WRL::ComPtr<ID3D11VertexShader>;

@@ -1,23 +1,31 @@
 #include "SceneManager.h"
 
-#include "Scene01.h"
-#include "SceneTitle.h"
+//#include "Scene01.h"
+//#include "SceneTitle.h"
 #include "SceneA.h"
 #include "SceneB.h"
 #include "SceneC.h"
 #include "SceneD.h"
 #include "SceneE.h"
 #include "SceneShadowMapTest.h"
+#include "SceneTest.h"
+
 #include "SceneLoading.h"
+
+#include "./Engine/GameSystem.h"
+#include "./Engine/UIRenderer.h"
+
 #include "./Utilities/Log.h"
+#include "./Utilities/ImGuiSelf.h"
 
 
 //----------------------------------------------------------------------------------------------------------------------------
 
 SceneManager::SceneManager(D3D::DevicePtr& p_device)
-	:mCurrentScene(SceneID::SCENE_E),
-	mNextScene(SceneID::SCENE_E),
+	:mCurrentScene(SceneID::SCENE_A),
+	mNextScene(SceneID::SCENE_A),
 	mClearFlag(false),
+	m_bIsLoading(false),
 	m_pDevice(p_device)
 {
 
@@ -39,18 +47,18 @@ void SceneManager::InitializeLoadingScene()
 {
 	Log::Info("Initializing Scene...");
 	m_pLoadingScene = std::make_unique<SceneLoading>(this, m_pDevice);
-
+	
 }
 
 //----------------------------------------------------------------------------------------------------------------------------
 
 void SceneManager::InitializeCurrentScene()
 {
-	mSceneStack.emplace(std::make_unique<SceneE>(this, m_pDevice));
-	mSceneStack.top()->SetSceneID(mCurrentScene);
+	
+	mSceneStack.emplace(std::make_unique<SceneF>(this, m_pDevice));
+	mSceneStack.top()->SetCurrntSceneID(mCurrentScene);
 	mSceneStack.top()->InitializeScene();
-	Log::Info("Initialized %s", mSceneStack.top()->GetSceneName().c_str());
-
+	Log::Info("Initialized %s", mSceneStack.top()->GetCurrentSceneName().c_str());
 }
 
 //----------------------------------------------------------------------------------------------------------------------------
@@ -64,47 +72,29 @@ void SceneManager::ExecuteLoadingScene(float elapsed_time)
 
 void SceneManager::ExecuteCurrentScene(float elapsed_time)
 {
-	mSceneStack.top()->ChangeScene();
 
 	mSceneStack.top()->Update(elapsed_time);
-}
 
-//----------------------------------------------------------------------------------------------------------------------------
-
-void SceneManager::RenderLoadingScene(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time)
-{
-	m_pLoadingScene->Render(p_graphics, elapsed_time);
-}
-
-//----------------------------------------------------------------------------------------------------------------------------
-
-void SceneManager::RenderCurrentScene(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time)
-{
-	mSceneStack.top()->Render(p_graphics, elapsed_time);
+	mSceneStack.top()->ChangeScene();
 
 }
 
-//----------------------------------------------------------------------------------------------------------------------------
-
-void SceneManager::ChangeScene(const SceneID& nextScene, bool clearCurrentScene)
+void SceneManager::LoadNextScene()
 {
-	if (clearCurrentScene == true)
-	{
-		mClearFlag = true;
-		mSceneStack.pop();
-		mNextScene = nextScene;
-	}
+	// ëOÇÃÉVÅ[ÉìÇîjä¸
+	mSceneStack.pop();
+
 
 	Log::Info("Initializing Scene...");
-
-	switch (nextScene)
+	
+	switch (mNextScene)
 	{
-	case SceneID::SCENE01:
-		mSceneStack.emplace(std::make_unique<Scene01>(this, m_pDevice));
-		break;
-	case SceneID::SCENETITLE:
-		mSceneStack.emplace(std::make_unique<SceneTitle>(this, m_pDevice));
-		break;
+	//case SceneID::SCENE01:
+	//	mSceneStack.emplace(std::make_unique<Scene01>(this, m_pDevice));
+	//	break;
+	//case SceneID::SCENETITLE:
+	//	mSceneStack.emplace(std::make_unique<SceneTitle>(this, m_pDevice));
+	//	break;
 	case SceneID::SCENE_A:
 		mSceneStack.emplace(std::make_unique<SceneA>(this, m_pDevice));
 		break;
@@ -123,10 +113,68 @@ void SceneManager::ChangeScene(const SceneID& nextScene, bool clearCurrentScene)
 	case SceneID::SCENE_F:
 		mSceneStack.emplace(std::make_unique<SceneF>(this, m_pDevice));
 		break;
+	case SceneID::SCENE_TEST:
+		mSceneStack.emplace(std::make_unique<SceneTest>(this, m_pDevice));
+		break;
 	}
-	mSceneStack.top()->SetSceneID(nextScene);
-	Log::Info("Initialized %s", mSceneStack.top()->GetSceneName().c_str());
+	mSceneStack.top()->SetCurrntSceneID(mNextScene);
+	mSceneStack.top()->InitializeScene();
+	Log::Info("Initialized %s", mSceneStack.top()->GetCurrentSceneName().c_str());
+	m_bIsLoading = false;
+}
 
+//----------------------------------------------------------------------------------------------------------------------------
+
+void SceneManager::RenderLoadingScene(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time)
+{
+	m_pLoadingScene->Render(p_graphics, elapsed_time);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------
+
+void SceneManager::RenderCurrentScene(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time)
+{
+	mSceneStack.top()->Render(p_graphics, elapsed_time);
+
+}
+
+void SceneManager::RenderUI()
+{
+	using namespace ImGui;
+
+	ENGINE.GetUIRenderer()->SetNextWindowSettings(Vector2(0, 0), Vector2(100, 400));
+	ENGINE.GetUIRenderer()->BeginRenderingNewWindow("Scene", false);
+	
+	for (auto i = 0u; i < static_cast<unsigned int>(SceneID::SCENE_NUM_MAX); ++i)
+	{
+		if (Button(mSceneStack.top()->GetSceneName(i).c_str(), ImVec2(80, 30)))
+		{
+			mSceneStack.top()->SetNextSceneID(static_cast<SceneID>(i));
+			mSceneStack.top()->ToggleChangeFlag();
+		}
+	}
+
+
+
+	ENGINE.GetUIRenderer()->FinishRenderingWindow();
+}
+
+bool SceneManager::GetLoadingScene()
+{
+	return m_bIsLoading;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------
+
+void SceneManager::ChangeScene(const SceneID& nextScene, bool clearCurrentScene)
+{
+	if (clearCurrentScene == true)
+	{
+		mClearFlag = true;
+		mNextScene = nextScene;
+	}
+
+	m_bIsLoading = true;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------

@@ -3,7 +3,7 @@
 #include <wrl/client.h>
 #include <string>
 
-enum class VEDType
+enum class VEDType : unsigned int
 {
     VED_DEFAULT = 0b001111,
     VED_PRIMITIVE = 0b001001,

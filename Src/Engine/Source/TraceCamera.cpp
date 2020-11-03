@@ -44,7 +44,7 @@ void TraceCamera::SetTarget(const std::shared_ptr<Actor>& target)
 
 void TraceCamera::ResetCameraPosition()
 {
-	if (InputPtr->OnKeyTrigger("1"))
+	if (InputPtr.OnKeyTrigger("1"))
 	{
 		mPos = mStartPos;
 

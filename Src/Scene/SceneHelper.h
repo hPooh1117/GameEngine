@@ -7,8 +7,9 @@ enum class SceneID
     SCENE_D,
     SCENE_E,
     SCENE_F,
-    SCENE01,
-    SCENETITLE,
+    SCENE_TEST,
+    //SCENE01,
+    //SCENETITLE,
 
     SCENE_NUM_MAX,
 };

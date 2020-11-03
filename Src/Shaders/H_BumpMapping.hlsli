@@ -2,11 +2,11 @@
 // テクスチャデータ
 //---------------------------------
 
-Texture2D normal_texture : register(t1);
-SamplerState normal_sampler : register(s1);
-
-Texture2D height_texture : register(t2);
-SamplerState height_sampler : register(s2);
+//Texture2D normal_texture : register(t1);
+//SamplerState normal_sampler : register(s1);
+//
+//Texture2D height_texture : register(t2);
+//SamplerState height_sampler : register(s2);
 
 //--------------------------------------------------
 // グローバル変数
@@ -51,4 +51,5 @@ struct PS_InputBumpShadow
 	float3 v_bin : TEXCOORD5;
 	float3 v_normal : TEXCOORD6;
 	float3 v_shadow : TEXCOORD7;
+	float2 depth : TEXCOORD8;
 };

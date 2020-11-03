@@ -7,10 +7,23 @@ cbuffer CBPerMatrix : register(b0)
     row_major float4x4 matWVP;
     row_major float4x4 world;
 
-    float4 mat_color;
+
+    row_major float4x4 inv_projview;
 
 };
 
+cbuffer CBPerMeshMat : register(b1)
+{
+    float4 mat_color;
+
+    float3 specColor;
+    float brdfSpec;
+
+    float gMetalness;
+    float gRoughness;
+    float dummy0;
+    float dummy1;
+}
 
 cbuffer CBPerBone : register(b4)
 {
@@ -100,6 +113,4 @@ struct PS_Input
 // 6 -> AmbientMap
 // 7 -> Depth
 
-Texture2D diffuse_texture : register(t0);
-SamplerState decal_sampler : register(s0);
 

@@ -2,6 +2,13 @@
 #include "H_DataFormat.hlsli"
 #include "H_ShadowMap.hlsli"
 #include "H_Functions.hlsli"
+
+Texture2D diffuse_texture : register(t0);
+SamplerState decal_sampler : register(s0);
+
+Texture2D shadow_texture : register(t5);
+SamplerState shadow_sampler : register(s5);
+
 //--------------------------------------------
 //	エントリーポイント
 //--------------------------------------------
@@ -24,6 +31,7 @@ PS_Input_Last VSmain(VS_Input input)
 	output.color = mat_color;
 	output.texcoord = input.texcoord;
 	output.v_shadow = GetShadowTex(light_view_projection, wPos.xyz);
+	output.depth = output.position.zw;
 	return output;
 }
 
@@ -46,10 +54,15 @@ PS_Input_Last VSmainS(VS_InputS input)
 	output.color = mat_color;
 	output.texcoord = input.texcoord;
 	output.v_shadow = GetShadowTex(light_view_projection, wPos.xyz);
+	output.depth = output.position.zw;
 
 	return output;
 }
 
+float LinearizeDepth(float depth, float near, float far)
+{
+	return (2.0 * near) / (far + near - depth * (far - near));
+}
 
 PS_Input_Last VSmainSkinning(VS_InputS input)
 {
@@ -78,6 +91,7 @@ PS_Input_Last VSmainSkinning(VS_InputS input)
 	output.color = mat_color;
 	output.texcoord = input.texcoord;
 	output.v_shadow = GetShadowTex(light_view_projection, wPos.xyz);
+	output.depth = output.position.zw;
 
 	return output;
 }
@@ -86,9 +100,9 @@ PS_Input_Last VSmainSkinning(VS_InputS input)
 //
 // pixel shader
 //
-PS_Output PSmain(PS_Input_Last input)
+PS_Output_AO PSmain(PS_Input_Last input)
 {
-	PS_Output output = (PS_Output)0;
+	PS_Output_AO output = (PS_Output_AO)0;
 	float4 P = float4(input.w_pos, 1);
 	float3 N = normalize(input.w_normal);
 
@@ -96,5 +110,7 @@ PS_Output PSmain(PS_Input_Last input)
 	output.normal = float4(N, 1);
 	output.position = P;
 	output.shadow = float4(GetShadow(shadow_texture, shadow_sampler, input.v_shadow, shadow_color, bias), 1);
+	output.depth = float4(input.depth.x / input.depth.y, 0, 0, 1);
+	//output.depth.r = LinearizeDepth(output.depth.r, 0.1, 1000.0);
 	return output;
 }

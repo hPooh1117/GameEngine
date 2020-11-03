@@ -113,6 +113,8 @@ float3 FurSpecular(float3 N, float3 L, float3 C, float3 E, float3 K, float Power
     return Sin2 * K * C;
 }
 
+
+
 //--------------------------------------------------------------------------------------------------------------
 // BRDF (Bidirectional Reflectance Distribution Function)
 //--------------------------------------------------------------------------------------------------------------

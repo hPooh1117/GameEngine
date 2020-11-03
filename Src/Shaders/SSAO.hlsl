@@ -20,8 +20,34 @@
 //	テクスチャ
 //--------------------------------------------
 
-Texture2D diffuse_texture : register(t0);
+//Texture2D diffuse_texture : register(t0);
+//SamplerState decal_sampler : register(s0);
+//
+//Texture2D normal_texture : register(t1);
+//SamplerState normal_sampler : register(s1);
+//
+//Texture2D position_texture: register(t2);
+//SamplerState position_sampler : register(s2);
+//
+//Texture2D shadow_texture : register(t5);
+//SamplerState shadow_sampler : register(s5);
+//
+//Texture2D depth_texture : register(t7);
+//SamplerState depth_sampler : register(s7);
+
+Texture2D albedo_texture : register(t0);
 SamplerState decal_sampler : register(s0);
+SamplerState border_sampler : register(s1);
+Texture2D normal_texture: register(t1);
+Texture2D position_texture : register(t2);
+Texture2D shadow_texture : register(t3);
+Texture2D depth_texture : register(t4);
+Texture2D prelight_texture : register(t5);
+Texture2D diffuse_texture : register(t6);
+Texture2D specular_texture : register(t7);
+Texture2D skybox_texture : register(t8);
+Texture2D      noise_texture : register(t9);
+SamplerState   noise_sampler : register(s9);
 
 //--------------------------------------------
 //	グローバル変数
@@ -174,49 +200,36 @@ float3 DecodeSphereMap(float2 e)
 //}
 
 // 20201004
-Texture2D      noise_texture : register(t8);
-SamplerState   noise_sampler : register(s8);
 
 
 float LinearizeDepth(float depth, float near, float far)
 {
 	return (2.0 * near) / (far + near - depth * (far - near));
 }
+float UnLinearizeDepth(float depth, float near, float far)
+{
+	float output = (far + near - 2.0 * near / depth) / (far - near);
+	;
+	return output;
+}
+
 
 PS_Output_SSAO PSmain(PS_Input input)
 {
 	PS_Output_SSAO output = (PS_Output_SSAO)0;
 
-	float2 depthBufferColor = depth_texture.Sample(depth_sampler, input.texcoord).rg;
+	float2 depthBufferColor = depth_texture.Sample(border_sampler, input.texcoord).rg;
+
 	float depth = depthBufferColor.r;
-	//depth = LinearizeDepth(depth, 0.1, 100.0);
 	float4 projP = float4(input.projPos.xy, depth, 1);
-	//projP *= depthBufferColor.g;
 	float4 viewP = mul(projP, inv_proj);
-	//viewP /= viewP.w;
-	//float4 wPos = mul(viewP, inv_view);
 	float4 wPos = mul(projP, inv_viewproj);
 	wPos.xyz /= wPos.w;
 	viewP /= viewP.w;
 
-	float3 P = wPos.xyz;
-	//float3 P = position_texture.Sample(position_sampler, input.texcoord).xyz;
-	float3 N = normal_texture.Sample(normal_sampler, input.texcoord).xyz;
-	float3 E = normalize(eye_pos.xyz - P);
-	float3 L = normalize(light_dir.xyz);
+	float3 N = normal_texture.Sample(decal_sampler, input.texcoord).xyz;
 
 
-	float3 C = light_color.rgb;
-	float3 Kd = float3(1, 1, 1);
-	float3 D = HalfLambert(N, L, C, Kd);
-
-	float3 Ks = float3(0.8, 0.8, 0.8);
-	float3 S = blinnPhongSpecular(N, L, C, E, Ks, 5);
-
-	output.diffuse = float4(D, 1);
-	output.specular = float4(S, 1);
-
-	//float3 centerDepthPos = ComputePositionViewFromZ(uint2(input.projPos.xy), depth);
 	float3 randomVector = noise_texture.Sample(noise_sampler, input.texcoord * noise_scale).xyz;
 	float3 tangent = normalize(randomVector - N * dot(randomVector, N));
 	float3 bitangent = cross(N, tangent);
@@ -224,6 +237,7 @@ PS_Output_SSAO PSmain(PS_Input input)
 
 	float occlusion = 0.0;
 
+	[unroll]
 	for (unsigned int i = 0; i < (unsigned int)kernelSize; ++i)
 	{
 		float3 samplePos = mul(sample_pos[i].xyz, TBN);
@@ -236,7 +250,7 @@ PS_Output_SSAO PSmain(PS_Input input)
 		float4 offset = mul(float4(samplePos, 1.0), proj);
 		offset.xy /= offset.w;
 
-		float sampleDepth = depth_texture.Sample(depth_sampler, float2(offset.x * 0.5 + 0.5, -offset.y * 0.5 + 0.5)).r;
+		float sampleDepth = depth_texture.Sample(decal_sampler, float2(offset.x * 0.5 + 0.5, -offset.y * 0.5 + 0.5)).r;
 		float4 sampleProjPos = float4(offset.xy, sampleDepth, 1);
 		float4 sampleViewPos = mul(sampleProjPos, inv_proj);
 		sampleDepth = sampleViewPos.z / sampleViewPos.w;
@@ -248,11 +262,16 @@ PS_Output_SSAO PSmain(PS_Input input)
 	occlusion = 1.0 - (occlusion / kernelSize);
 	float finalOcclusion = pow(abs(occlusion), power);
 
-	//output.ambient = float4(occlusion > 1 ? 1 : 0, 0, 0, 1.0);
+
+	float3 diffuse = diffuse_texture.Sample(decal_sampler, input.texcoord).xyz;
+	float3 specular = specular_texture.Sample(decal_sampler, input.texcoord).xyz;
+	float3 albedo = albedo_texture.Sample(decal_sampler, input.texcoord).xyz;
+	float3 shadow = shadow_texture.Sample(decal_sampler, input.texcoord).xyz;
+	float3 skybox = skybox_texture.Sample(decal_sampler, input.texcoord).xyz;
+
 	output.ambient = float4(finalOcclusion, finalOcclusion, finalOcclusion, 1.0);
-	//output.ambient = float4(P.xyz, 1.0);
-	//output.ambient = float4(centerDepthPos.xyz, 1.0);
-	//output.ambient = float4(depth, 0, 0, 1.0);
+
+	output.result = float4((diffuse * output.ambient.xyz * albedo * shadow + specular * output.ambient.xyz * albedo * shadow + skybox)  , 1);
 
 	return output;
 }

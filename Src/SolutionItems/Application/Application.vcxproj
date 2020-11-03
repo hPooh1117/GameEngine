@@ -163,6 +163,9 @@
     <ProjectReference Include="..\Renderer\Renderer.vcxproj">
       <Project>{8631e30c-8e7d-4c45-b5dd-4e547165ee84}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\RenderPasses\RenderPasses.vcxproj">
+      <Project>{ebd2a057-c1de-4a2c-8b81-9497e7e0e964}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\Scene\Scene.vcxproj">
       <Project>{d2fd546a-73d4-4092-b861-1d4403612d1d}</Project>
     </ProjectReference>

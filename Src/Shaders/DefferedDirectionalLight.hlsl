@@ -5,6 +5,12 @@
 #include "H_DirectionalLight.hlsli"
 #include "H_ShadowMap.hlsli"
 
+Texture2D albedo_texture : register(t0);
+SamplerState decal_sampler : register(s0);
+
+Texture2D normal_texture : register(t1);
+Texture2D position_texture : register(t2);
+Texture2D shadow_texture : register(t3);
 
 //--------------------------------------------
 //	エントリーポイント

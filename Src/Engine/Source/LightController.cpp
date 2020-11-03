@@ -15,10 +15,9 @@ LightController::LightController(D3D::DevicePtr& p_device)
 	mEnvironmentMapAlpha(0.5f),
 	mTimer(0.0f),
 	m_bSpotLightControllable(false),
-	m_bUsingBRDF(false),
-	mRoughness(0.5f),
-	mMetalness(0.5f),
-	mAngle(DirectX::XM_PI)
+	mLightDirection(0, 0, 1, 0),
+	mYaw(DirectX::XM_PI),
+	mPitch(30.0f)
 {
 	auto result = p_device->CreateBuffer(
 		&CD3D11_BUFFER_DESC(
@@ -41,12 +40,15 @@ LightController::LightController(D3D::DevicePtr& p_device)
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-bool LightController::Init(unsigned int pointLightNum, unsigned int spotLightNum, bool isPBR)
+bool LightController::Init(unsigned int pointLightNum, unsigned int spotLightNum)
 {
+
+	if (!mPointLights.empty()) mPointLights.clear();
+	if (!mSpotLights.empty()) mSpotLights.clear();
+
 	mPointLights.resize(pointLightNum < NUM_POINT_LIGHT ? pointLightNum : NUM_POINT_LIGHT);
 	mSpotLights.resize(spotLightNum < NUM_SPOT_LIGHT ? spotLightNum : NUM_SPOT_LIGHT);
 
-	m_bUsingBRDF = isPBR;
 
 	Log::Info("[LIGHT] Initialized.");
 	return true;
@@ -67,25 +69,43 @@ void LightController::Update(float elapsed_time)
 
 void LightController::UpdateDirectionalLights(float elapsed_time)
 {
-	if (InputPtr->OnKeyDown("Left"))
+	if (InputPtr.OnKeyDown("Left"))
 	{
-		mAngle += 0.001745f * 20;
+		mYaw += 1.0f;
 	}
-	if (InputPtr->OnKeyDown("Right"))
+	if (InputPtr.OnKeyDown("Right"))
 	{
-		mAngle -= 0.001745f * 20;
+		mYaw -= 1.0f;
+	}
+	if (InputPtr.OnKeyDown("Up"))
+	{
+		mPitch += 1.0f;
+	}
+	if (InputPtr.OnKeyDown("Down"))
+	{
+		mPitch -= 1.0f;
 	}
 
-	mLightDirection.x = -sinf(mAngle);
-	mLightDirection.y = -0.25f;
-	mLightDirection.z = -cosf(mAngle);
+	//DirectX::XMMATRIX rot = DirectX::XMMatrixRotationY(mYaw * 0.01745f) * DirectX::XMMatrixRotationX(mPitch * 0.01745f);
 
-	float d = sqrtf(mLightDirection.x * mLightDirection.x + mLightDirection.z * mLightDirection.z);
-	if (d > 0)
-	{
-		mLightDirection.x /= d;
-		mLightDirection.z /= d;
-	}
+	DirectX::XMFLOAT3 forward(0, 0, 1);
+	//XMStoreFloat4(&mLightDirection, DirectX::XMVector3TransformCoord(DirectX::XMLoadFloat3(&forward), rot));
+	
+	DirectX::XMVECTOR q = DirectX::XMQuaternionRotationRollPitchYaw(mPitch * 0.01745f, mYaw * 0.01745f, 0.0f);
+	DirectX::XMMATRIX r = DirectX::XMMatrixRotationQuaternion(q);
+	XMStoreFloat4(&mLightDirection, DirectX::XMVector3TransformCoord(DirectX::XMLoadFloat3(&forward), r));
+
+
+	//mLightDirection.x = -sinf(mYaw);
+	//mLightDirection.y = -0.25f;
+	//mLightDirection.z = -cosf(mYaw);
+
+	//float d = sqrtf(mLightDirection.x * mLightDirection.x + mLightDirection.z * mLightDirection.z);
+	//if (d > 0)
+	//{
+	//	mLightDirection.x /= d;
+	//	mLightDirection.z /= d;
+	//}
 
 }
 
@@ -104,7 +124,7 @@ void LightController::UpdateSpotLights(float elapsed_time)
 		mSpotLights[i].dir.z = -cosf(mSpotLights[i].angle);
 	}
 
-	if (InputPtr->OnKeyTrigger("LeftAlt"))
+	if (InputPtr.OnKeyTrigger("LeftAlt"))
 	{
 		m_bSpotLightControllable = !m_bSpotLightControllable;
 		Log::Info("[LIGHT] Toggled SpotLightControllability. (%s)", m_bSpotLightControllable ? "True" : "False");
@@ -144,9 +164,9 @@ void LightController::ActivateSpotLight(unsigned int index, bool b_activate)
 //--------------------------------------------------------------------------------------------------------------------------------
 
 void LightController::SendLightData(
-	PointLightGPU&           pointData,
-	SpotLightGPU&            spotLightData,
-	DirectilnalLightGPU&     dirctionalData)
+	PointLightGPU& pointData,
+	SpotLightGPU& spotLightData,
+	DirectilnalLightGPU& dirctionalData)
 {
 	// TODO: ライト情報を送って、よそで定数バッファを管理したい。
 }
@@ -162,8 +182,8 @@ void LightController::SetLightColor(const Vector4& color)
 
 void LightController::SetPointData(
 	unsigned int       index,
-	const Vector3&     pos,
-	const Vector4&     color, 
+	const Vector3& pos,
+	const Vector4& color,
 	float              range)
 {
 	if (index >= NUM_POINT_LIGHT)
@@ -187,10 +207,10 @@ void LightController::SetPointData(
 //--------------------------------------------------------------------------------------------------------------------------------
 
 void LightController::SetSpotData(
-	unsigned int       index, 
-	const Vector3&     pos,
-	const Vector4&     color,
-	const Vector3&     direction, 
+	unsigned int       index,
+	const Vector3& pos,
+	const Vector4& color,
+	const Vector3& direction,
 	float              range,
 	float              nearCorn,
 	float              farCorn)
@@ -217,92 +237,46 @@ void LightController::SetSpotData(
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-void LightController::SetDataForGPU(D3D::DeviceContextPtr& pImmContext, std::shared_ptr<CameraController>& pCamera)
+void LightController::SetDataForGPU(D3D::DeviceContextPtr& pImmContext, CameraController* pCamera)
 {
-	if (!m_bUsingBRDF)
+	CBufferForLight cb = {};
+	cb.directionalLight.ambient_color = mAmbientColor;
+	cb.directionalLight.light_color = mLightColor;
+	cb.directionalLight.light_direction = mLightDirection;
+	cb.directionalLight.eye_pos = Vector4(pCamera->GetCameraPosition());
+	cb.directionalLight.env_alpha = mEnvironmentMapAlpha;
+	cb.directionalLight.tess_factor = mTessFactor;
+	cb.directionalLight.time = mTimer;
+
+	for (auto i = 0u; i < NUM_POINT_LIGHT; ++i)
 	{
-		CBufferForLight cb = {};
-		cb.directionalLight.ambient_color = mAmbientColor;
-		cb.directionalLight.light_color = mLightColor;
-		cb.directionalLight.light_direction = mLightDirection;
-		cb.directionalLight.eye_pos = Vector4(pCamera->GetCameraPosition());
-		cb.directionalLight.env_alpha = mEnvironmentMapAlpha;
-		cb.directionalLight.tess_factor = mTessFactor;
-		cb.directionalLight.time = mTimer;
+		if (i >= mPointLights.size()) break;
 
-		for (auto i = 0u; i < NUM_POINT_LIGHT; ++i)
-		{
-			if (i >= mPointLights.size()) break;
-
-			PointLightData& point = mPointLights.at(i);
-			cb.pointLight[i].index = static_cast<float>(point.index);
-			cb.pointLight[i].range = point.range;
-			cb.pointLight[i].type = point.b_enable ? 1.0f : 0.0f;
-			cb.pointLight[i].pos = point.pos;
-			cb.pointLight[i].color = point.color;
-		}
-
-		for (auto j = 0u; j < NUM_SPOT_LIGHT; ++j)
-		{
-			if (j >= mSpotLights.size()) break;
-
-			SpotLightData& spot = mSpotLights.at(j);
-			cb.spotLight[j].index = static_cast<float>(spot.index);
-			cb.spotLight[j].range = spot.range;
-			cb.spotLight[j].type = spot.b_enable ? 1.0f : 0.0f;
-			cb.spotLight[j].inner_corn = spot.inner_corn;
-			cb.spotLight[j].outer_corn = spot.outer_corn;
-			cb.spotLight[j].pos = spot.pos;
-			cb.spotLight[j].color = spot.color;
-			cb.spotLight[j].dir = spot.dir;
-		}
-
-
-		pImmContext->UpdateSubresource(m_pConstantBuffer.Get(), 0, nullptr, &cb, 0, 0);
+		PointLightData& point = mPointLights.at(i);
+		cb.pointLight[i].index = static_cast<float>(point.index);
+		cb.pointLight[i].range = point.range;
+		cb.pointLight[i].type = point.b_enable ? 1.0f : 0.0f;
+		cb.pointLight[i].pos = point.pos;
+		cb.pointLight[i].color = point.color;
 	}
-	else
+
+	for (auto j = 0u; j < NUM_SPOT_LIGHT; ++j)
 	{
-		CBufferForPBR cb = {};
-		cb.directionalBRDF.ambient_color = mAmbientColor;
-		cb.directionalBRDF.light_color = mLightColor;
-		cb.directionalBRDF.light_direction = mLightDirection;
-		cb.directionalBRDF.eye_pos = Vector4(pCamera->GetCameraPosition());
-		cb.directionalBRDF.env_alpha = mEnvironmentMapAlpha;
-		cb.directionalBRDF.roughness = mRoughness;
-		cb.directionalBRDF.metalness = mMetalness;
-		cb.directionalBRDF.time = mTimer;
+		if (j >= mSpotLights.size()) break;
 
-		for (auto i = 0u; i < NUM_POINT_LIGHT; ++i)
-		{
-			if (i >= mPointLights.size()) break;
-
-			PointLightData& point = mPointLights.at(i);
-			cb.pointLight[i].index = static_cast<float>(point.index);
-			cb.pointLight[i].range = point.range;
-			cb.pointLight[i].type = point.b_enable ? 1.0f : 0.0f;
-			cb.pointLight[i].pos = point.pos;
-			cb.pointLight[i].color = point.color;
-		}
-
-		for (auto j = 0u; j < NUM_SPOT_LIGHT; ++j)
-		{
-			if (j >= mSpotLights.size()) break;
-
-			SpotLightData& spot = mSpotLights.at(j);
-			cb.spotLight[j].index = static_cast<float>(spot.index);
-			cb.spotLight[j].range = spot.range;
-			cb.spotLight[j].type = spot.b_enable ? 1.0f : 0.0f;
-			cb.spotLight[j].inner_corn = spot.inner_corn;
-			cb.spotLight[j].outer_corn = spot.outer_corn;
-			cb.spotLight[j].pos = spot.pos;
-			cb.spotLight[j].color = spot.color;
-			cb.spotLight[j].dir = spot.dir;
-		}
-
-
-		pImmContext->UpdateSubresource(m_pConstantBuffer.Get(), 0, nullptr, &cb, 0, 0);
-
+		SpotLightData& spot = mSpotLights.at(j);
+		cb.spotLight[j].index = static_cast<float>(spot.index);
+		cb.spotLight[j].range = spot.range;
+		cb.spotLight[j].type = spot.b_enable ? 1.0f : 0.0f;
+		cb.spotLight[j].inner_corn = spot.inner_corn;
+		cb.spotLight[j].outer_corn = spot.outer_corn;
+		cb.spotLight[j].pos = spot.pos;
+		cb.spotLight[j].color = spot.color;
+		cb.spotLight[j].dir = spot.dir;
 	}
+
+
+	pImmContext->UpdateSubresource(m_pConstantBuffer.Get(), 0, nullptr, &cb, 0, 0);
 
 	pImmContext->VSSetConstantBuffers(2, 1, m_pConstantBuffer.GetAddressOf());
 	pImmContext->GSSetConstantBuffers(2, 1, m_pConstantBuffer.GetAddressOf());
@@ -315,8 +289,16 @@ void LightController::SetDataForGPU(D3D::DeviceContextPtr& pImmContext, std::sha
 void LightController::RenderUI()
 {
 	using namespace ImGui;
-	MyArrayFromVector dir = MyArrayFromVector(mLightDirection);
-	SliderFloat3("Light Direction x", dir.SetArray(), 0.0f, 5.0f);
+
+	SliderFloat("X-Angle", &mPitch, -180.0f, 180.0f);
+	SliderFloat("Y-Angle", &mYaw, -180.0f, 180.0f);
+
+	
+	Text("Direction : %.2f, ", mLightDirection.x);
+	SameLine();
+	Text("%.2f, ", mLightDirection.y);
+	SameLine();
+	Text("%.2f", mLightDirection.z);
 
 	MyArrayFromVector color = MyArrayFromVector(mLightColor);
 	SliderFloat4("Light Color", color.SetArray(), 0.0f, 1.0f);
@@ -326,15 +308,7 @@ void LightController::RenderUI()
 
 	SliderFloat("Environment Factor", &mEnvironmentMapAlpha, 0.0f, 1.0f);
 
-	if (m_bUsingBRDF)
-	{
-		SliderFloat("Roughness", &mRoughness, 0.0f, 1.0f);
-		SliderFloat("Metalness", &mMetalness, 0.0f, 1.0f);
-	}
-	else
-	{
-		SliderFloat("TessFactor", &mTessFactor, 0.0f, 10.0f);
-	}
+	SliderFloat("TessFactor", &mTessFactor, 0.0f, 10.0f);
 
 	for (auto i = 0u; i < NUM_POINT_LIGHT; ++i)
 	{
@@ -393,7 +367,7 @@ void LightController::RenderUI()
 		}
 
 	}
-
+	Separator();
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------

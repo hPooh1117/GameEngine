@@ -4,6 +4,14 @@
 #include "H_DirectionalLight.hlsli"
 
 
+Texture2D diffuse_texture : register(t0);
+SamplerState decal_sampler : register(s0);
+
+Texture2D normal_texture : register(t1);
+SamplerState normal_sampler : register(s1);
+
+Texture2D height_texture : register(t2);
+SamplerState height_sampler : register(s2);
 
 
 //--------------------------------------------
@@ -66,7 +74,7 @@ float4 PSmain(PS_InputBump input) : SV_TARGET
 	texcoord.y -= inv_E.y * H * viewOffset;
 
 	float4 color = diffuse_texture.Sample(decal_sampler, texcoord);
-	float3 N = normal_texture.Sample(normal_sampler, texcoord).xyz;
+	float3 N = normal_texture.Sample(decal_sampler, texcoord).xyz;
 	N = N * 2.0f - 1.0f;
 
 	float3x3 mat = { vx, vy, vz };

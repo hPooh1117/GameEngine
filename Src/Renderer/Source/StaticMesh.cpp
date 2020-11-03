@@ -36,6 +36,20 @@ StaticMesh::StaticMesh(Microsoft::WRL::ComPtr<ID3D11Device>& device, const wchar
         );
     _ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
+    hr = device->CreateBuffer(
+        &CD3D11_BUFFER_DESC(
+            sizeof(CBufferForMaterial),
+            D3D11_BIND_CONSTANT_BUFFER,
+            D3D11_USAGE_DEFAULT,
+            0,
+            0,
+            0
+        ),
+        nullptr,
+        m_pConstantBufferMaterial.GetAddressOf()
+    );
+    _ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
+
 
 
     ////--> Set InputLayouts
@@ -160,12 +174,12 @@ void StaticMesh::CreateBuffers(Microsoft::WRL::ComPtr<ID3D11Device>& device)
 }
 
 void StaticMesh::Render(
-    Microsoft::WRL::ComPtr<ID3D11DeviceContext>& imm_context,
+    D3D::DeviceContextPtr& imm_context,
     float elapsed_time,
     const DirectX::XMMATRIX& world,
-    const std::shared_ptr<CameraController>& camera,
-    const std::shared_ptr<Shader>& shader,
-    const DirectX::XMFLOAT4& mat_color,
+    CameraController* camera,
+    Shader* shader,
+    const MaterialData& mat_data,
     bool isShadow,
     bool isSolid
 )
@@ -173,7 +187,7 @@ void StaticMesh::Render(
 
     HRESULT hr = S_OK;
 
-    shader->activateShaders(imm_context);
+    if (shader != nullptr) shader->activateShaders(imm_context);
 
     UINT stride = sizeof(Vertex);
     UINT offset = 0;
@@ -199,24 +213,35 @@ void StaticMesh::Render(
         XMStoreFloat4x4(&WVP, world * camera->GetViewMatrix() * camera->GetProjMatrix(imm_context));
     }
 
+
     for (auto &material : mMaterials)
     {
-        CBufferForMesh meshbuffer = {};
-        meshbuffer.m_WVP = WVP;
-        meshbuffer.m_world = W;
-        meshbuffer.m_mat_color.x = mat_color.x * material.Kd.x;
-        meshbuffer.m_mat_color.y = mat_color.y * material.Kd.y;
-        meshbuffer.m_mat_color.z = mat_color.z * material.Kd.z;
-        meshbuffer.m_mat_color.w = mat_color.w;
+        CBufferForMesh meshData = {};
+        meshData.WVP = WVP;
+        meshData.world = W;
+        XMStoreFloat4x4(&meshData.invProj, camera->GetInvProjViewMatrix(imm_context));
 
-        imm_context->UpdateSubresource(m_pConstantBufferMesh.Get(), 0, nullptr, &meshbuffer, 0, 0);
+        CBufferForMaterial matData = {};
+        matData.mat_color = mat_data.mat_color;
+        matData.metalness = mat_data.metalness;
+        matData.roughness = mat_data.roughness;
+        matData.specularColor = mat_data.specularColor;
+        matData.brdfFactor = mat_data.brdfFactor;
+
+        imm_context->UpdateSubresource(m_pConstantBufferMesh.Get(), 0, nullptr, &meshData, 0, 0);
+        imm_context->UpdateSubresource(m_pConstantBufferMaterial.Get(), 0, nullptr, &matData, 0, 0);
 
         imm_context->VSSetConstantBuffers(0, 1, m_pConstantBufferMesh.GetAddressOf());
         imm_context->HSSetConstantBuffers(0, 1, m_pConstantBufferMesh.GetAddressOf());
         imm_context->DSSetConstantBuffers(0, 1, m_pConstantBufferMesh.GetAddressOf());
         imm_context->GSSetConstantBuffers(0, 1, m_pConstantBufferMesh.GetAddressOf());
-
         imm_context->PSSetConstantBuffers(0, 1, m_pConstantBufferMesh.GetAddressOf());
+
+        imm_context->VSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());
+        imm_context->HSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());
+        imm_context->DSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());
+        imm_context->GSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());
+        imm_context->PSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());
 
         material.texture->Set(imm_context);
 
@@ -325,7 +350,7 @@ void StaticMesh::LoadOBJFile(Microsoft::WRL::ComPtr<ID3D11Device>& device, const
 
         //    subset current_subset = {};
         //    current_subset.usemtl = usemtl;
-        //    current_subset.index_start = indices.size();
+        //    current_subset.indexStart = indices.size();
         //    mSubsets.push_back(current_subset);
         //}
         else

@@ -3,6 +3,8 @@
 using namespace DirectX;
 AudioSystem::AudioSystem()
 {
+	CoInitializeEx(NULL, COINIT_MULTITHREADED);
+
 	AUDIO_ENGINE_FLAGS flag = AudioEngine_Default;
 
 #ifdef _DEBUG

@@ -189,3 +189,99 @@ Texture::~Texture()
 }
 
 //----------------------------------------------------------------------------------------------------------------------------
+
+NewTexture::NewTexture()
+{
+}
+
+NewTexture::~NewTexture()
+{
+}
+
+bool NewTexture::Load(D3D::DevicePtr& device, const wchar_t* filename)
+{
+	auto hr = S_OK;
+
+	D3D11_TEXTURE2D_DESC tex2D = {};
+	hr = ResourceManager::LoadTexFile(device, filename, m_pSRV.GetAddressOf(), &tex2D);
+	mTextureSize.x = static_cast<float>(tex2D.Width);
+	mTextureSize.y = static_cast<float>(tex2D.Height);
+	return true;
+
+}
+
+bool NewTexture::Load(D3D::DevicePtr& device)
+{
+	auto hr = S_OK;
+
+	hr = ResourceManager::CreateDummyTexture(device, m_pSRV);
+	mTextureSize.x = 1.0f;
+	mTextureSize.y = 1.0f;
+
+	//-->Create SamplerState
+
+	return true;
+
+}
+
+bool NewTexture::Create(D3D::DevicePtr& device, UINT width, UINT height, DXGI_FORMAT format)
+{
+	D3D::Texture2DPtr texture2D = nullptr;
+
+	{
+		// テクスチャ作成
+		D3D11_TEXTURE2D_DESC texDesc = {};
+		texDesc.Width = width;
+		texDesc.Height = height;
+		texDesc.MipLevels = 1;
+		texDesc.ArraySize = 1;
+		texDesc.Format = format;
+		texDesc.SampleDesc.Count = 1;
+		texDesc.Usage = D3D11_USAGE_DEFAULT;
+		texDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		texDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+		auto hr = device->CreateTexture2D(
+			&texDesc,
+			nullptr,
+			texture2D.GetAddressOf()
+		);
+		_ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
+	}
+		//// レンダーターゲット作成
+		//D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+		//rtvDesc.Format = format;
+		//rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+		//rtvDesc.Texture2D.MipSlice = 0;
+		//hr = device->CreateRenderTargetView(texture2D.Get(), &rtvDesc, m_pRTV.GetAddressOf());
+		//_ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
+
+		// シェーダーリソースビュー作成
+		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+		srvDesc.Format = format;
+		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+		srvDesc.Texture2D.MostDetailedMip = 0;
+		srvDesc.Texture2D.MipLevels = 1;
+		auto hr = device->CreateShaderResourceView(texture2D.Get(), &srvDesc, m_pSRV.GetAddressOf());
+		_ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
+
+	
+	return true;
+
+}
+
+void NewTexture::Set(D3D::DeviceContextPtr& imm_context, int slot, bool flag)
+{
+	if (!flag) // 空のテクスチャを送る
+	{
+		ID3D11ShaderResourceView* rtv[1] = { nullptr };
+		ID3D11SamplerState* ss[1] = { nullptr };
+		imm_context->PSSetShaderResources(slot, 1, rtv);
+		imm_context->DSSetShaderResources(slot, 1, rtv);
+		return;
+	}
+
+	//if (m_pSRV == nullptr) return;
+
+	imm_context->PSSetShaderResources(slot, 1, m_pSRV.GetAddressOf());
+	imm_context->DSSetShaderResources(slot, 1, m_pSRV.GetAddressOf());
+}

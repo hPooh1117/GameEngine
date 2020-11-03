@@ -15,30 +15,45 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\RenderPass\ForwardPasses.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\RenderPass\RenderPasses.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\RenderPass\ForwardPasses.h">
+    <ClInclude Include="..\..\RenderPass\ShaderIDTable.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="..\..\RenderPass\ShadowPasses.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\RenderPass\PostProcessPasses.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\RenderPass\DefferedPasses.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\RenderPass\SSAOPasses.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\RenderPass\Source\RenderPasses.cpp">
+    <ClCompile Include="..\..\RenderPass\Source\ForwardPasses.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\RenderPass\Source\ForwardPasses.cpp">
+    <ClCompile Include="..\..\RenderPass\Source\RenderPasses.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="..\..\RenderPass\Source\ShadowPasses.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\RenderPass\PostProcessPasses.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\RenderPass\Source\DefferedPasses.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\RenderPass\Source\SSAOPasses.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>

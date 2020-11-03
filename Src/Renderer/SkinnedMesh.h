@@ -1,25 +1,23 @@
 #pragma once
-#include <d3d11.h>
-#include <DirectXMath.h>
-#include <wrl\client.h>
-#include <vector>
-#include <memory>
-#include <fbxsdk.h> 
 #include "FbxMeshInfo.h"
 #include "Mesh.h"
 #include "./Utilities/Util.h"
 
-class Shader;
 
 class SkinnedMesh : public Mesh
 {
 public:
-	DirectX::XMFLOAT4X4 m_coordinate_conversion = {
-	1, 0, 0, 0,
-	0, 0, 1, 0,
-	0, 1, 0, 0,
-	0, 0, 0, 1
+	enum CoordSystem
+	{
+		EY_UP_LHS,
+		EZ_UP_LHS,
+		EY_UP_RHS,
 	};
+
+	static constexpr unsigned int CG_SOFTWARE_TYPE = 3;
+	static const DirectX::XMFLOAT4X4 COORD_CONVERSION[CG_SOFTWARE_TYPE];
+
+
 
 	static constexpr unsigned int MAX_MOTION_INTERPOLATION = 60;
 
@@ -36,6 +34,7 @@ private:
 	std::string mCurrentMotion = "default";
 	std::string mPreviousMotion = "default";
 	FrameTimer mFrameInterpolation;
+	unsigned int mCoordSystem;
 
 	// convert coordinate system from 'UP: +Z FRONT: +Y RIGHT-HAND' to
 	// 'UP: +Y FRONT: +Z LEFT-HAND'
@@ -46,7 +45,7 @@ private:
 	D3D11_TEXTURE2D_DESC m_texture2D_desc;
 
 public:
-	SkinnedMesh(Microsoft::WRL::ComPtr<ID3D11Device>& device, const char* filename);
+	SkinnedMesh(Microsoft::WRL::ComPtr<ID3D11Device>& device, const char* filename, unsigned int coord_system);
 	~SkinnedMesh() = default;
 
 
@@ -56,12 +55,12 @@ public:
 	virtual void CreateBuffers(Microsoft::WRL::ComPtr<ID3D11Device>& device) override;
 
 	virtual void Render(
-		Microsoft::WRL::ComPtr<ID3D11DeviceContext>& imm_context,
+		D3D::DeviceContextPtr& imm_context,
 		float elapsed_time,
 		const DirectX::XMMATRIX& world,
-		const std::shared_ptr<CameraController>& camera,
-		const std::shared_ptr<Shader>& shader,
-		const DirectX::XMFLOAT4& mat_color = DirectX::XMFLOAT4( 1, 1, 1, 1 ),
+		CameraController* camera,
+		Shader* shader,
+		const MaterialData& mat_data,
 		bool isShadow = false,
 		bool isSolid = true
 	) override;
@@ -72,5 +71,6 @@ public:
 
 	void Play(std::string name, bool isLooped = false);
 	DirectX::XMMATRIX CalculateMotionMatrix(int frame, int bone_id, MyFbxMesh& mesh);
+
 };
 

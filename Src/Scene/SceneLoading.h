@@ -6,7 +6,9 @@ class Sprite;
 class SceneLoading : public Scene
 {
 private:
-	std::shared_ptr<Sprite> m_pScreen;
+	std::shared_ptr<Sprite> mpSprScreen;
+	std::unique_ptr<Sprite> mpSprGene;
+	std::unique_ptr<Sprite> mpSprLoadingString;
 	std::shared_ptr<Shader> m_pBasicQuad;
 
 public:

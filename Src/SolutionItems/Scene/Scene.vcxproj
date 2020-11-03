@@ -158,7 +158,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Scene\Scene.h" />
-    <ClInclude Include="..\..\Scene\Scene01.h" />
     <ClInclude Include="..\..\Scene\SceneA.h" />
     <ClInclude Include="..\..\Scene\SceneB.h" />
     <ClInclude Include="..\..\Scene\SceneC.h" />
@@ -168,11 +167,10 @@
     <ClInclude Include="..\..\Scene\SceneLoading.h" />
     <ClInclude Include="..\..\Scene\SceneManager.h" />
     <ClInclude Include="..\..\Scene\SceneShadowMapTest.h" />
-    <ClInclude Include="..\..\Scene\SceneTitle.h" />
+    <ClInclude Include="..\..\Scene\SceneTest.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Scene\Source\Scene.cpp" />
-    <ClCompile Include="..\..\Scene\Source\Scene01.cpp" />
     <ClCompile Include="..\..\Scene\Source\SceneA.cpp" />
     <ClCompile Include="..\..\Scene\Source\SceneB.cpp" />
     <ClCompile Include="..\..\Scene\Source\SceneC.cpp" />
@@ -181,7 +179,7 @@
     <ClCompile Include="..\..\Scene\Source\SceneLoading.cpp" />
     <ClCompile Include="..\..\Scene\Source\SceneManager.cpp" />
     <ClCompile Include="..\..\Scene\Source\SceneShadowMapTest.cpp" />
-    <ClCompile Include="..\..\Scene\Source\SceneTitle.cpp" />
+    <ClCompile Include="..\..\Scene\Source\SceneTest.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

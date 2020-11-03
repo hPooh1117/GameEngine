@@ -27,20 +27,4 @@ private:
 
     std::shared_ptr<Actor> m_pField;
 
-private:
-    std::unique_ptr<ShadowMap> m_pShadowMap;
-    std::unique_ptr<MultiRenderTarget> m_pMRT;
-
-    std::shared_ptr<Shader> m_pLambert;
-    std::shared_ptr<Shader> m_pLambertForSkinnedMesh;
-    std::shared_ptr<Shader> m_pLambertForSkinning;
-
-    std::shared_ptr<Shader> m_pFromGBuffer;
-    std::shared_ptr<Shader> m_pToGBuffer;
-    std::shared_ptr<Shader> m_pToGBufferForSkinnedMesh;
-    std::shared_ptr<Shader> m_pToGBufferForSkinning;
-
-    std::shared_ptr<Shader> m_pToGBufferForBump;
-    std::shared_ptr<Shader> m_pToGBufferSkinnedMeshForBump;
-    std::shared_ptr<Shader> m_pDefferedLightShader;
 };

@@ -17,6 +17,7 @@ protected:
 public:
     Window();
     virtual bool Init();
+    void ShowAndUpdateWindow();
     bool Run();
     void SetHWND(HWND hwnd);
     void calculateFrameStats();
@@ -31,6 +32,7 @@ public:
     void CaptureMouse(bool bDoCapture);
     //virtual void onFocus() = 0;
     //virtual void onKillFocus() = 0;
+    virtual void OnSize() = 0;
 
     inline RECT GetClientWindowRect()
     {

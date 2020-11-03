@@ -1,5 +1,4 @@
 #pragma once
-#include "D3D_Helper.h"
 #include "Mesh.h"
 
 class Texture;
@@ -9,7 +8,7 @@ private:
 	D3D::BufferPtr m_pVertexBuffer;
 	D3D::BufferPtr m_pIndexBuffer;
 
-	std::unique_ptr<Texture> m_pTexture;
+	//std::unique_ptr<Texture> mpTextures;
 
 public:
 	Plane(D3D::DevicePtr& device, const wchar_t* filename);
@@ -19,9 +18,9 @@ public:
 		D3D::DeviceContextPtr& imm_context,
 		float elapsed_time,
 		const DirectX::XMMATRIX& world,
-		const std::shared_ptr<CameraController>& camera,
-		const std::shared_ptr<Shader>& shader,
-		const DirectX::XMFLOAT4& mat_color = DirectX::XMFLOAT4(1, 1, 1, 1),
+		CameraController* camera,
+		Shader* shader,
+		const MaterialData& mat_data,
 		bool isShadow = false,
 		bool isSolid = true
 	) override;
@@ -75,9 +74,9 @@ public:
 		D3D::DeviceContextPtr& imm_context,
 		float elapsed_time,
 		const DirectX::XMMATRIX& world,
-		const std::shared_ptr<CameraController>& camera,
-		const std::shared_ptr<Shader>& shader,
-		const DirectX::XMFLOAT4& mat_color = DirectX::XMFLOAT4(1, 1, 1, 1),
+		CameraController* camera,
+		Shader* shader,
+		const MaterialData& mat_data,
 		bool isShadow = false,
 		bool isSolid = true
 	) override;

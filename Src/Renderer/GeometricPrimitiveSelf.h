@@ -1,11 +1,7 @@
 #pragma once
-#include <DirectXMath.h>
-#include "D3D_Helper.h"
-#include <memory>
-#include <vector>
+
 #include "Mesh.h"
-class Shader;
-class Light;
+
 class Texture;
 
 class GeometricPrimitiveSelf : public Mesh
@@ -31,9 +27,9 @@ public:
         D3D::DeviceContextPtr& imm_context,
         float elapsed_time,
         const DirectX::XMMATRIX& world,
-        const std::shared_ptr<CameraController>& camera,
-        const std::shared_ptr<Shader>& shader,
-        const DirectX::XMFLOAT4& mat_color = DirectX::XMFLOAT4(1, 1, 1, 1),
+        CameraController* camera,
+        Shader* shader,
+        const MaterialData& mat_data,
         bool isShadow = false,
         bool isSolid = true
     ) override;
@@ -61,7 +57,7 @@ private:
     std::unique_ptr<Texture> mTexture;
 
 public:
-    BasicCube(D3D::DevicePtr& device, const wchar_t* filename);
+    BasicCube(D3D::DevicePtr& device);
     bool LoadTexture(
         D3D::DevicePtr& device,
         const wchar_t* filename);
@@ -91,7 +87,6 @@ private:
 public:
     BasicSphere(
         D3D::DevicePtr& device,
-        const wchar_t* filename = L"\0",
         unsigned int slices = 8,
         unsigned int stacks = 8,
         float radius = 0.5f

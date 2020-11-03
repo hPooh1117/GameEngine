@@ -1,5 +1,6 @@
 #include "ActorManager.h"
 
+#include "Actor.h"
 
 //----------------------------------------------------------------------------------------------------------------------------
 
@@ -37,12 +38,15 @@ void ActorManager::Update(float elapsed_time)
 {
     if (m_pActors.empty()) return;
 
-    for (unsigned int i = 0; i < m_pActors.size(); ++i)
+    for (auto& actor :  m_pActors)
     {
-        auto it = m_pActors.find(i);
-        if (it != m_pActors.end())
-        it->second->Update(elapsed_time);
+        actor.second->Update(elapsed_time);
     }
+}
+
+void ActorManager::ClearAll()
+{
+    m_pActors.clear();
 }
 
 //----------------------------------------------------------------------------------------------------------------------------

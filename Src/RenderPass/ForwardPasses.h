@@ -3,16 +3,18 @@
 
 #include "./Renderer/D3D_Helper.h"
 
-class ForwardPass :
-    public RenderPass
-{
+class GraphicsEngine;
 
+class ForwardPass : public RenderPass
+{
+    
 public:
-    ForwardPass() : RenderPass() {}
-    virtual ~ForwardPass() = default;
+    ForwardPass();
+    virtual ~ForwardPass() {}
 
     virtual void Initialize(D3D::DevicePtr& device) override;
 
-    void RenderForwardLighting();
+    void RenderForwardLighting(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time);
+    void RenderUI();
 };
 

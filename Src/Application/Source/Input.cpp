@@ -1,5 +1,6 @@
 #include "Input.h"
 
+
 using DirectX::Keyboard;
 
 //-------------------------------------------------------------------------------------------------------
@@ -20,6 +21,7 @@ const Input::KeyMap Input::KEYMAPS = []()
 	m["Q"] = Keyboard::Q;    m["W"] = Keyboard::W;      m["E"] = Keyboard::E;      m["R"] = Keyboard::R;
 	m["A"] = Keyboard::A;    m["S"] = Keyboard::S;      m["D"] = Keyboard::D;      m["F"] = Keyboard::F;
 	m["Z"] = Keyboard::Z;    m["X"] = Keyboard::X;      m["C"] = Keyboard::C;      m["V"] = Keyboard::V;
+	m["B"] = Keyboard::B;
 
 	m["Left"] = Keyboard::Left;
 	m["Right"] = Keyboard::Right;
@@ -34,6 +36,7 @@ const Input::KeyMap Input::KEYMAPS = []()
 	m["Enter"] = Keyboard::Keyboard::Enter;
 	m["Back"] = Keyboard::Keyboard::Back;
 	m["Esc"] = Keyboard::Escape;
+
 
 	return std::move(m);
 }();
@@ -189,14 +192,24 @@ bool Input::OnMouseMove() const
 	return !(mMouseDelta.x == 0.0f && mMouseDelta.y == 0.0f);
 }
 
-Vector2 Input::GetMousePos() const
+const Vector2 &Input::GetMousePos() const
 {
 	return mMousePos;
 }
 
-Vector2 Input::GetMouseDelta() const
+const Vector2 &Input::GetMouseDelta() const
 { 
 	return mMouseDelta;
+}
+
+bool Input::GetIsMouseWheelUp() const
+{
+	return mMouseWheelState == MouseState::EWheelUp;
+}
+
+bool Input::GetIsMouseWheelDown() const
+{
+	return mMouseWheelState == MouseState::EWheelDown;
 }
 
 void Input::MakeMouseCaptured()
@@ -319,14 +332,19 @@ float Input::GetThumbRYValue() const
 	return static_cast<float>(mCurrentState.Gamepad.sThumbRY) / 32767.0f;
 }
 
+void Input::SetMouseWheelState(int state)
+{
+	mMouseWheelState = state;
+}
+
 
 
 //-----------------------------------------------------------------------------
 // HELPER
 //-----------------------------------------------------------------------------
-Input* Input::Get()
-{
-	static Input instance;
-	return &instance;
-}
-
+//Input* Input::Get()
+//{
+//	static Input instance;
+//	return &instance;
+//}
+//

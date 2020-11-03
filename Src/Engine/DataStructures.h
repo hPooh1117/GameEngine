@@ -50,8 +50,10 @@ struct DirectionalBRDF
 	Vector4 eye_pos;
 	float   env_alpha = 0.0f;
 	float   roughness = 0.0f;
-	float   time = 0.0f;
 	float   metalness = 0.0f;
+	float   time = 0.0f;
+	Vector3 specColor;
+	float   brdfSpec;
 };
 
 struct CBufferForLight
@@ -66,4 +68,13 @@ struct CBufferForPBR
 	DirectionalBRDF     directionalBRDF;
 	PointLightGPU       pointLight[NUM_POINT_LIGHT];
 	SpotLightGPU        spotLight[NUM_SPOT_LIGHT];
+};
+
+struct MaterialData
+{
+	DirectX::XMFLOAT4 mat_color;
+	DirectX::XMFLOAT3 specularColor;
+	float brdfFactor;
+	float metalness;
+	float roughness;
 };

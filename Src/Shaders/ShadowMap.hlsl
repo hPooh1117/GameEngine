@@ -4,8 +4,21 @@
 #include "H_ShadowMap.hlsli"
 #include "H_BumpMapping.hlsli"
 
+
+Texture2D diffuse_texture : register(t0);
+SamplerState decal_sampler : register(s0);
+
+Texture2D normal_texture : register(t1);
+SamplerState normal_sampler : register(s1);
+
+Texture2D height_texture : register(t2);
+SamplerState height_sampler : register(s2);
+
+Texture2D shadow_texture : register(t5);
+SamplerState shadow_sampler : register(s5);
+
 //--------------------------------------------
-//	エントリーポイント
+//	頂点シェーダー
 //--------------------------------------------
 PS_Input_Shadow VSshadow(VS_Input input)
 {
@@ -21,6 +34,70 @@ PS_Input_Shadow VSshadow(VS_Input input)
 
 	return output;
 }
+
+PS_Input_Shadow VSshadowS(VS_InputS input)
+{
+	PS_Input_Shadow output = (PS_Input_Shadow)0;
+
+	float4 P = float4(input.position, 1);
+
+	// WVP変換
+	output.position = mul(P, matWVP);
+
+	// 出力値設定
+	output.depth.xy = output.position.zw;
+
+	return output;
+}
+
+PS_Input_Shadow VSshadowSkinning(VS_InputS input)
+{
+	PS_Input_Shadow output = (PS_Input_Shadow)0;
+
+
+	// スキニング処理
+	float4 p = { 0, 0, 0, 0 };
+	int i = 0;
+	for (i = 0; i < 4; i++)
+	{
+		p += (input.bone_weights[i] * mul(float4(input.position, 1), bone_transforms[input.bone_indices[i]]));
+	}
+	p.w = 1.0f;
+
+	// WVP変換
+	output.position = mul(p, matWVP);
+
+	// 出力値設定
+	output.depth.xy = output.position.zw;
+
+	return output;
+
+}
+
+//--------------------------------------------
+//	ピクセルシェーダー
+//--------------------------------------------
+float4 PSshadow(PS_Input_Shadow input) : SV_TARGET0
+{
+
+	float4 color = input.depth.x / input.depth.y;
+	color.a = 1.0f;
+	return color;
+}
+
+
+
+
+
+
+
+
+
+
+
+//--------------------------------------------
+//	頂点シェーダー
+//--------------------------------------------
 
 PS_Input_Last VSmain(VS_Input input)
 {
@@ -83,44 +160,6 @@ PS_Input_Last VSmain2(VS_Input input)
 }
 
 
-PS_Input_Shadow VSshadowS(VS_InputS input)
-{
-	PS_Input_Shadow output = (PS_Input_Shadow)0;
-
-	float4 P = float4(input.position, 1);
-
-	// WVP変換
-	output.position = mul(P, matWVP);
-
-	// 出力値設定
-	output.depth.xy = output.position.zw;
-
-	return output;
-}
-
-PS_Input_Shadow VSshadowSkinning(VS_InputS input)
-{
-	PS_Input_Shadow output = (PS_Input_Shadow)0;
-
-
-	// スキニング処理
-	float4 p = { 0, 0, 0, 0 };
-	int i = 0;
-	for (i = 0; i < 4; i++)
-	{
-		p += (input.bone_weights[i] * mul(float4(input.position, 1), bone_transforms[input.bone_indices[i]]));
-	}
-	p.w = 1.0f;
-
-	// WVP変換
-	output.position = mul(p, matWVP);
-
-	// 出力値設定
-	output.depth.xy = output.position.zw;
-
-	return output;
-
-}
 
 PS_Input_Last VSmainS(VS_InputS input)
 {
@@ -278,13 +317,6 @@ PS_InputBumpShadow VSmainN(VS_InputS input)
 //--------------------------------------------
 //	ピクセルシェーダー
 //--------------------------------------------
-float4 PSshadow(PS_Input_Shadow input) : SV_TARGET0
-{
-
-	float4 color = input.depth.x / input.depth.y;
-	color.a = 1.0f;
-	return color;
-}
 
 float4 PSmain(PS_Input_Last input) : SV_TARGET
 {

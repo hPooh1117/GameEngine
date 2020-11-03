@@ -5,6 +5,9 @@
 //----------------------------------
 // テクスチャ
 //----------------------------------
+Texture2D diffuse_texture : register(t0);
+SamplerState decal_sampler : register(s0);
+
 Texture2D fur_texture : register(t1);
 SamplerState fur_sampler : register(s1);
 

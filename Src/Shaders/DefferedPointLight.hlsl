@@ -3,6 +3,24 @@
 #include "H_2DSprite.hlsli"
 #include "H_Functions.hlsli"
 #include "H_PointLight.hlsli"
+#include "H_ShadowMap.hlsli"
+
+Texture2D albedo_texture : register(t0);
+SamplerState decal_sampler : register(s0);
+SamplerState border_sampler : register(s1);
+Texture2D normal_texture : register(t1);
+Texture2D position_texture : register(t2);
+Texture2D shadow_texture : register(t3);
+Texture2D depth_texture : register(t4);
+
+struct PS_InputDeffered
+{
+	float4 position : SV_POSITION;
+	float4 color : COLOR;
+	float2 texcoord : TEXCOORD0;
+	float2 projPos : TEXCOORD1;
+};
+
 
 //--------------------------------------------
 //	エントリーポイント
@@ -10,9 +28,9 @@
 //
 // vertex shader(default)
 //
-PS_Input VSmain(VS_Input input)
+PS_InputDeffered VSmain(VS_Input input)
 {
-	PS_Input output = (PS_Input)0;
+	PS_InputDeffered output = (PS_InputDeffered)0;
 
 	float4 P = float4(input.position, 1);
 
@@ -20,21 +38,35 @@ PS_Input VSmain(VS_Input input)
 	output.position = P;
 	output.color = mat_color;
 	output.texcoord = input.texcoord;
+	output.projPos = output.texcoord * float2(2.0f, -2.0f) + float2(-1.0f, 1.0f);
+
 	return output;
 }
 
 
-
+float UnLinearizeDepth(float depth, float near, float far)
+{
+	float output = (far + near - 2.0 * near / depth) / (far - near);
+	;
+	return output;
+}
 
 //
 // pixel shader(for multi rtvs)
 //
-PS_Output_Light PSmain(PS_Input input)
+PS_Output_Light PSmain(PS_InputDeffered input)
 {
 	PS_Output_Light output = (PS_Output_Light)0;
 
-	float3 P = position_texture.Sample(position_sampler, input.texcoord).xyz;
-	float3 N = normal_texture.Sample(normal_sampler, input.texcoord).xyz;
+	float2 depthBufferColor = depth_texture.Sample(border_sampler, input.texcoord).rg;
+	float  depth = depthBufferColor.r;
+	depth = UnLinearizeDepth(depth, 0.1, 1000.0);
+	float4 projP = float4(input.projPos.xy, depth, 1);
+	float4 wP = mul(projP, inv_projview);
+	wP.xyz /= wP.w;
+
+	float3 P = position_texture.Sample(decal_sampler, input.texcoord).xyz;
+	float3 N = normal_texture.Sample(decal_sampler, input.texcoord).xyz;
 	float3 E = normalize(eye_pos.xyz - P);
 	float3 L = normalize(light_dir.xyz);
 
@@ -70,8 +102,19 @@ PS_Output_Light PSmain(PS_Input input)
 		PS += blinnPhongSpecular(N, PL, PC, E, Ks, 20) * influence * influence;
 	}
 
+
+
+	float4 shadow = shadow_texture.Sample(decal_sampler, input.texcoord);
+	float4 albedo = albedo_texture.Sample(decal_sampler, input.texcoord);
+
+	float Length = length(eye_pos.xyz - P.xyz);
+	float4 skyboxAlbedo = step(450.0, Length) * albedo;
+	skyboxAlbedo.a = 1;
+
 	output.diffuse = float4(D + A + PD, 1);
 	output.specular = float4(S + PS, 1);
+	output.prelighting = float4(D + A + PD + S + PS + skyboxAlbedo.xyz, 1) * shadow * albedo;
+	output.skybox = skyboxAlbedo;
 	return output;
 }
 

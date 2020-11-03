@@ -1,6 +1,5 @@
 #pragma once
-#include <d3d11.h>
-#include <wrl/client.h>
+#include "D3D_Helper.h"
 
 class Blender
 {
@@ -19,8 +18,10 @@ public:
         BLEND_TYPE_ALL,
     };
 
+    Blender() = default;
     Blender(Microsoft::WRL::ComPtr<ID3D11Device>& device);
     ~Blender();
+    bool Initialize(D3D::DevicePtr& p_device);
     void SetBlendState(Microsoft::WRL::ComPtr<ID3D11DeviceContext>& imm_context, const int blendType);
 
 private:

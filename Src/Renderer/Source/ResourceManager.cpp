@@ -233,6 +233,7 @@ HRESULT ResourceManager::CompileHLSLFile(
     if (errorBlob != NULL)
     {
         MessageBoxA(0, (char*)errorBlob->GetBufferPointer(), NULL, MB_OK);
+        
     }
 
     cache.emplace(key, shaderBlob);

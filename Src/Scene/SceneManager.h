@@ -19,7 +19,7 @@ private:
     SceneID                               mCurrentScene;
     SceneID                               mNextScene;
     bool                                  mClearFlag;
-
+    bool                                  m_bIsLoading;
 private:
     D3D::DevicePtr  m_pDevice;
 
@@ -32,11 +32,13 @@ public:
 
     void ExecuteLoadingScene(float elapsed_time);
     void ExecuteCurrentScene(float elapsed_time);
+    void LoadNextScene();
 
     void RenderLoadingScene(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time);
     void RenderCurrentScene(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time);
+    void RenderUI();
 
-
+    bool GetLoadingScene();
 
 
     void ChangeScene(const SceneID&, bool clearCurrentScene = false);

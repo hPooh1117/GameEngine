@@ -28,7 +28,7 @@ std::shared_ptr<RayColliderComponent> RayColliderComponent::Initialize(const std
 
 bool RayColliderComponent::Create()
 {
-	std::shared_ptr<MeshComponent> rayMesh = m_pOwner.lock()->GetComponent(MeshComponent::MeshID::kBasicLine);
+	std::shared_ptr<MeshComponent> rayMesh = m_pOwner.lock()->GetComponent(MeshComponent::MeshID::EBasicLine);
 	assert(rayMesh != nullptr);
 
 

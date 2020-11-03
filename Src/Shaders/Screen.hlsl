@@ -1,17 +1,16 @@
+#include "H_ShadowMap.hlsli"
+
 //--------------------------------------------
 //	テクスチャ
 //--------------------------------------------
-Texture2D diffuse_texture : register(t0);
+Texture2D albedo_texture : register(t0);
 SamplerState decal_sampler : register(s0);
+Texture2D shadow_texture: register(t3);
+Texture2D diffuse_texture : register(t6);
+Texture2D specular_texture : register(t7);
+Texture2D skybox_texture : register(t8);
 
-Texture2D diffuse_light_texture : register(t1);
-SamplerState diffuse_sampler : register(s1);
-
-Texture2D specular_texture : register(t2);
-SamplerState specular_sampler : register(s2);
-
-Texture2D ambient_texture : register(t3);
-SamplerState ambient_sampler : register(s3);
+Texture2D ambient_texture : register(t10);
 
 //--------------------------------------------
 //	グローバル変数
@@ -48,7 +47,6 @@ struct PS_Output
 {
 	float4 result : SV_TARGET0;
 	float4 postEffect : SV_TARGET1;
-	float4 noAmbient : SV_TARGET2;
 };
 
 //************************************************************
@@ -74,32 +72,35 @@ PS_Output PSmain(PS_Input input)
 {
 	PS_Output output = (PS_Output)0;
 
-
-	float3 D = diffuse_light_texture.Sample(diffuse_sampler, input.texcoord).rgb;
-	float3 S = specular_texture.Sample(specular_sampler, input.texcoord).rgb;
-	float3 A = ambient_texture.Sample(ambient_sampler, input.texcoord).rgb;
+	
+	float3 D = diffuse_texture.Sample(decal_sampler, input.texcoord).rgb;
+	float3 S = specular_texture.Sample(decal_sampler, input.texcoord).rgb;
+	float3 A = ambient_texture.Sample(decal_sampler, input.texcoord).rgb;
 
 	float2 textureInfo;
 	ambient_texture.GetDimensions(textureInfo.x, textureInfo.y);
 	float2 texelSize = 1.0 / textureInfo;
 	float result = 0.0;
-	float2 hlim = float2(float(-BLUR_SIZE) * 0.5 + 0.5, float(-BLUR_SIZE) * 0.5 + 0.5);
-	for (int i = 0; i < BLUR_SIZE; ++i)
+	float2 hlim = float2(-blurSize * 0.5 + 0.5, -blurSize * 0.5 + 0.5);
+	for (int i = 0; i < (int)blurSize; ++i)
 	{
-		for (int j = 0; j < BLUR_SIZE; ++j)
+		for (int j = 0; j < (int)blurSize; ++j)
 		{
 			float2 offset = (hlim + float2(float(i), float(j))) * texelSize;
-			result += ambient_texture.Sample(ambient_sampler, input.texcoord + offset.xy).r;
+			result += ambient_texture.Sample(decal_sampler, input.texcoord + offset.xy).r;
 		}
 	}
 	result /= float(BLUR_SIZE * BLUR_SIZE);
 
 
 
-	float4 color = diffuse_texture.Sample(decal_sampler, input.texcoord);
-	color.a = 1;
-	output.result = float4(D * result + S * result, 1) * color;
+	float3 albedo = albedo_texture.Sample(decal_sampler, input.texcoord).xyz;
+	float3 shadow = shadow_texture.Sample(decal_sampler, input.texcoord).xyz;
+	float3 skybox = skybox_texture.Sample(decal_sampler, input.texcoord).xyz;
+
+
+	//output.result = float4(D * result + S * result, 1) * color;
+	output.result = float4((D * result * albedo * shadow + S * result * albedo * shadow + skybox), 1);
 	output.postEffect = float4(result, result, result, 1);
-	output.noAmbient = float4(D + S, 1) * color;
 	return output;
 }

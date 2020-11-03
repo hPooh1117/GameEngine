@@ -1,6 +1,9 @@
 #include "H_DataFormat.hlsli"
 #include "H_Functions.hlsli"
 
+Texture2D diffuse_texture : register(t0);
+SamplerState decal_sampler : register(s0);
+
 //----------------------------------
 // スポットライト構造体
 //----------------------------------

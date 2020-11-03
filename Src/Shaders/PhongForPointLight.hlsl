@@ -3,6 +3,17 @@
 #include "H_PointLight.hlsli"
 #include "H_BumpMapping.hlsli"
 
+
+
+Texture2D diffuse_texture : register(t0);
+SamplerState decal_sampler : register(s0);
+
+Texture2D normal_texture : register(t1);
+SamplerState normal_sampler : register(s1);
+
+Texture2D height_texture : register(t2);
+SamplerState height_sampler : register(s2);
+
 //--------------------------------------------
 //	エントリーポイント
 //--------------------------------------------

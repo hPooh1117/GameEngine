@@ -6,9 +6,16 @@
 #include <Windows.h>
 #include "./Utilities/Vector.h"
 #include <Xinput.h>
+#include "Engine/Singleton.h"
 
 #pragma comment(lib, "xinput.lib")
 
+enum MouseState
+{
+	ENone,
+	EWheelUp,
+	EWheelDown = -1,
+};
 
 class Input final
 {
@@ -40,6 +47,7 @@ private:
 		kNUM_MAX,
 	};
 
+
 private:
 	std::unique_ptr<DirectX::Keyboard>  m_pKeyBoard;
 	std::unique_ptr<DirectX::GamePad>   m_pGamePad;
@@ -55,9 +63,12 @@ private:
 	bool                                m_bMouseCaptured;
 	Vector2                             mMousePos;
 	Vector2                             mMouseDelta;
-
+	int                                 mMouseWheelState;
 
 public:
+	Input();
+
+
 // UPDATE PER FRAME
 	void HandleInput(HWND hwnd);
 private:
@@ -73,8 +84,6 @@ public:
 	bool    OnKeyRelease(const char* key) const;
 
 	bool    OnMouseMove() const;
-	Vector2 GetMousePos() const;
-	Vector2 GetMouseDelta() const;
 	void    MakeMouseCaptured();
 	void    MakeMouseReleased();
 
@@ -87,6 +96,12 @@ public:
 
 	bool OnLeftTriggerDown() const;
 	bool OnRightTriggerDown() const;
+
+	const Vector2 &GetMousePos() const;
+	const Vector2 &GetMouseDelta() const;
+	bool    GetIsMouseWheelUp() const;
+	bool    GetIsMouseWheelDown() const;
+
 	float GetLeftTriggerValue() const;
 	float GetRightTriggerValue() const;
 	float GetThumbLXValue() const;
@@ -94,14 +109,15 @@ public:
 	float GetThumbRXValue() const;
 	float GetThumbRYValue() const;
 
+	void SetMouseWheelState(int state);
+
 // STATIC INTERFACE
-	static Input* Get();
+	//static Input* Get();
 	~Input();
 
-private:
-	Input();
+public:
 	Input(const Input& other) = delete;
 	Input& operator=(const Input& other) = delete;
 };
 
-#define InputPtr  Input::Get()
+#define InputPtr  Singleton<Input>::Get()

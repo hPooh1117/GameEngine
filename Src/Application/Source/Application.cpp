@@ -4,14 +4,14 @@
 
 #include "Input.h"
 
-#include "./Renderer/GraphicsEngine.h"
-
 #include "./Engine/GameSystem.h"
-#include "./Engine/MainCamera.h"
 #include "./Engine/Settings.h"
 #include "./Engine/Singleton.h"
 
-#include "./Utilities/ImguiSelf.h"
+
+#include "./Renderer/GraphicsEngine.h"
+#include "./Renderer/Swapchain.h"
+
 #include "./Utilities/Log.h"
 
 
@@ -45,8 +45,10 @@ bool Application::Init()
 		Log::Info("[RENDERER] DirectX11 is Initialized.");
 	}
 
+	Window::ShowAndUpdateWindow();
+
 	//m_pGameSystem = std::make_unique<GameSystem>(m_pGraphicsEngine->GetDevicePtr());
-	Singleton<GameSystem>::Get().Initialize(m_pGraphicsEngine->GetDevicePtr());
+	ENGINE.Initialize(m_pGraphicsEngine->GetDevicePtr());
 
 	return true;
 
@@ -55,10 +57,10 @@ bool Application::Init()
 
 void Application::Update(float elapsed_time)
 {
-	InputPtr->HandleInput(mHwnd);
+	InputPtr.HandleInput(mHwnd);
 
 	//m_pGameSystem->Update(elapsed_time);
-	Singleton<GameSystem>::Get().Update(elapsed_time);
+	ENGINE.Update(m_pGraphicsEngine->GetDevicePtr(), elapsed_time);
 
 	
 
@@ -67,11 +69,19 @@ void Application::Update(float elapsed_time)
 
 void Application::Render(float elapsed_time)
 {
-	m_pGraphicsEngine->BeginRender();
+	//m_pGraphicsEngine->BeginRender();
 	//m_pGameSystem->RenderCurrentScene(m_pGraphicsEngine, elapsed_time);
-	Singleton<GameSystem>::Get().Render(m_pGraphicsEngine, elapsed_time);
+	ENGINE.Render(m_pGraphicsEngine, elapsed_time);
 
 	m_pGraphicsEngine->EndRender();
+}
+
+void Application::OnSize()
+{
+	RECT rc = this->GetClientWindowRect();
+	m_pGraphicsEngine->GetSwapchain()->Resize(m_pGraphicsEngine->GetDevicePtr(), rc.right - rc.left, rc.bottom - rc.top);
+
+	ENGINE.SetCurrentWindowSize(m_pGraphicsEngine->GetDevicePtr(), rc.right - rc.left, rc.bottom - rc.top);
 }
 
 

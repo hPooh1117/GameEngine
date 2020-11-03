@@ -10,16 +10,10 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImGui", "Src\SolutionItems\ImGui\ImGui.vcxproj", "{97891263-446F-491C-9981-826E16791D40}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Utilities", "Src\SolutionItems\Utilities\Utilities.vcxproj", "{40903909-6CB8-49EF-86F9-63A163979A5A}"
-	ProjectSection(ProjectDependencies) = postProject
-		{97891263-446F-491C-9981-826E16791D40} = {97891263-446F-491C-9981-826E16791D40}
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Scene", "Src\SolutionItems\Scene\Scene.vcxproj", "{D2FD546A-73D4-4092-B861-1D4403612D1D}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Engine", "Src\SolutionItems\Engine\Engine.vcxproj", "{EBE9E01D-2771-492C-B3D7-2C3C0A9D820D}"
-	ProjectSection(ProjectDependencies) = postProject
-		{A399E72D-047C-4547-B455-43AB1E235BF9} = {A399E72D-047C-4547-B455-43AB1E235BF9}
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Application", "Src\SolutionItems\Application\Application.vcxproj", "{B2EE5370-2121-495C-A64E-0A57FDE6FF10}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -27,6 +21,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Application", "Src\Solution
 		{8631E30C-8E7D-4C45-B5DD-4E547165EE84} = {8631E30C-8E7D-4C45-B5DD-4E547165EE84}
 		{EBE9E01D-2771-492C-B3D7-2C3C0A9D820D} = {EBE9E01D-2771-492C-B3D7-2C3C0A9D820D}
 		{A399E72D-047C-4547-B455-43AB1E235BF9} = {A399E72D-047C-4547-B455-43AB1E235BF9}
+		{EBD2A057-C1DE-4A2C-8B81-9497E7E0E964} = {EBD2A057-C1DE-4A2C-8B81-9497E7E0E964}
 		{97891263-446F-491C-9981-826E16791D40} = {97891263-446F-491C-9981-826E16791D40}
 		{D2FD546A-73D4-4092-B861-1D4403612D1D} = {D2FD546A-73D4-4092-B861-1D4403612D1D}
 	EndProjectSection
@@ -43,6 +38,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shaders", "Shaders", "{CA61
 		Src\Shaders\environment_ps.hlsl = Src\Shaders\environment_ps.hlsl
 		Src\Shaders\environment_vs.hlsl = Src\Shaders\environment_vs.hlsl
 		Src\Shaders\EnvironmentMap.hlsl = Src\Shaders\EnvironmentMap.hlsl
+		Src\Shaders\EquirectangularToCube.hlsl = Src\Shaders\EquirectangularToCube.hlsl
 		Src\Shaders\FlatShaderGeo.hlsl = Src\Shaders\FlatShaderGeo.hlsl
 		Src\Shaders\Fog.hlsl = Src\Shaders\Fog.hlsl
 		Src\Shaders\fog.hlsli = Src\Shaders\fog.hlsli
@@ -88,6 +84,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shaders", "Shaders", "{CA61
 		Src\Shaders\plane_ps.hlsl = Src\Shaders\plane_ps.hlsl
 		Src\Shaders\plane_vs.hlsl = Src\Shaders\plane_vs.hlsl
 		Src\Shaders\PointLightSea.hlsl = Src\Shaders\PointLightSea.hlsl
+		Src\Shaders\PostEffect.hlsl = Src\Shaders\PostEffect.hlsl
 		Src\Shaders\primitive.hlsli = Src\Shaders\primitive.hlsli
 		Src\Shaders\primitive_batch.hlsli = Src\Shaders\primitive_batch.hlsli
 		Src\Shaders\primitive_batch_ps.hlsl = Src\Shaders\primitive_batch_ps.hlsl
@@ -122,7 +119,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shaders", "Shaders", "{CA61
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Component", "Src\SolutionItems\Component\Component.vcxproj", "{A399E72D-047C-4547-B455-43AB1E235BF9}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenderPass", "Src\SolutionItems\RenderPass\RenderPass.vcxproj", "{9E8B1135-310F-4D26-B93F-70DA076AA17D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenderPasses", "Src\SolutionItems\RenderPasses\RenderPasses.vcxproj", "{EBD2A057-C1DE-4A2C-8B81-9497E7E0E964}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -218,18 +215,18 @@ Global
 		{A399E72D-047C-4547-B455-43AB1E235BF9}.Release|x64.Build.0 = Release|x64
 		{A399E72D-047C-4547-B455-43AB1E235BF9}.Release|x86.ActiveCfg = Release|Win32
 		{A399E72D-047C-4547-B455-43AB1E235BF9}.Release|x86.Build.0 = Release|Win32
-		{9E8B1135-310F-4D26-B93F-70DA076AA17D}.Debug|x64.ActiveCfg = Debug|x64
-		{9E8B1135-310F-4D26-B93F-70DA076AA17D}.Debug|x64.Build.0 = Debug|x64
-		{9E8B1135-310F-4D26-B93F-70DA076AA17D}.Debug|x86.ActiveCfg = Debug|Win32
-		{9E8B1135-310F-4D26-B93F-70DA076AA17D}.Debug|x86.Build.0 = Debug|Win32
-		{9E8B1135-310F-4D26-B93F-70DA076AA17D}.Profile|x64.ActiveCfg = Release|x64
-		{9E8B1135-310F-4D26-B93F-70DA076AA17D}.Profile|x64.Build.0 = Release|x64
-		{9E8B1135-310F-4D26-B93F-70DA076AA17D}.Profile|x86.ActiveCfg = Release|Win32
-		{9E8B1135-310F-4D26-B93F-70DA076AA17D}.Profile|x86.Build.0 = Release|Win32
-		{9E8B1135-310F-4D26-B93F-70DA076AA17D}.Release|x64.ActiveCfg = Release|x64
-		{9E8B1135-310F-4D26-B93F-70DA076AA17D}.Release|x64.Build.0 = Release|x64
-		{9E8B1135-310F-4D26-B93F-70DA076AA17D}.Release|x86.ActiveCfg = Release|Win32
-		{9E8B1135-310F-4D26-B93F-70DA076AA17D}.Release|x86.Build.0 = Release|Win32
+		{EBD2A057-C1DE-4A2C-8B81-9497E7E0E964}.Debug|x64.ActiveCfg = Debug|x64
+		{EBD2A057-C1DE-4A2C-8B81-9497E7E0E964}.Debug|x64.Build.0 = Debug|x64
+		{EBD2A057-C1DE-4A2C-8B81-9497E7E0E964}.Debug|x86.ActiveCfg = Debug|Win32
+		{EBD2A057-C1DE-4A2C-8B81-9497E7E0E964}.Debug|x86.Build.0 = Debug|Win32
+		{EBD2A057-C1DE-4A2C-8B81-9497E7E0E964}.Profile|x64.ActiveCfg = Release|x64
+		{EBD2A057-C1DE-4A2C-8B81-9497E7E0E964}.Profile|x64.Build.0 = Release|x64
+		{EBD2A057-C1DE-4A2C-8B81-9497E7E0E964}.Profile|x86.ActiveCfg = Release|Win32
+		{EBD2A057-C1DE-4A2C-8B81-9497E7E0E964}.Profile|x86.Build.0 = Release|Win32
+		{EBD2A057-C1DE-4A2C-8B81-9497E7E0E964}.Release|x64.ActiveCfg = Release|x64
+		{EBD2A057-C1DE-4A2C-8B81-9497E7E0E964}.Release|x64.Build.0 = Release|x64
+		{EBD2A057-C1DE-4A2C-8B81-9497E7E0E964}.Release|x86.ActiveCfg = Release|Win32
+		{EBD2A057-C1DE-4A2C-8B81-9497E7E0E964}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

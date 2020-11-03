@@ -1,14 +1,13 @@
 #pragma once
-#include <d3d11.h>
-#include <wrl\client.h>
 #include <DirectXMath.h>
 #include <memory>
 #include <vector>
+#include "D3D_Helper.h"
+#include "./Engine/DataStructures.h"
 
-class Camera;
-class Light;
 class Shader;
 class CameraController;
+
 
 class Mesh
 {
@@ -23,12 +22,21 @@ public:
 
     struct CBufferForMesh
     {
-        DirectX::XMFLOAT4X4 m_WVP;   // world * view * projection matrix
-        DirectX::XMFLOAT4X4 m_world;           // world transformation matrix
-        DirectX::XMFLOAT4 m_mat_color = { 1, 1, 1, 1 };
+        DirectX::XMFLOAT4X4 WVP;   // world * view * projection matrix
+        DirectX::XMFLOAT4X4 world;           // world transformation matrix
+        DirectX::XMFLOAT4X4 invProj;
+    };
+    struct CBufferForMaterial
+    {
+        DirectX::XMFLOAT4 mat_color = { 1, 1, 1, 1 };
+        DirectX::XMFLOAT3 specularColor;
+        float brdfFactor;
+        float metalness;
+        float roughness;
+        float dummy0 = 0.0f;
+        float dummy1 = 0.0f;
 
     };
-
 
 protected:
     std::vector<Vertex> mVertices;
@@ -37,6 +45,7 @@ protected:
 
 protected:
     Microsoft::WRL::ComPtr<ID3D11Buffer>            m_pConstantBufferMesh   = nullptr;
+    Microsoft::WRL::ComPtr<ID3D11Buffer>            m_pConstantBufferMaterial = nullptr;
 
     // RenderState
     Microsoft::WRL::ComPtr<ID3D11RasterizerState>   m_pRasterizerWire       = nullptr;
@@ -54,9 +63,9 @@ public:
         Microsoft::WRL::ComPtr<ID3D11DeviceContext>& imm_context,
         float elapse_time,
         const DirectX::XMMATRIX& world,
-        const std::shared_ptr<CameraController>& camera,
-        const std::shared_ptr<Shader>& shader,
-        const DirectX::XMFLOAT4& mat_color = DirectX::XMFLOAT4(1, 1, 1, 1),
+        CameraController* camera,
+        Shader* shader,
+        const MaterialData& mat_data,
         bool isShadow = false,
         bool isSolid = true
     ) = 0;

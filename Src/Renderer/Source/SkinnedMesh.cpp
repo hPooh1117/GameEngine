@@ -4,6 +4,7 @@
 #include <chrono>
 #include <iostream>
 
+#include "FbxMeshInfo.h"
 #include "FbxLoader.h"
 #include "ResourceManager.h"
 #include "Shader.h"
@@ -11,6 +12,7 @@
 #include "./Engine/MainCamera.h"
 #include "./Engine/CameraController.h"
 #include "./Engine/Light.h"
+#include "./Engine/GameSystem.h"
 
 #include "./Utilities/misc.h"
 #include "./Utilities/Log.h"
@@ -21,9 +23,36 @@ using namespace DirectX;
 using namespace fbxsdk;
 
 //----------------------------------------------------------------------------------------------------------------------------
+const DirectX::XMFLOAT4X4 SkinnedMesh::COORD_CONVERSION[CG_SOFTWARE_TYPE] =
+{
+	// DEFAULT(LHS +Y-UP)
+	{
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		0, 0, 0, 1
+	},
 
-SkinnedMesh::SkinnedMesh(Microsoft::WRL::ComPtr<ID3D11Device>& device, const char* filename)
-	:Mesh(), mFrameInterpolation(MAX_MOTION_INTERPOLATION)
+	// UNREAL ENGINE(LHS +Z-UP)
+	{
+		1, 0, 0, 0,
+		0, 0, 1, 0,
+		0, 1, 0, 0,
+		0, 0, 0, 1
+	},
+	// MAYA(RHS +Y-UP)
+	{
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0,-1, 0,
+		0, 0, 0, 1
+	},
+};
+
+SkinnedMesh::SkinnedMesh(Microsoft::WRL::ComPtr<ID3D11Device>& device, const char* filename, unsigned int coord_system)
+	:Mesh(), 
+	mFrameInterpolation(MAX_MOTION_INTERPOLATION),
+	mCoordSystem(coord_system)
 {
 
 	LoadFbxFile(device, filename);
@@ -61,6 +90,20 @@ SkinnedMesh::SkinnedMesh(Microsoft::WRL::ComPtr<ID3D11Device>& device, const cha
 		m_constant_buffer_bone.GetAddressOf()
 	);
 
+	hr = device->CreateBuffer(
+		&CD3D11_BUFFER_DESC(
+			sizeof(CBufferForMaterial),
+			D3D11_BIND_CONSTANT_BUFFER,
+			D3D11_USAGE_DEFAULT,
+			0,
+			0,
+			0
+		),
+		nullptr,
+		m_pConstantBufferMaterial.GetAddressOf()
+	);
+	_ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
+
 
 
 
@@ -70,16 +113,16 @@ SkinnedMesh::SkinnedMesh(Microsoft::WRL::ComPtr<ID3D11Device>& device, const cha
 
 	hr = device->CreateRasterizerState(
 		&CD3D11_RASTERIZER_DESC(
-			D3D11_FILL_SOLID,         // D3D11_FILL_MODE FillMode;
-			D3D11_CULL_BACK,          // D3D11_CULL_MODE CullMode;
-			TRUE,                     // BOOL FrontCounterClockwise;
-			0,                        // INT DepthBias;
-			0.0f,                     // FLOAT DepthBiasClamp;
-			0.0f,                     // FLOAT SlopeScaledDepthBias;
-			TRUE,                     // BOOL DepthClipEnable;
-			FALSE,                    // BOOL ScissorEnable;
-			FALSE,                    // BOOL MultisampleEnable;
-			FALSE                     // BOOL AntialiasedLineEnable;
+			D3D11_FILL_SOLID,                    // D3D11_FILL_MODE FillMode;
+			D3D11_CULL_BACK,                     // D3D11_CULL_MODE CullMode;
+			mCoordSystem > 0 ? TRUE : FALSE,     // BOOL FrontCounterClockwise;
+			0,                                   // INT DepthBias;
+			0.0f,                                // FLOAT DepthBiasClamp;
+			0.0f,                                // FLOAT SlopeScaledDepthBias;
+			TRUE,                                // BOOL DepthClipEnable;
+			FALSE,                               // BOOL ScissorEnable;
+			FALSE,                               // BOOL MultisampleEnable;
+			FALSE                                // BOOL AntialiasedLineEnable;
 		),
 		m_pRasterizerSolid.GetAddressOf()
 	);
@@ -184,56 +227,46 @@ void SkinnedMesh::CreateBuffers(Microsoft::WRL::ComPtr<ID3D11Device>& device)
 //----------------------------------------------------------------------------------------------------------------------------
 
 void SkinnedMesh::Render(
-	Microsoft::WRL::ComPtr<ID3D11DeviceContext>& imm_context,
+	D3D::DeviceContextPtr& imm_context,
 	float elapsed_time,
 	const DirectX::XMMATRIX& world,
-	const std::shared_ptr<CameraController>& camera,
-	const std::shared_ptr<Shader>& shader,
-	const DirectX::XMFLOAT4& mat_color,
+	CameraController* camera,
+	Shader* shader,
+	const MaterialData& mat_data,
 	bool isShadow,
 	bool isSolid
 )
 {
 	HRESULT hr = S_OK;
-	shader->activateShaders(imm_context);
-
+	if (shader != nullptr)
+	{
+		shader->activateShaders(imm_context);
+	}
 
 	XMFLOAT4X4 W, WVP;
-	DirectX::XMStoreFloat4x4(&W, world);
-	if (isShadow)
-	{
-		XMStoreFloat4x4(&WVP, world * camera->GetOrthoView() * camera->GetOrthoProj(imm_context));
-	}
-	else
-	{
-		XMStoreFloat4x4(&WVP, world * camera->GetViewMatrix() * camera->GetProjMatrix(imm_context));
-	}
+	XMStoreFloat4x4(&W, world);
+	XMStoreFloat4x4(&WVP, world * (isShadow ? camera->GetOrthoView() * camera->GetOrthoProj(imm_context) : camera->GetViewMatrix() * camera->GetProjMatrix(imm_context)));
+
 
 	for (auto& mesh : m_meshes)
 	{
-
 		CBufferForMesh meshData = {};
 		CBufferForBone boneData = {};
 
 		UINT stride = sizeof(FbxInfo::Vertex);
 		UINT offset = 0;
-		imm_context->IASetVertexBuffers(0, 1, mesh.m_pVertexBuffer.GetAddressOf(), &stride, &offset);
-		imm_context->IASetIndexBuffer(mesh.m_pIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-		imm_context->IASetPrimitiveTopology(mTopologyType);
-		isSolid ? imm_context->RSSetState(m_pRasterizerSolid.Get())
-			: imm_context->RSSetState(m_pRasterizerWire.Get());
 
 
 
 
-		if (mesh.m_motions[mCurrentMotion].number_of_frames > 0)
+		if (mesh.m_motions[mCurrentMotion].frameSize > 0)
 		{
 			FbxInfo::Motion& motion = mesh.m_motions[mCurrentMotion];
-			int frame = static_cast<int>(motion.animation_tick / motion.sampling_time);
-			if (frame > motion.number_of_frames - 1)
+			int frame = static_cast<int>(motion.animeTick / motion.SAMPLE_TIME);
+			if (frame > motion.frameSize - 1)
 			{
 				frame = 0;
-				motion.animation_tick = 0;
+				motion.animeTick = 0;
 			}
 			size_t numberOfBones = mesh.m_bone_data.size();
 			_ASSERT_EXPR(numberOfBones < FbxInfo::MAX_BONES, L"'numberOfBones' exceeds MAX_BONES.");
@@ -241,13 +274,13 @@ void SkinnedMesh::Render(
 			{
 				DirectX::XMStoreFloat4x4(
 					&boneData.m_bone_transforms[i],
-					XMLoadFloat4x4(&mesh.m_bone_data.at(i).offset)*
-					CalculateMotionMatrix(frame, i, mesh) 
+					XMLoadFloat4x4(&mesh.m_bone_data.at(i).offset) *
+					CalculateMotionMatrix(frame, i, mesh)
 				);
 				//boneData.m_bone_offset[i] = mesh.m_bone_data.at(i).offset;
 				//boneData.m_motion_transforms[i] = CalculateMotionMatrix(frame, i, mesh);
 			}
-			motion.animation_tick += elapsed_time * 0.5f;
+			motion.animeTick += elapsed_time * 0.5f;
 		}
 		else
 		{
@@ -264,21 +297,54 @@ void SkinnedMesh::Render(
 
 			}
 		}
+#pragma region CPU_Skinning
+		//for (auto v = 0u;  v < mesh.mVertices.size(); ++v)
+		//{
+		//	Vector3 p = mesh.mVertices[v].position;
+		//	Vector3 n = mesh.mVertices[v].normal;
 
 
+		//	mesh.mVertices[v].position.x = 0;
+		//	mesh.mVertices[v].position.y = 0;
+		//	mesh.mVertices[v].position.z = 0;
+
+		//	mesh.mVertices[v].normal.x = 0;
+		//	mesh.mVertices[v].normal.y = 0;
+		//	mesh.mVertices[v].normal.z = 0;
+
+		//	for (auto i = 0u; i < 4; ++i)
+		//	{
+		//		const DirectX::XMFLOAT4X4& key = boneData.m_bone_transforms[mesh.mVertices[v].bone_indices[i]];
+		//		mesh.mVertices[v].position.x += mesh.mVertices[v].bone_weights[i] * (p.x * key._11 + p.y * key._21 + p.z * key._31 + 1 * key._41);
+		//		mesh.mVertices[v].position.y += mesh.mVertices[v].bone_weights[i] * (p.x * key._12 + p.y * key._22 + p.z * key._32 + 1 * key._42);
+		//		mesh.mVertices[v].position.z += mesh.mVertices[v].bone_weights[i] * (p.x * key._13 + p.y * key._23 + p.z * key._33 + 1 * key._43);
+
+		//		mesh.mVertices[v].normal.x += mesh.mVertices[v].bone_weights[i] * (n.x * key._11 + n.y * key._21 + n.z * key._31);
+		//		mesh.mVertices[v].normal.y += mesh.mVertices[v].bone_weights[i] * (n.x * key._12 + n.y * key._22 + n.z * key._32);
+		//		mesh.mVertices[v].normal.z += mesh.mVertices[v].bone_weights[i] * (n.x * key._13 + n.y * key._23 + n.z * key._33);
+		//	}
+		//}
+		//imm_context->UpdateSubresource(mesh.mpVertexBuffer.Get(), 0, NULL, mesh.mVertices.data(), 0, 0);
+#pragma endregion
+
+		imm_context->IASetVertexBuffers(0, 1, mesh.m_pVertexBuffer.GetAddressOf(), &stride, &offset);
+		imm_context->IASetIndexBuffer(mesh.m_pIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+		imm_context->IASetPrimitiveTopology(mTopologyType);
+		imm_context->RSSetState(isSolid ? m_pRasterizerSolid.Get() : m_pRasterizerWire.Get());
 
 		DirectX::XMStoreFloat4x4(
-			&meshData.m_WVP,
-			DirectX::XMLoadFloat4x4(&mesh.m_global_transform) *
-			DirectX::XMLoadFloat4x4(&m_coordinate_conversion) *
+			&meshData.WVP,
+			DirectX::XMLoadFloat4x4(&mesh.mGlobalTransform) *
+			DirectX::XMLoadFloat4x4(&COORD_CONVERSION[mCoordSystem]) *
 			DirectX::XMLoadFloat4x4(&WVP)
 		);
 		DirectX::XMStoreFloat4x4(
-			&meshData.m_world,
-			DirectX::XMLoadFloat4x4(&mesh.m_global_transform) *
-			DirectX::XMLoadFloat4x4(&m_coordinate_conversion) *
+			&meshData.world,
+			DirectX::XMLoadFloat4x4(&mesh.mGlobalTransform) *
+			DirectX::XMLoadFloat4x4(&COORD_CONVERSION[mCoordSystem]) *
 			DirectX::XMLoadFloat4x4(&W));
-		meshData.m_mat_color = mat_color;
+		XMStoreFloat4x4(&meshData.invProj, camera->GetInvProjViewMatrix(imm_context));
+
 		imm_context->UpdateSubresource(m_pConstantBufferMesh.Get(), 0, nullptr, &meshData, 0, 0);
 		imm_context->VSSetConstantBuffers(0, 1, m_pConstantBufferMesh.GetAddressOf());
 		imm_context->HSSetConstantBuffers(0, 1, m_pConstantBufferMesh.GetAddressOf());
@@ -290,17 +356,30 @@ void SkinnedMesh::Render(
 		imm_context->VSSetConstantBuffers(4, 1, m_constant_buffer_bone.GetAddressOf());
 		imm_context->PSSetConstantBuffers(4, 1, m_constant_buffer_bone.GetAddressOf());
 
-		for (FbxInfo::Subset& subset : mesh.m_subsets)
+		for (FbxInfo::Subset& subset : mesh.mSubsets)
 		{
-			meshData.m_mat_color.x = subset.diffuse.color.x * mat_color.x;
-			meshData.m_mat_color.y = subset.diffuse.color.y * mat_color.y;
-			meshData.m_mat_color.z = subset.diffuse.color.z * mat_color.z;
-			meshData.m_mat_color.w = mat_color.w;
+			CBufferForMaterial matData = {};
+			matData.mat_color.x = subset.diffuse.color.x * mat_data.mat_color.x;
+			matData.mat_color.y = subset.diffuse.color.y * mat_data.mat_color.y;
+			matData.mat_color.z = subset.diffuse.color.z * mat_data.mat_color.z;
+			matData.mat_color.w = mat_data.mat_color.w;
+
+			matData.metalness = mat_data.metalness;
+			matData.roughness = mat_data.roughness;
+			matData.specularColor = mat_data.specularColor;
+			matData.brdfFactor = mat_data.brdfFactor;
+
+			imm_context->UpdateSubresource(m_pConstantBufferMaterial.Get(), 0, nullptr, &matData, 0, 0);
+			imm_context->VSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());
+			imm_context->HSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());
+			imm_context->DSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());
+			imm_context->GSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());
+			imm_context->PSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());
 
 
 			subset.diffuse.texture->Set(imm_context);
 
-			imm_context->DrawIndexed(subset.index_count, subset.index_start, 0);
+			imm_context->DrawIndexed(subset.indexCount, subset.indexStart, 0);
 		}
 	}
 	mFrameInterpolation.Tick();
@@ -342,11 +421,11 @@ void SkinnedMesh::Play(std::string name, bool isLooped)
 			std::cout << "the motion not found." << std::endl;
 			return;
 		}
-		i->second.isLooped = isLooped;
-		it->m_motions[mCurrentMotion].animation_tick = 0.0f;
+		i->second.bIsLooped = isLooped;
+		it->m_motions[mCurrentMotion].animeTick = 0.0f;
 		it++;
 	}
-	
+
 	mFrameInterpolation.Init();
 	mPreviousMotion = mCurrentMotion;
 	mCurrentMotion = name;
@@ -364,16 +443,17 @@ DirectX::XMMATRIX SkinnedMesh::CalculateMotionMatrix(int frame, int bone_id, MyF
 
 	//std::cout << "Interpolation : " << mFrameInterpolation.GetTime() << std::endl;
 
-	int anotherFrame = frame;
+	unsigned int anotherFrame = frame;
 	FbxInfo::Motion& previousMotion = mesh.m_motions[mPreviousMotion];
-	if (frame > previousMotion.number_of_frames) anotherFrame = frame - (previousMotion.number_of_frames);
+	if (frame > previousMotion.frameSize) anotherFrame = frame - (previousMotion.frameSize);
 
 	DirectX::XMFLOAT4X4 previous = mesh.m_motions[mPreviousMotion].keys.at(bone_id).at(anotherFrame);
 
 
-	
+
 	return Lerp(previous, current, mFrameInterpolation.GetTimeRate());
 }
+
 
 //----------------------------------------------------------------------------------------------------------------------------
 

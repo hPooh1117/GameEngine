@@ -2,6 +2,9 @@
 
 #include "./Application/Input.h"
 #include "./Application/Helper.h"
+
+#include "./Utilities/Log.h"
+#include "./Utilities/ImGuiSelf.h"
 using namespace DirectX;
 
 
@@ -37,7 +40,7 @@ void MainCamera::Update(float elapsed_time)
 
 void MainCamera::SwitchMoveEnable()
 {
-	if (InputPtr->OnKeyTrigger("Space"))
+	if (InputPtr.OnKeyTrigger("B"))
 	{
 		m_bEnableMoving = !m_bEnableMoving;
 	}
@@ -45,48 +48,51 @@ void MainCamera::SwitchMoveEnable()
 
 void MainCamera::MoveCamera()
 {
+	if (ImGui::IsMouseHoveringAnyWindow()) return;
 
-	// WASDで前後左右移動
-	if (InputPtr->OnKeyDown("W"))
+	float speed = 5.0f;
+	Vector2 deltaMouse = InputPtr.GetMouseDelta();
+
+	if ((GetKeyState(VK_MBUTTON) & 0x8000)/* && (deltaMouse.x != 0 && deltaMouse.y != 0)*/)
 	{
-		mPos += mForward * 0.1f;
+		Vector3 delta3D = Vector3(-deltaMouse.x, deltaMouse.y, 0);
+		mForward.normalize();
+		Vector3 Y = Vector3(0, 1, 0);
+		Vector3 X = Y.cross(mForward);
+		X.normalize();
+		Vector3 Z = X.cross(Y);
+		Z.normalize();
+
+		Vector3 delta;
+		delta.x = delta3D.x * X.x + delta3D.y * Y.x + delta3D.z * Z.x;
+		delta.y = delta3D.x * X.y + delta3D.y * Y.y + delta3D.z * Z.y;
+		delta.z = delta3D.x * X.z + delta3D.y * Y.z + delta3D.z * Z.z;
+		mPos = Math::Lerp(mPos, mPos + delta * 0.06f, 0.8f);
+		
+		Log::Info("MouseDelta in CameraCoordinate ( %.2f, %.2f, %.2f )", delta.x, delta.y, delta.z);
 	}
-	if (InputPtr->OnKeyDown("S"))
+	if (InputPtr.GetIsMouseWheelUp())
 	{
-		mPos -= mForward * 0.1f;
+		mPos += mForward * speed;
 	}
-	if (InputPtr->OnKeyDown("A"))
+	if (InputPtr.GetIsMouseWheelDown())
 	{
-		mPos -= mUp.cross(mForward) * 0.1f;
-	}
-	if (InputPtr->OnKeyDown("D"))
-	{
-		mPos += mUp.cross(mForward) * 0.1f;
+		mPos -= mForward * speed;
 	}
 
-	// 左シフト、左コントロールでそれぞれ上移動、下移動
-	if (InputPtr->OnKeyDown("LeftShift"))
+	float pitch = 0.0f, yaw = 0.0f;
+	if (InputPtr.IsConnected(0))    // ゲームパッド操作
 	{
-		mPos += Vector3(0, 1, 0) * 0.1f;
-	}
-	if (InputPtr->OnKeyDown("LeftCtrl"))
-	{
-		mPos -= Vector3(0, 1, 0) * 0.1f;
-	}
-
-
-	float pitch, yaw;
-	if (InputPtr->IsConnected(0))    // ゲームパッド操作
-	{
-		pitch = InputPtr->GetThumbRYValue() * mDeltaTime * -0.4f;
-		yaw = InputPtr->GetThumbRXValue() * mDeltaTime * 0.4f;
+		pitch = InputPtr.GetThumbRYValue() * mDeltaTime * -0.4f;
+		yaw = InputPtr.GetThumbRXValue() * mDeltaTime * 0.4f;
 	}
 	else                             // マウス操作
 	{
-		Vector2 deltaMouse = InputPtr->GetMouseDelta();
-
-		pitch = deltaMouse.y * mDeltaTime * 0.1f;
-		yaw = deltaMouse.x * mDeltaTime * 0.1f;
+		if (GetAsyncKeyState(VK_RBUTTON) < 0)
+		{
+			pitch = deltaMouse.y * mDeltaTime * 0.1f;
+			yaw = deltaMouse.x * mDeltaTime * 0.1f;
+		}
 	}
 
 	// カメラの上下に制限 
@@ -115,7 +121,7 @@ void MainCamera::MoveCamera()
 
 void MainCamera::ResetCameraPosition()
 {
-	if (InputPtr->OnKeyTrigger("1"))
+	if (InputPtr.OnKeyTrigger("1"))
 	{
 		mPos = mStartPos;
 	}
@@ -130,12 +136,5 @@ void MainCamera::SetFocusPoint(const Vector3& pos)
 	axis = mForward.cross(focus);
 	float angle = acosf(Vector3::Dot(mForward, focus));
 	mRotation.SetToRotateAxis(axis, angle);
-	//XMFLOAT3 axis2 = axis.getXMFLOAT3();
-	//XMMATRIX mat = XMMatrixRotationAxis(XMLoadFloat3(&axis2), angle);
-	//Matrix R;
-	//R = Matrix::CreateFromQuaternion(mRotation);
-	////XMStoreFloat4x4(&m_rotation, /*R * */mat);
-	//m_forward = { R._31, R._32, R._33 };
-	//m_up = { R._21, R._22, R._23 };
 }
 

@@ -1,11 +1,13 @@
 #pragma once
-#include "Actor.h"
-#include <unordered_map>
+#include <map>
+#include <memory>
+#include <sys/types.h>
 
+class Actor;
 class ActorManager final
 {
 private:
-	std::unordered_map<int, std::shared_ptr<Actor>> m_pActors;
+	std::map<unsigned int, std::shared_ptr<Actor>> m_pActors;
 
 public:
 	ActorManager();
@@ -13,6 +15,8 @@ public:
 	void AddActor(std::shared_ptr<Actor>& actor);
 	std::shared_ptr<Actor>& GetActor(int type);
 	void Update(float elapsed_time);
+
+	void ClearAll();
 
 	inline unsigned int GetActorsSize() { return m_pActors.size(); }
 	inline auto& GetActors() { return m_pActors; }

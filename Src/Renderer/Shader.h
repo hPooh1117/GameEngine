@@ -5,7 +5,6 @@
 #include "VertexDecleration.h"
 
 
-
 // @class Shader
 // @brief All shader data including vertex, pixel (, geometric, hull ) are compiled here.
 // @brief And then Create shader object like ID3D11xxxShader.

@@ -21,7 +21,9 @@
 // Unit 8
 
 using namespace DirectX;
-// ウィンドウハンドル　：　管理番号
+
+
+Blender GraphicsEngine::mBlender = Blender();
 
 GraphicsEngine::GraphicsEngine() :mViewport({})
 {
@@ -129,6 +131,7 @@ bool GraphicsEngine::Initialize(HWND hwnd)
         Log::Error("Couldn't Create DepthStencilState(DS_WRITE_FALSE).");
     }
 
+    mBlender.Initialize(m_pD3dDevice);
 
     InitImGui(hwnd);
 
@@ -157,7 +160,7 @@ void GraphicsEngine::InitImGui(HWND hwnd)
 
 }
 
-void GraphicsEngine::ActivateRenderTarget()
+void GraphicsEngine::ActivateBackBuffer()
 {
     // Unit1 7-①　ビューポートの設定 （ビューポート：描画範囲）
     SetViewport(SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -176,15 +179,15 @@ void GraphicsEngine::ActivateRenderTarget()
     // Unit1 7-④　レンダーターゲットと深度ステンシルバッファ―のバインド
     m_pImmContext->OMSetRenderTargets(1, m_pSwapChain->getRenderTargetView().GetAddressOf(), m_pSwapChain->getDepthStencilView().Get());
 
-    m_pImmContext->OMSetDepthStencilState(m_pDepthStencilState[TRUE].Get(), 1);
 
 }
+
 
 void GraphicsEngine::BeginRender()
 {
     //BeginImGuiRender();
 
-    ActivateRenderTarget();
+    ActivateBackBuffer();
 
 }
 
@@ -263,6 +266,15 @@ void GraphicsEngine::SetViewport(float width, float height)
 
 }
 
+void GraphicsEngine::SetDepthStencil(unsigned int type)
+{
+    if (type >= DS_TYPE_NUM_MAX)
+    {
+        Log::Error("Couldn't set depth stencil state. type is out of range.");
+        return;
+    }
+    m_pImmContext->OMSetDepthStencilState(m_pDepthStencilState[type].Get(), 1);
+}
 
 GraphicsEngine::~GraphicsEngine()
 {

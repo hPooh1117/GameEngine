@@ -10,7 +10,7 @@ private:
 
     float mDeltaTime = 0.0f;
 
-    bool m_bEnableMoving = false;
+    bool m_bEnableMoving = true;
 
 public:
     MainCamera(Vector3 pos);

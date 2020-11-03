@@ -18,18 +18,6 @@ public:
 private:
 	std::shared_ptr<Actor> m_pPlayer;
 	std::shared_ptr<Actor> m_pField;
-
-private:
-	std::unique_ptr<ShadowMap> m_pShadowMap;
-
-
-	// Shadow Map(Forward)
-	std::shared_ptr<Shader> m_pToShadowShader;
-	std::shared_ptr<Shader> m_pFromShadowShader;
-	std::shared_ptr<Shader> m_pToShadowForSkinnedMesh;
-	std::shared_ptr<Shader> m_pFromShadowForSkinnedMesh;
-	std::shared_ptr<Shader> m_pToShadowForSkinned;
-	std::shared_ptr<Shader> m_pFromShadowForSkinned;
-
+	std::shared_ptr<Actor> mpPlane;
 };
 

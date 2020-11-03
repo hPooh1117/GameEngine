@@ -28,6 +28,30 @@ public:
 
 	inline Vector2 GetTexSize() { return Vector2(static_cast<float>(mTexDesc.Width), static_cast<float>(mTexDesc.Height)); }
 	inline auto& GetRenderTargetV() { return m_pRTV; }
+	inline auto& GetShaderResourceV() { return m_pSRV; }
 	~Texture();
+};
+
+class NewTexture
+{
+private:
+	D3D::ShaderResouceVPtr m_pSRV = nullptr;
+public:
+	//D3D11_TEXTURE2D_DESC mTexDesc = {};
+	Vector2 mTextureSize = {};
+	unsigned int mID = 0;
+public:
+	NewTexture();
+	~NewTexture();
+
+
+	bool Load(D3D::DevicePtr& device, const wchar_t* filename);
+	bool Load(D3D::DevicePtr& device);
+	bool Create(D3D::DevicePtr& device, UINT width, UINT height, DXGI_FORMAT format);
+
+	void Set(D3D::DeviceContextPtr& imm_context, int slot = 0, bool flag = true);
+
+	inline Vector2 GetTexSize() { return mTextureSize; }
+	//inline auto& GetRenderTargetV() { return m_pRTV; }
 };
 

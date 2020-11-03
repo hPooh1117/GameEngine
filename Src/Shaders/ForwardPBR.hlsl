@@ -153,9 +153,9 @@ float4 PSmain(PS_Input input) : SV_TARGET
 	float4 env = environment_texture.SampleLevel(decal_sampler, euv, (1 - smoothness) * 9);
 
 	// トーンマップ
-	env.rgb *= 0.1;
-	env.rgb = env.rgb / (1.0 + env.rgb) * 1.0;
-	env.rgb = pow(abs(env.rgb), 1.0 / 2.2);
+	//env.rgb *= 0.1;
+	//env.rgb = env.rgb / (1.0 + env.rgb) * 1.0;
+	//env.rgb = pow(abs(env.rgb), 1.0 / 2.2);
 
 	// 合成のバランス調整
 	env *= (metalness + 0.1) * (base * 0.6 + 0.3);

@@ -27,11 +27,11 @@ SpotLight::SpotLight(D3D::DevicePtr& p_device)
 
 void SpotLight::Update(float elapsed_time)
 {
-    if (InputPtr->OnKeyDown("Left"))
+    if (InputPtr.OnKeyDown("Left"))
     {
         mAngle += 0.001745f * 20;
     }
-    if (InputPtr->OnKeyDown("Right"))
+    if (InputPtr.OnKeyDown("Right"))
     {
         mAngle -= 0.001745f * 20;
     }

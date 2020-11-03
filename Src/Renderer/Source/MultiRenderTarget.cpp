@@ -180,7 +180,7 @@ void MultiRenderTarget::ActivateDefferedLight(std::unique_ptr<GraphicsEngine>& p
 
 	m_pColor->Render(
 		immContext,
-		m_pShaders.at(ShaderType::EPreLighting),
+		m_pShaders.at(ShaderType::EPreLighting).get(),
 		m_pColorMap,
 		pos,
 		size,
@@ -223,7 +223,7 @@ void MultiRenderTarget::ActivateScreen(std::unique_ptr<GraphicsEngine>& p_graphi
 
 void MultiRenderTarget::Deactivate(std::unique_ptr<GraphicsEngine>& p_graphics)
 {
-	p_graphics->ActivateRenderTarget();
+	p_graphics->ActivateBackBuffer();
 }
 
 //----------------------------------------------------------------------------------------------------------------------------
@@ -247,7 +247,7 @@ void MultiRenderTarget::Render(
 	case GBufferType::kAlbedo:
 		m_pColor->Render(
 			imm_context,
-			m_pShaders.at(ShaderType::ESimpleQuad),
+			m_pShaders.at(ShaderType::ESimpleQuad).get(),
 			m_pColorMap,
 			pos,
 			size,
@@ -259,7 +259,7 @@ void MultiRenderTarget::Render(
 	case GBufferType::kPosition:
 		m_pColor->Render(
 			imm_context,
-			m_pShaders.at(ShaderType::ESimpleQuad),
+			m_pShaders.at(ShaderType::ESimpleQuad).get(),
 			m_pPositionMap,
 			pos,
 			size,
@@ -271,7 +271,7 @@ void MultiRenderTarget::Render(
 	case GBufferType::kNormal:
 		m_pColor->Render(
 			imm_context,
-			m_pShaders.at(ShaderType::ESimpleQuad),
+			m_pShaders.at(ShaderType::ESimpleQuad).get(),
 			m_pNormalMap,
 			pos,
 			size,
@@ -283,7 +283,7 @@ void MultiRenderTarget::Render(
 	case GBufferType::kDepth:
 		m_pColor->Render(
 			imm_context,
-			m_pShaders.at(ShaderType::ESimpleQuad),
+			m_pShaders.at(ShaderType::ESimpleQuad).get(),
 			m_pDepthMap,
 			pos,
 			size,
@@ -295,7 +295,7 @@ void MultiRenderTarget::Render(
 	case GBufferType::kShadow:
 		m_pColor->Render(
 			imm_context,
-			m_pShaders.at(ShaderType::ESimpleQuad),
+			m_pShaders.at(ShaderType::ESimpleQuad).get(),
 			m_pShadowMap,
 			pos,
 			size,
@@ -307,7 +307,7 @@ void MultiRenderTarget::Render(
 	case GBufferType::kDiffuse:
 		m_pColor->Render(
 			imm_context,
-			m_pShaders.at(ShaderType::ESimpleQuad),
+			m_pShaders.at(ShaderType::ESimpleQuad).get(),
 			m_pDiffuseLightMap,
 			pos,
 			size,
@@ -319,7 +319,7 @@ void MultiRenderTarget::Render(
 	case GBufferType::kSpecular:
 		m_pColor->Render(
 			imm_context,
-			m_pShaders.at(ShaderType::ESimpleQuad),
+			m_pShaders.at(ShaderType::ESimpleQuad).get(),
 			m_pSpecularLightMap,
 			pos,
 			size,
@@ -331,7 +331,7 @@ void MultiRenderTarget::Render(
 	case GBufferType::kAmbient:
 		m_pColor->Render(
 			imm_context,
-			m_pShaders.at(ShaderType::ESimpleQuad),
+			m_pShaders.at(ShaderType::ESimpleQuad).get(),
 			m_pAmbientLightMap,
 			pos,
 			size,
@@ -342,7 +342,7 @@ void MultiRenderTarget::Render(
 	case GBufferType::kPostEffect:
 		m_pColor->Render(
 			imm_context,
-			m_pShaders.at(ShaderType::ESimpleQuad),
+			m_pShaders.at(ShaderType::ESimpleQuad).get(),
 			m_pPostEffectMap,
 			pos,
 			size,
@@ -354,7 +354,7 @@ void MultiRenderTarget::Render(
 	case GBufferType::kNoAO:
 		m_pColor->Render(
 			imm_context,
-			m_pShaders.at(ShaderType::ESimpleQuad),
+			m_pShaders.at(ShaderType::ESimpleQuad).get(),
 			m_pShadowMap,
 			pos,
 			size,
@@ -366,7 +366,7 @@ void MultiRenderTarget::Render(
 
 		m_pColor->Render(
 			imm_context,
-			m_pShaders.at(ShaderType::ESimpleQuad),
+			m_pShaders.at(ShaderType::ESimpleQuad).get(),
 			m_pNoAO,
 			pos,
 			size,
@@ -380,7 +380,7 @@ void MultiRenderTarget::Render(
 	case GBufferType::kResult:
 		m_pColor->Render(
 			imm_context,
-			m_pShaders.at(ShaderType::ESimpleQuad),
+			m_pShaders.at(ShaderType::ESimpleQuad).get(),
 			m_pShadowMap,
 			pos,
 			size,
@@ -392,7 +392,7 @@ void MultiRenderTarget::Render(
 
 		m_pColor->Render(
 			imm_context,
-			m_pShaders.at(ShaderType::ESimpleQuad),
+			m_pShaders.at(ShaderType::ESimpleQuad).get(),
 			m_pScreenMap,
 			pos,
 			size,
@@ -427,7 +427,7 @@ void MultiRenderTarget::RenderScreen(D3D::DeviceContextPtr& imm_context, std::un
 	// ‰æ‘œ‚Ì‡¬
 	m_pColor->Render(
 		imm_context,
-		m_pShaders.at(ShaderType::EScreen),
+		m_pShaders.at(ShaderType::EScreen).get(),
 		m_pColorMap,
 		pos,
 		size,
