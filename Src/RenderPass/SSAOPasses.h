@@ -25,8 +25,9 @@ public:
 
 	void ExecuteSSAO(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time);
 
-	void RenderUI();
-	void RenderUIForRuntime();
+	void RenderUI(bool b_open);
+	void RenderUIForSettings();
+	void RenderUIForAnotherScreen();
 
 	const std::unique_ptr<RenderTarget>& GetBlurPassTargetPtr() { return mpBlurPassTargets; }
 };

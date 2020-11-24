@@ -84,7 +84,7 @@ void TraceCamera::RenderUI()
 {
 	using namespace ImGui;
 
-	SetNextTreeNodeOpen(false, ImGuiSetCond_Once);
+	SetNextTreeNodeOpen(false, ImGuiCond_Once);
 	std::string title = "Trace Camera";
 
 	if (TreeNode(title.data()))

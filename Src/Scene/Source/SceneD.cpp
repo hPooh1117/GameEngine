@@ -10,6 +10,7 @@
 #include "./Engine/LightController.h"
 #include "./Engine/MainCamera.h"
 #include "./Engine/UIRenderer.h"
+#include "./Engine/Settings.h"
 
 #include "./Engine/AudioSystem.h"
 #include "./Engine/PhysicsManager.h"
@@ -65,8 +66,8 @@ SceneD::SceneD(SceneManager* manager, Microsoft::WRL::ComPtr<ID3D11Device>& devi
 	//	m_phong_shader,
 	//	L"./Data/Images/check.jpg");
 	mpPlayer->AddComponent<NewMeshComponent>();
-	mpPlayer->GetComponent<NewMeshComponent>()->RegistMesh(MeshTypeID::E_BasicSphere, ShaderType::ELambert, nullptr, FbxType::EDefault);
-	mpPlayer->GetComponent<NewMeshComponent>()->RegistTexture(L"./Data/Images/check.jpg", 0);
+	mpPlayer->GetComponent<NewMeshComponent>()->RegisterMesh(MeshTypeID::E_BasicSphere, ShaderID::ELambert, nullptr, FbxType::EDefault);
+	mpPlayer->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Images/check.jpg", TextureConfig::EColorMap);
 	mpPlayer->AddComponent<SphereColliderComponent>();
 	mpPlayer->SetPosition(Vector3(1.5f, 4, -3));
 	ENGINE.GetActorManagerPtr()->AddActor(mpPlayer);
@@ -88,8 +89,8 @@ SceneD::SceneD(SceneManager* manager, Microsoft::WRL::ComPtr<ID3D11Device>& devi
 		//	L"./Data/Images/Sand_003_SD/Sand_003_COLOR.jpg"
 		//	);
 		actor->AddComponent<NewMeshComponent>();
-		actor->GetComponent<NewMeshComponent>()->RegistMesh(MeshTypeID::E_BasicSphere, ShaderType::ELambert, nullptr, FbxType::EDefault);
-		actor->GetComponent<NewMeshComponent>()->RegistTexture(L"./Data/Images/Sand_003_SD/Sand_003_COLOR.jpg", 0);
+		actor->GetComponent<NewMeshComponent>()->RegisterMesh(MeshTypeID::E_BasicSphere, ShaderID::ELambert, nullptr, FbxType::EDefault);
+		actor->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Images/Sand_003_SD/Sand_003_COLOR.jpg", TextureConfig::EColorMap);
 		actor->AddComponent<SphereColliderComponent>();
 		ENGINE.GetActorManagerPtr()->AddActor(actor);
 	}
@@ -102,8 +103,8 @@ SceneD::SceneD(SceneManager* manager, Microsoft::WRL::ComPtr<ID3D11Device>& devi
 	//	L"./Data/Images/Test.png"
 	//);
 	mpField->AddComponent<NewMeshComponent>();
-	mpField->GetComponent<NewMeshComponent>()->RegistMesh(MeshTypeID::E_BasicCube, ShaderType::ELambert, nullptr, FbxType::EDefault);
-	mpField->GetComponent<NewMeshComponent>()->RegistTexture(L"./Data/Images/Forest Soil.jpg", 0);
+	mpField->GetComponent<NewMeshComponent>()->RegisterMesh(MeshTypeID::E_BasicCube, ShaderID::ELambert, nullptr, FbxType::EDefault);
+	mpField->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Images/Test.png", TextureConfig::EColorMap);
 	mpField->SetPosition(Vector3(0, -0.5f, 0));
 	mpField->SetScale(20.0f, 0.5f, 20.0f);
 	ENGINE.GetActorManagerPtr()->AddActor(mpField);
@@ -120,9 +121,15 @@ SceneD::SceneD(SceneManager* manager, Microsoft::WRL::ComPtr<ID3D11Device>& devi
 	ENGINE.GetCameraPtr()->SetPositionOfMoveableCamera(Vector3(0, 5, -40));
 	ENGINE.GetLightPtr()->Init(0, 0);
 
-	ENGINE.NotCastShadow();
-	ENGINE.SetIsDefferedRendering(false);
-	ENGINE.SetSSAO(false);
+
+	Settings::Renderer renderSettings = {
+		false,   // shadow
+		false,  // ssao
+		false,   // deffered
+		false   // cubemap
+	};
+	ENGINE.SetRendererSettings(renderSettings);
+
 }
 
 void SceneD::InitializeScene()
@@ -141,6 +148,10 @@ void SceneD::Update(float elapsed_time)
 
 	mpPhysics->DetectCollision(ENGINE.GetActorManagerPtr(), elapsed_time);
 
+}
+
+void SceneD::PreCompute(std::unique_ptr<GraphicsEngine>& p_graphics)
+{
 }
 
 //----------------------------------------------------------------------------------------------------------------------------
@@ -202,10 +213,10 @@ void SceneD::Render(std::unique_ptr<GraphicsEngine>& p_graphics,
 		std::to_string(InputPtr.IsConnected(0)));
 
 
-	ENGINE.GetUIRenderer()->SetNextWindowSettings(Vector2(SCREEN_WIDTH - 300, 0), Vector2(300, 600));
-	ENGINE.GetUIRenderer()->BeginRenderingNewWindow("Debugging");
-	ENGINE.GetUIRenderer()->RenderUIQueue();
-	ENGINE.GetUIRenderer()->FinishRenderingWindow();
+	//ENGINE.GetUIRenderer()->SetNextWindowSettings(Vector2(SCREEN_WIDTH - 300, 0), Vector2(300, 600));
+	//ENGINE.GetUIRenderer()->BeginRenderingNewWindow("Debugging");
+	//ENGINE.GetUIRenderer()->RenderUIQueue();
+	//ENGINE.GetUIRenderer()->FinishRenderingWindow();
 
 	//mFont->End(immContext);
 }

@@ -141,7 +141,7 @@ SkinnedMesh::SkinnedMesh(Microsoft::WRL::ComPtr<ID3D11Device>& device, const cha
 			TRUE,                     // BOOL DepthClipEnable;
 			FALSE,                    // BOOL ScissorEnable;
 			FALSE,                    // BOOL MultisampleEnable;
-			FALSE                     // BOOL AntialiasedLineEnable;
+			FALSE                      // BOOL AntialiasedLineEnable;
 		),
 		m_pRasterizerWire.GetAddressOf()
 	);
@@ -240,7 +240,7 @@ void SkinnedMesh::Render(
 	HRESULT hr = S_OK;
 	if (shader != nullptr)
 	{
-		shader->activateShaders(imm_context);
+		shader->ActivateShaders(imm_context);
 	}
 
 	XMFLOAT4X4 W, WVP;
@@ -259,10 +259,10 @@ void SkinnedMesh::Render(
 
 
 
-		if (mesh.m_motions[mCurrentMotion].frameSize > 0)
+		if (mesh.mMotions[mCurrentMotion].frameSize > 0)
 		{
-			FbxInfo::Motion& motion = mesh.m_motions[mCurrentMotion];
-			int frame = static_cast<int>(motion.animeTick / motion.SAMPLE_TIME);
+			FbxInfo::Motion& motion = mesh.mMotions[mCurrentMotion];
+			auto frame = static_cast<unsigned int>(motion.animeTick / FbxInfo::SAMPLE_TIME);
 			if (frame > motion.frameSize - 1)
 			{
 				frame = 0;
@@ -367,7 +367,9 @@ void SkinnedMesh::Render(
 			matData.metalness = mat_data.metalness;
 			matData.roughness = mat_data.roughness;
 			matData.specularColor = mat_data.specularColor;
-			matData.brdfFactor = mat_data.brdfFactor;
+			matData.textureConfig = mat_data.textureConfig;
+			matData.diffuse = mat_data.diffuse;
+			matData.specular = mat_data.specular;
 
 			imm_context->UpdateSubresource(m_pConstantBufferMaterial.Get(), 0, nullptr, &matData, 0, 0);
 			imm_context->VSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());
@@ -410,22 +412,23 @@ DirectX::XMMATRIX SkinnedMesh::Lerp(DirectX::XMFLOAT4X4& A, DirectX::XMFLOAT4X4&
 
 //----------------------------------------------------------------------------------------------------------------------------
 
-void SkinnedMesh::Play(std::string name, bool isLooped)
+void SkinnedMesh::Play(std::string name, int blend_time, bool isLooped)
 {
 	auto it = m_meshes.begin();
 	while (it != m_meshes.end())
 	{
-		auto i = it->m_motions.find(name);
-		if (i == it->m_motions.end())
+		auto i = it->mMotions.find(name);
+		if (i == it->mMotions.end())
 		{
 			std::cout << "the motion not found." << std::endl;
 			return;
 		}
 		i->second.bIsLooped = isLooped;
-		it->m_motions[mCurrentMotion].animeTick = 0.0f;
+		it->mMotions[mCurrentMotion].animeTick = 0.0f;
 		it++;
 	}
 
+	mFrameInterpolation.SetMaxTime(blend_time);
 	mFrameInterpolation.Init();
 	mPreviousMotion = mCurrentMotion;
 	mCurrentMotion = name;
@@ -438,16 +441,16 @@ void SkinnedMesh::Play(std::string name, bool isLooped)
 
 DirectX::XMMATRIX SkinnedMesh::CalculateMotionMatrix(int frame, int bone_id, MyFbxMesh& mesh)
 {
-	DirectX::XMFLOAT4X4& current = mesh.m_motions[mCurrentMotion].keys.at(bone_id).at(frame);
+	DirectX::XMFLOAT4X4& current = mesh.mMotions[mCurrentMotion].keys.at(bone_id).at(frame);
 	if (mFrameInterpolation.IsStopped()) return XMLoadFloat4x4(&current);
 
 	//std::cout << "Interpolation : " << mFrameInterpolation.GetTime() << std::endl;
 
 	unsigned int anotherFrame = frame;
-	FbxInfo::Motion& previousMotion = mesh.m_motions[mPreviousMotion];
+	FbxInfo::Motion& previousMotion = mesh.mMotions[mPreviousMotion];
 	if (frame > previousMotion.frameSize) anotherFrame = frame - (previousMotion.frameSize);
 
-	DirectX::XMFLOAT4X4 previous = mesh.m_motions[mPreviousMotion].keys.at(bone_id).at(anotherFrame);
+	DirectX::XMFLOAT4X4 previous = mesh.mMotions[mPreviousMotion].keys.at(bone_id).at(anotherFrame);
 
 
 

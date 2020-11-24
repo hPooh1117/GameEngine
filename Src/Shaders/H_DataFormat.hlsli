@@ -17,12 +17,12 @@ cbuffer CBPerMeshMat : register(b1)
     float4 mat_color;
 
     float3 specColor;
-    float brdfSpec;
 
     float gMetalness;
     float gRoughness;
-    float dummy0;
-    float dummy1;
+    float gDiffuse;
+    float gSpecular;
+    int   gTextureConfig;
 }
 
 cbuffer CBPerBone : register(b4)
@@ -43,6 +43,17 @@ struct VS_Input
     float4 color : COLOR;
 };
 
+struct VS_InputB
+{
+    float3 position : POSITION;
+    float3 normal : NORMAL;
+    float2 texcoord : TEXCOORD;
+    float4 color : COLOR;
+    float3 tangent : TANGENT;
+    float3 binormal : BINORMAL;
+
+};
+
 struct VS_InputS
 {
     float3 position : POSITION;
@@ -52,6 +63,7 @@ struct VS_InputS
     float4 bone_weights : WEIGHTS;
     uint4  bone_indices : BONES;
     float3 tangent : TANGENT;
+    float3 binormal : BINORMAL;
 };
 
 struct HS_Input
@@ -98,7 +110,16 @@ struct PS_Input
     float3 w_normal : TEXCOORD3;
 };
 
-
+struct PS_InputB
+{
+    float4 position : SV_POSITION;
+    float4 color : COLOR;
+    float2 texcoord : TEXCOORD;
+    float3 w_pos : TEXCOORD2;
+    float3 w_normal : TEXCOORD3;
+    float3 w_tangent : TEXCOORD4;
+    float3 w_binormal : TEXCOORD5;
+};
 
 
 //---------------------------------

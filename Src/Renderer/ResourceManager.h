@@ -3,6 +3,7 @@
 #include <wrl.h>
 #include <string>
 #include <memory>
+#include <vector>
 
 #ifdef _DEBUG
 #pragma comment(lib, "DirectXTex.lib")
@@ -14,9 +15,9 @@
 
 #include "D3D_Helper.h"
 
+struct ShaderMacro;
 
-// @class ResourceManager
-// @brief to sharing texture resource among the sprite classes using same texture.
+
 class ResourceManager
 {
 public:
@@ -35,15 +36,20 @@ public:
     static HRESULT CreateVSFromFile(
         D3D::DevicePtr& device,
         const std::string& vs_name,
-        D3D::VShaderPtr& vs
+        D3D::VSPtr& vs
     );
 
     static HRESULT CompileHLSLFile(
-        std::wstring& filename,
-        std::string& func, 
-        std::string shaderModel,
+        const std::wstring& filename,
+        const std::string& func, 
+        const std::string shaderModel,
         Microsoft::WRL::ComPtr<ID3DBlob>& shaderBlob);
-
+    static HRESULT CompileHLSLFile(
+        const wchar_t* filename,
+        const char* func,
+        const char* shader_model,
+        D3D::BlobPtr& shader_blob,
+        const std::vector<ShaderMacro>& shader_macros );
     
 
     //static HRESULT FetchDataFromCSO(
@@ -62,16 +68,18 @@ public:
     static HRESULT CreatePSFromFile(
         D3D::DevicePtr& device,
         const std::string& ps_name,
-        D3D::PShaderPtr& ps
+        D3D::PSPtr& ps
     );
 
 
     static HRESULT CreateFilenameToRefer(
         wchar_t(&newFilename)[256], 
-        const wchar_t*, const wchar_t*);
+        const wchar_t*, 
+        const wchar_t*,
+        bool will_be_deleted = true);
 
     static HRESULT CreateDummyTexture(
         D3D::DevicePtr& device,
-        D3D::ShaderResouceVPtr& p_srv);
+        D3D::SRVPtr& p_srv);
 };
 

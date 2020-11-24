@@ -79,7 +79,7 @@ void SpotLight::RenderUI()
 
     for (auto i = 0; i < SPOT_MAX; ++i)
     {
-        SetNextTreeNodeOpen(false, ImGuiSetCond_Once);
+        SetNextTreeNodeOpen(false, ImGuiCond_Once);
         std::string title = "Spot Light " + std::to_string(i);
 
         if (TreeNode(title.data()))

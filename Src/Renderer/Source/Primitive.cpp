@@ -133,7 +133,7 @@ void Primitive::Render(
     imm_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
     imm_context->RSSetState(mRasterizerState.Get());
 
-    shader->activateShaders(imm_context);
+    shader->ActivateShaders(imm_context);
     imm_context->OMSetDepthStencilState(mDepthStencilState.Get(), 1);
 
 

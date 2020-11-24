@@ -1,6 +1,13 @@
 #include "H_DataFormat.hlsli"
 #include "H_PointLight.hlsli"
 #include "H_Functions.hlsli"
+
+
+
+Texture2D diffuse_texture : register(t0);
+SamplerState decal_sampler : register(s0);
+
+
 //--------------------------------------------
 //	エントリーポイント
 //--------------------------------------------
@@ -19,7 +26,7 @@ GS_Input VSmain(VS_Input input)
 
 	float4 wP = mul(P, world);
 
-	output.color = input.color;
+	output.color = input.color * mat_color;
 	output.texcoord = input.texcoord;
 	output.w_normal = N;
 	output.w_pos = wP.xyz;
@@ -42,7 +49,7 @@ GS_Input VSmainS(VS_InputS input)
 
 	float4 wP = mul(P, world);
 
-	output.color = input.color;
+	output.color = input.color * mat_color;
 	output.texcoord = input.texcoord;
 	output.w_normal = N;
 	output.w_pos = wP.xyz;
@@ -75,7 +82,7 @@ GS_Input VSmainSkinning(VS_InputS input)
 
 	float4 wP = mul(p, world);
 
-	output.color = input.color;
+	output.color = input.color * mat_color;
 	output.texcoord = input.texcoord;
 	output.w_normal = N;
 	output.w_pos = wP.xyz;

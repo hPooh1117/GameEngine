@@ -26,7 +26,7 @@ private:
 	std::vector<std::thread> mThreads;
 	std::condition_variable  mEventVar;
 	std::mutex               mEventMutex;
-	bool                     m_bIsStopping = false;
+	bool                     mbIsStopping = false;
 
 	TaskQueue                mTaskQueue;
 

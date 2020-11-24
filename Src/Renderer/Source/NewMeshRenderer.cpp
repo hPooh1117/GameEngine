@@ -39,10 +39,7 @@ NewMeshRenderer::NewMeshRenderer()
 
 bool NewMeshRenderer::Initialize(D3D::DevicePtr& p_device)
 {
-	{
-		std::unique_lock<std::mutex> lck(ENGINE.mLoadingMutex);
-		mpSkybox = std::make_unique<Skybox>(p_device, mSkyboxFilename.c_str(), 10, 10);
-	}
+	mpSkybox = std::make_unique<Skybox>(p_device, mSkyboxFilename.c_str(), 10, 10);
 
 	return true;
 }
@@ -65,7 +62,7 @@ bool NewMeshRenderer::InitializeMeshes(D3D::DevicePtr& p_device)
 			mMeshTable.emplace(component.first, std::make_unique<BasicCylinder>(p_device));
 			break;
 		case MeshTypeID::E_BasicSphere:
-			mMeshTable.emplace(component.first, std::make_unique<BasicSphere>(p_device, 15, 15));
+			mMeshTable.emplace(component.first, std::make_unique<BasicSphere>(p_device, 20, 20));
 			break;
 		case MeshTypeID::E_BasicCapsule:
 			mMeshTable.emplace(component.first, std::make_unique<BasicSphere>(p_device));
@@ -77,7 +74,7 @@ bool NewMeshRenderer::InitializeMeshes(D3D::DevicePtr& p_device)
 			mMeshTable.emplace(component.first, std::make_unique<Plane>(p_device, component.second->GetMeshFileName().c_str()));
 			break;
 		case MeshTypeID::E_StaticMesh:
-			mMeshTable.emplace(component.first, std::make_unique<StaticMesh>(p_device, component.second->GetMeshFileName().c_str()));
+			mMeshTable.emplace(component.first, std::make_unique<StaticMesh>(p_device, component.second->GetMeshFileName().c_str(), true));
 			break;
 		case MeshTypeID::E_SkinnedMesh:
 		{
@@ -115,6 +112,8 @@ bool NewMeshRenderer::InitializeMeshes(D3D::DevicePtr& p_device)
 
 void NewMeshRenderer::RegistMeshDataFromActors(D3D::DevicePtr& p_device, const std::unique_ptr<ActorManager>& p_actors)
 {
+
+
 	for (auto i = 0u; i < p_actors->GetActorsSize(); ++i)
 	{
 		if (mMeshDataTable.find(i) != mMeshDataTable.end()) continue;
@@ -128,7 +127,7 @@ void NewMeshRenderer::RegistMeshDataFromActors(D3D::DevicePtr& p_device, const s
 
 void NewMeshRenderer::RenderSkybox(D3D::DeviceContextPtr& p_imm_context, float elapsed_time, unsigned int current_pass_id)
 {
-	ShaderType type = current_pass_id == RenderPassID::EForwardPass ? ShaderType::ESkybox : ShaderType::EDefferedSkybox;
+	ShaderID type = static_cast<ShaderID>(ChooseShaderIdForSkybox(current_pass_id));
 	ENGINE.GetRenderPass(current_pass_id)->SetShader(p_imm_context, type);
 	Vector3 pos = ENGINE.GetCameraPtr()->GetCameraPosition();
 	DirectX::XMMATRIX w = DirectX::XMMatrixTranslation(pos.x, pos.y, pos.z);
@@ -141,7 +140,6 @@ void NewMeshRenderer::RenderSkybox(D3D::DeviceContextPtr& p_imm_context, float e
 
 void NewMeshRenderer::RenderMesh(D3D::DeviceContextPtr& p_imm_context, float elapsed_time, unsigned int current_pass_id)
 {
-
 	for (auto& mesh : mMeshTable)
 	{
 		// メッシュデータ受け取り
@@ -150,22 +148,26 @@ void NewMeshRenderer::RenderMesh(D3D::DeviceContextPtr& p_imm_context, float ela
 		// メッシュ描画用情報の準備
 		DirectX::XMMATRIX world = component->GetWorldMatrix();
 		bool bIsSolid = component->GetIsSolid();
-		ShaderType id = component->GetShaderID(current_pass_id == RenderPassID::EShadowPass ? ShaderUsage::EShader : ShaderUsage::EMain);
-		ENGINE.GetRenderPass(current_pass_id)->SetShader(p_imm_context, id);
+		ShaderID id = static_cast<ShaderID>(component->GetShaderID(ChooseShaderUsageForMesh(current_pass_id)));
+		if (id == ShaderID::UNREGISTERED_SHADER) continue;
+
+		ENGINE.GetRenderPass(current_pass_id)->SetShader(p_imm_context, static_cast<ShaderID>(id));
 
 		// テクスチャ準備
 		for (auto& texData : component->GetTextureTable())
 		{
-			ENGINE.GetTextureHolderPtr()->Set(p_imm_context, texData.filename, texData.slot);
+			if (texData.filename == L"EMPTY") ENGINE.GetTextureHolderPtr()->Set(p_imm_context, texData.filename, texData.slot, false);
+			else							  ENGINE.GetTextureHolderPtr()->Set(p_imm_context, texData.filename, texData.slot);
 			ENGINE.GetTextureHolderPtr()->SetSampler(p_imm_context, texData.slot, SamplerID::EWrap);
 			ENGINE.GetTextureHolderPtr()->SetSampler(p_imm_context, 1, SamplerID::EBorder);
+			ENGINE.GetTextureHolderPtr()->SetSampler(p_imm_context, 2, SamplerID::EClamp);
 		}
 		// モーションが変更されていたら
 		if (component->GetWasChangedMotion())
 		{
 			// モーション再生
 			Mesh* meshptr = mesh.second.release();
-			static_cast<SkinnedMesh*>(meshptr)->Play(component->GetCurrentName());
+			static_cast<SkinnedMesh*>(meshptr)->Play(component->GetCurrentName(), component->GetAnimeBlendTime());
 			mesh.second.reset(meshptr);
 			component->DeactivateChangedMotion();
 		}
@@ -173,6 +175,35 @@ void NewMeshRenderer::RenderMesh(D3D::DeviceContextPtr& p_imm_context, float ela
 		bool bForShadow = current_pass_id == RenderPassID::EShadowPass ? true : false;
 
 		mesh.second->Render(p_imm_context, elapsed_time, world, ENGINE.GetCameraPtr().get(), nullptr, component->GetMaterialData(), bForShadow, bIsSolid);
+	}
+}
+
+UINT NewMeshRenderer::ChooseShaderUsageForMesh(UINT current_pass)
+{
+	switch (current_pass)
+	{
+	case RenderPassID::EShadowPass:
+		return ShaderUsage::EShader;
+	case RenderPassID::ECubeMapPass:
+		return ShaderUsage::ECubeMap;
+	default:
+		return ShaderUsage::EMain;
+	}
+}
+
+UINT NewMeshRenderer::ChooseShaderIdForSkybox(UINT current_pass)
+{
+	switch (current_pass)
+	{
+	case RenderPassID::EForwardPass:
+		return ShaderID::ESkybox;
+	case RenderPassID::EDefferedPass:
+		return ShaderID::EDefferedSkybox;
+	case RenderPassID::ECubeMapPass:
+		return ShaderID::EMakeCubeMap;
+	default:
+		Log::Warning("Inserted invalid number.");
+		return ShaderID::ESkybox;
 	}
 }
 
@@ -185,6 +216,11 @@ void NewMeshRenderer::ClearAll()
 {
 	mMeshDataTable.clear();
 	mMeshTable.clear();
+}
+
+void NewMeshRenderer::SetSkybox(int id)
+{
+	mpSkybox->SetCurrentSkybox(id);
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------

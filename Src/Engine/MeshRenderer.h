@@ -65,7 +65,7 @@
 ////	NewMeshRenderer();
 ////	~NewMeshRenderer() = default;
 ////
-////	bool Initialize(D3D::DevicePtr& p_device);
+////	bool Create(D3D::DevicePtr& p_device);
 ////	bool InitializeMeshes(D3D::DevicePtr& p_device);
 ////	void RegistMeshDataFromActors(const std::unique_ptr<ActorManager>& p_actors);
 ////	void RenderMesh(D3D::DeviceContextPtr& p_imm_context, float elapsed_time, u_int current_pass_id);

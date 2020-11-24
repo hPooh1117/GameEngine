@@ -8,6 +8,12 @@
 class ShadowMap;
 class MultiRenderTarget;
 
+struct SimpleBuffer
+{
+    int i;
+    float f;
+};
+
 class SceneB : public Scene
 {
 public:
@@ -16,6 +22,8 @@ public:
 
     virtual void InitializeScene() override;
     virtual void Update(float elapsed_time) override;
+    virtual void PreCompute(std::unique_ptr<GraphicsEngine>& p_graphics) override;
+
     virtual void Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time) override;
 
     ~SceneB();
@@ -25,6 +33,11 @@ private:
     std::shared_ptr<Actor> m_pOswell;
     std::shared_ptr<Actor> m_pShiba;
 
+   
+
     std::shared_ptr<Actor> m_pField;
+
+    int mNumElement;
+    std::vector<SimpleBuffer> mSimpleBufferVec;
 
 };

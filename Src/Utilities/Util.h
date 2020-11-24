@@ -62,6 +62,7 @@ public:
 	inline unsigned int GetTimeMax();
 	inline float        GetTimeMaxFloat();
 	inline void         SetTime(unsigned int time);
+	inline void         SetMaxTime(unsigned int time);
 };
 
 void FrameTimer::Init()
@@ -87,5 +88,7 @@ float        FrameTimer::GetTimeFloat() { return static_cast<float>(mTimer); }
 unsigned int FrameTimer::GetTimeMax() { return mTimerMax; }
 float        FrameTimer::GetTimeMaxFloat() { return static_cast<float>(mTimerMax); }
 void         FrameTimer::SetTime(unsigned int time) { mTimer = time; }
+void		 FrameTimer::SetMaxTime(unsigned int time) { mTimerMax = time; }
+
 //----------------------------------------------------------------------------------------------------------------------------
 

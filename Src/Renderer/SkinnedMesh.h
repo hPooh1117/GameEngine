@@ -69,7 +69,7 @@ public:
 
 	DirectX::XMMATRIX Lerp(DirectX::XMFLOAT4X4& A, DirectX::XMFLOAT4X4& B, float rate);
 
-	void Play(std::string name, bool isLooped = false);
+	void Play(std::string name, int blend_time, bool isLooped = false);
 	DirectX::XMMATRIX CalculateMotionMatrix(int frame, int bone_id, MyFbxMesh& mesh);
 
 };

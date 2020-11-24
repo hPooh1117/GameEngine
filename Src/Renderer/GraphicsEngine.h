@@ -63,8 +63,8 @@ public:
 
     D3D::DevicePtr&        GetDevicePtr();
     D3D::DeviceContextPtr& GetImmContextPtr();
-    D3D::RenderTargetVPtr& GetRTVPtr();
-    D3D::DepthStencilVPtr& GetDSVPtr();
+    D3D::RTVPtr& GetRTVPtr();
+    D3D::DSVPtr& GetDSVPtr();
     D3D::DepthStencilPtr&  GetDepthStencilPtr(int ds_num);
     std::unique_ptr<Swapchain>& GetSwapchain() { return m_pSwapChain; }
 

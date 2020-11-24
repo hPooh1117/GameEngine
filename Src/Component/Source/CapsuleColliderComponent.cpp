@@ -113,7 +113,7 @@ void CapsuleColliderComponent::ResponceToSphere(
 	float restitution,
 	float penetration)
 {
-	//Vector3 pos1 = mPosition;
+	//Vector3 pos1 = mPos;
 	//Vector3 pos2 = other->GetCenterPosition();
 	//Vector3 n = pos2 - pos1;
 	//n.normalize();

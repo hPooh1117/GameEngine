@@ -43,6 +43,7 @@ public:
     inline void SetPosition(const Vector3& pos)
     {
         mPos = pos;
+        mRotation = Quaternion();
     }
 
     inline Vector3& getPosition()

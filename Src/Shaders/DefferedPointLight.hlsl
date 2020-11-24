@@ -86,6 +86,7 @@ PS_Output_Light PSmain(PS_InputDeffered input)
 	float3 PD = (float3)0;
 	float3 PS = (float3)0;
 
+	[unroll]
 	for (int i = 0; i < POINTMAX; ++i)
 	{
 		if (point_lights[i].type == 0) continue;
@@ -111,10 +112,10 @@ PS_Output_Light PSmain(PS_InputDeffered input)
 	float4 skyboxAlbedo = step(450.0, Length) * albedo;
 	skyboxAlbedo.a = 1;
 
-	output.diffuse = float4(D + A + PD, 1);
+	output.diffuse = float4(D + PD, 1);
 	output.specular = float4(S + PS, 1);
 	output.prelighting = float4(D + A + PD + S + PS + skyboxAlbedo.xyz, 1) * shadow * albedo;
-	output.skybox = skyboxAlbedo;
+	output.skybox = skyboxAlbedo * light_color;
 	return output;
 }
 

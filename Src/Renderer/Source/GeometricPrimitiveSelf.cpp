@@ -71,7 +71,7 @@ GeometricPrimitiveSelf::GeometricPrimitiveSelf(
             TRUE,                     // BOOL DepthClipEnable;
             FALSE,                    // BOOL ScissorEnable;
             FALSE,                    // BOOL MultisampleEnable;
-            FALSE                     // BOOL AntialiasedLineEnable;
+            FALSE                      // BOOL AntialiasedLineEnable;
             ),
         m_pRasterizerWire.GetAddressOf()
         );
@@ -88,7 +88,7 @@ GeometricPrimitiveSelf::GeometricPrimitiveSelf(
             TRUE,                    // BOOL DepthClipEnable;
             FALSE,                    // BOOL ScissorEnable;
             FALSE,                    // BOOL MultisampleEnable;
-            FALSE                     // BOOL AntialiasedLineEnable;
+            FALSE                      // BOOL AntialiasedLineEnable;
             ),
         m_pRasterizerSolid.GetAddressOf()
         );
@@ -170,7 +170,7 @@ void GeometricPrimitiveSelf::Render(
 {
     HRESULT hr = S_OK;
 
-    if (shader != nullptr) shader->activateShaders(imm_context);
+    if (shader != nullptr) shader->ActivateShaders(imm_context);
 
     SetRenderState(imm_context);
 
@@ -195,7 +195,9 @@ void GeometricPrimitiveSelf::Render(
     matData.metalness = mat_data.metalness;
     matData.roughness = mat_data.roughness;
     matData.specularColor = mat_data.specularColor;
-    matData.brdfFactor = mat_data.brdfFactor;
+    matData.textureConfig = mat_data.textureConfig;
+    matData.diffuse = mat_data.diffuse;
+    matData.specular = mat_data.specular;
 
     imm_context->UpdateSubresource(m_pConstantBufferMesh.Get(), 0, nullptr, &meshData, 0, 0);
     imm_context->VSSetConstantBuffers(0, 1, m_pConstantBufferMesh.GetAddressOf());
@@ -316,40 +318,41 @@ BasicCube::BasicCube(
 
     // Set Info of vertices
     Vertex vertices[] = {
-        { XMFLOAT3(-0.5, +0.5, +0.5), XMFLOAT3(+0.0f, +1.0f, +0.0f), XMFLOAT2(0, 1), XMFLOAT4(1, 1, 1, 1) },
-        { XMFLOAT3(+0.5, +0.5, +0.5), XMFLOAT3(+0.0f, +1.0f, +0.0f), XMFLOAT2(1, 1), XMFLOAT4(1, 1, 1, 1) },
-        { XMFLOAT3(-0.5, +0.5, -0.5), XMFLOAT3(+0.0f, +1.0f, +0.0f), XMFLOAT2(0, 0), XMFLOAT4(1, 1, 1, 1) },
-        { XMFLOAT3(+0.5, +0.5, -0.5), XMFLOAT3(+0.0f, +1.0f, +0.0f), XMFLOAT2(1, 0), XMFLOAT4(1, 1, 1, 1) },
+        // TOP
+        { XMFLOAT3(-0.5, +0.5, +0.5), XMFLOAT3(+0.0f, +1.0f, +0.0f), XMFLOAT2(0, 1), XMFLOAT4(1, 1, 1, 1) ,XMFLOAT3(+1.0f, +0.0f, +0.0f), XMFLOAT3(+0.0f, +0.0f, +1.0f)},
+        { XMFLOAT3(+0.5, +0.5, +0.5), XMFLOAT3(+0.0f, +1.0f, +0.0f), XMFLOAT2(1, 1), XMFLOAT4(1, 1, 1, 1) ,XMFLOAT3(+1.0f, +0.0f, +0.0f), XMFLOAT3(+0.0f, +0.0f, +1.0f)},
+        { XMFLOAT3(-0.5, +0.5, -0.5), XMFLOAT3(+0.0f, +1.0f, +0.0f), XMFLOAT2(0, 0), XMFLOAT4(1, 1, 1, 1) ,XMFLOAT3(+1.0f, +0.0f, +0.0f), XMFLOAT3(+0.0f, +0.0f, +1.0f)},
+        { XMFLOAT3(+0.5, +0.5, -0.5), XMFLOAT3(+0.0f, +1.0f, +0.0f), XMFLOAT2(1, 0), XMFLOAT4(1, 1, 1, 1) ,XMFLOAT3(+1.0f, +0.0f, +0.0f), XMFLOAT3(+0.0f, +0.0f, +1.0f)},
 
+        // BOTTOM
+        { XMFLOAT3(-0.5, -0.5, +0.5), XMFLOAT3(+0.0f, -1.0f, +0.0f), XMFLOAT2(0, 1), XMFLOAT4(1, 1, 1, 1) ,XMFLOAT3(-1.0f, +0.0f, +0.0f), XMFLOAT3(+0.0f, +0.0f, +1.0f)},
+        { XMFLOAT3(+0.5, -0.5, +0.5), XMFLOAT3(+0.0f, -1.0f, +0.0f), XMFLOAT2(1, 1), XMFLOAT4(1, 1, 1, 1) ,XMFLOAT3(-1.0f, +0.0f, +0.0f), XMFLOAT3(+0.0f, +0.0f, +1.0f)},
+        { XMFLOAT3(-0.5, -0.5, -0.5), XMFLOAT3(+0.0f, -1.0f, +0.0f), XMFLOAT2(0, 0), XMFLOAT4(1, 1, 1, 1) ,XMFLOAT3(-1.0f, +0.0f, +0.0f), XMFLOAT3(+0.0f, +0.0f, +1.0f)},
+        { XMFLOAT3(+0.5, -0.5, -0.5), XMFLOAT3(+0.0f, -1.0f, +0.0f), XMFLOAT2(1, 0), XMFLOAT4(1, 1, 1, 1) ,XMFLOAT3(-1.0f, +0.0f, +0.0f), XMFLOAT3(+0.0f, +0.0f, +1.0f)},
 
-        { XMFLOAT3(-0.5, -0.5, +0.5), XMFLOAT3(+0.0f, -1.0f, +0.0f), XMFLOAT2(0, 1), XMFLOAT4(1, 1, 1, 1) },
-        { XMFLOAT3(+0.5, -0.5, +0.5), XMFLOAT3(+0.0f, -1.0f, +0.0f), XMFLOAT2(1, 1), XMFLOAT4(1, 1, 1, 1) },
-        { XMFLOAT3(-0.5, -0.5, -0.5), XMFLOAT3(+0.0f, -1.0f, +0.0f), XMFLOAT2(0, 0), XMFLOAT4(1, 1, 1, 1) },
-        { XMFLOAT3(+0.5, -0.5, -0.5), XMFLOAT3(+0.0f, -1.0f, +0.0f), XMFLOAT2(1, 0), XMFLOAT4(1, 1, 1, 1) },
+        // FRONT
+        { XMFLOAT3(-0.5, +0.5, -0.5), XMFLOAT3(+0.0f, +0.0f, -1.0f), XMFLOAT2(0, 1), XMFLOAT4(1, 1, 1, 1), XMFLOAT3(+1.0f, +0.0f, +0.0f), XMFLOAT3(+0.0f, +1.0f, +0.0f)},
+        { XMFLOAT3(+0.5, +0.5, -0.5), XMFLOAT3(+0.0f, +0.0f, -1.0f), XMFLOAT2(1, 1), XMFLOAT4(1, 1, 1, 1), XMFLOAT3(+1.0f, +0.0f, +0.0f), XMFLOAT3(+0.0f, +1.0f, +0.0f)},
+        { XMFLOAT3(-0.5, -0.5, -0.5), XMFLOAT3(+0.0f, +0.0f, -1.0f), XMFLOAT2(0, 0), XMFLOAT4(1, 1, 1, 1), XMFLOAT3(+1.0f, +0.0f, +0.0f), XMFLOAT3(+0.0f, +1.0f, +0.0f)},
+        { XMFLOAT3(+0.5, -0.5, -0.5), XMFLOAT3(+0.0f, +0.0f, -1.0f), XMFLOAT2(1, 0), XMFLOAT4(1, 1, 1, 1), XMFLOAT3(+1.0f, +0.0f, +0.0f), XMFLOAT3(+0.0f, +1.0f, +0.0f)},
 
+        // BACK
+        { XMFLOAT3(-0.5, +0.5, +0.5), XMFLOAT3(+0.0f, +0.0f, +1.0f), XMFLOAT2(0, 1), XMFLOAT4(1, 1, 1, 1), XMFLOAT3(+1.0f, +0.0f, +0.0f), XMFLOAT3(+0.0f, -1.0f, +0.0f)},
+        { XMFLOAT3(+0.5, +0.5, +0.5), XMFLOAT3(+0.0f, +0.0f, +1.0f), XMFLOAT2(1, 1), XMFLOAT4(1, 1, 1, 1), XMFLOAT3(+1.0f, +0.0f, +0.0f), XMFLOAT3(+0.0f, -1.0f, +0.0f)},
+        { XMFLOAT3(-0.5, -0.5, +0.5), XMFLOAT3(+0.0f, +0.0f, +1.0f), XMFLOAT2(0, 0), XMFLOAT4(1, 1, 1, 1), XMFLOAT3(+1.0f, +0.0f, +0.0f), XMFLOAT3(+0.0f, -1.0f, +0.0f)},
+        { XMFLOAT3(+0.5, -0.5, +0.5), XMFLOAT3(+0.0f, +0.0f, +1.0f), XMFLOAT2(1, 0), XMFLOAT4(1, 1, 1, 1), XMFLOAT3(+1.0f, +0.0f, +0.0f), XMFLOAT3(+0.0f, -1.0f, +0.0f)},
 
-        { XMFLOAT3(-0.5, +0.5, -0.5), XMFLOAT3(+0.0f, +0.0f, -1.0f), XMFLOAT2(0, 1), XMFLOAT4(1, 1, 1, 1) },
-        { XMFLOAT3(+0.5, +0.5, -0.5), XMFLOAT3(+0.0f, +0.0f, -1.0f), XMFLOAT2(1, 1), XMFLOAT4(1, 1, 1, 1) },
-        { XMFLOAT3(-0.5, -0.5, -0.5), XMFLOAT3(+0.0f, +0.0f, -1.0f), XMFLOAT2(0, 0), XMFLOAT4(1, 1, 1, 1) },
-        { XMFLOAT3(+0.5, -0.5, -0.5), XMFLOAT3(+0.0f, +0.0f, -1.0f), XMFLOAT2(1, 0), XMFLOAT4(1, 1, 1, 1) },
+        // RIGHT
+        { XMFLOAT3(+0.5, +0.5, -0.5), XMFLOAT3(+1.0f, +0.0f, +0.0f), XMFLOAT2(0, 1), XMFLOAT4(1, 1, 1, 1), XMFLOAT3(+0.0f, +0.0f, +1.0f), XMFLOAT3(+0.0f, +1.0f, +0.0f)},
+        { XMFLOAT3(+0.5, +0.5, +0.5), XMFLOAT3(+1.0f, +0.0f, +0.0f), XMFLOAT2(1, 1), XMFLOAT4(1, 1, 1, 1), XMFLOAT3(+0.0f, +0.0f, +1.0f), XMFLOAT3(+0.0f, +1.0f, +0.0f)},
+        { XMFLOAT3(+0.5, -0.5, -0.5), XMFLOAT3(+1.0f, +0.0f, +0.0f), XMFLOAT2(0, 0), XMFLOAT4(1, 1, 1, 1), XMFLOAT3(+0.0f, +0.0f, +1.0f), XMFLOAT3(+0.0f, +1.0f, +0.0f)},
+        { XMFLOAT3(+0.5, -0.5, +0.5), XMFLOAT3(+1.0f, +0.0f, +0.0f), XMFLOAT2(1, 0), XMFLOAT4(1, 1, 1, 1), XMFLOAT3(+0.0f, +0.0f, +1.0f), XMFLOAT3(+0.0f, +1.0f, +0.0f)},
 
-
-        { XMFLOAT3(-0.5, +0.5, +0.5), XMFLOAT3(+0.0f, +0.0f, +1.0f), XMFLOAT2(0, 1), XMFLOAT4(1, 1, 1, 1) },
-        { XMFLOAT3(+0.5, +0.5, +0.5), XMFLOAT3(+0.0f, +0.0f, +1.0f), XMFLOAT2(1, 1), XMFLOAT4(1, 1, 1, 1) },
-        { XMFLOAT3(-0.5, -0.5, +0.5), XMFLOAT3(+0.0f, +0.0f, +1.0f), XMFLOAT2(0, 0), XMFLOAT4(1, 1, 1, 1) },
-        { XMFLOAT3(+0.5, -0.5, +0.5), XMFLOAT3(+0.0f, +0.0f, +1.0f), XMFLOAT2(1, 0), XMFLOAT4(1, 1, 1, 1) },
-
-
-        { XMFLOAT3(+0.5, +0.5, -0.5), XMFLOAT3(+1.0f, +0.0f, +0.0f), XMFLOAT2(0, 1), XMFLOAT4(1, 1, 1, 1) },
-        { XMFLOAT3(+0.5, +0.5, +0.5), XMFLOAT3(+1.0f, +0.0f, +0.0f), XMFLOAT2(1, 1), XMFLOAT4(1, 1, 1, 1) },
-        { XMFLOAT3(+0.5, -0.5, -0.5), XMFLOAT3(+1.0f, +0.0f, +0.0f), XMFLOAT2(0, 0), XMFLOAT4(1, 1, 1, 1) },
-        { XMFLOAT3(+0.5, -0.5, +0.5), XMFLOAT3(+1.0f, +0.0f, +0.0f), XMFLOAT2(1, 0), XMFLOAT4(1, 1, 1, 1) },
-
-
-        { XMFLOAT3(-0.5, +0.5, -0.5), XMFLOAT3(-1.0f, +0.0f, +0.0f), XMFLOAT2(0, 1), XMFLOAT4(1, 1, 1, 1) },
-        { XMFLOAT3(-0.5, +0.5, +0.5), XMFLOAT3(-1.0f, +0.0f, +0.0f), XMFLOAT2(1, 1), XMFLOAT4(1, 1, 1, 1) },
-        { XMFLOAT3(-0.5, -0.5, -0.5), XMFLOAT3(-1.0f, +0.0f, +0.0f), XMFLOAT2(0, 0), XMFLOAT4(1, 1, 1, 1) },
-        { XMFLOAT3(-0.5, -0.5, +0.5), XMFLOAT3(-1.0f, +0.0f, +0.0f), XMFLOAT2(1, 0), XMFLOAT4(1, 1, 1, 1) },
+        // LEFT
+        { XMFLOAT3(-0.5, +0.5, -0.5), XMFLOAT3(-1.0f, +0.0f, +0.0f), XMFLOAT2(0, 1), XMFLOAT4(1, 1, 1, 1), XMFLOAT3(+0.0f, +0.0f, -1.0f), XMFLOAT3(+0.0f, +1.0f, +0.0f)},
+        { XMFLOAT3(-0.5, +0.5, +0.5), XMFLOAT3(-1.0f, +0.0f, +0.0f), XMFLOAT2(1, 1), XMFLOAT4(1, 1, 1, 1), XMFLOAT3(+0.0f, +0.0f, -1.0f), XMFLOAT3(+0.0f, +1.0f, +0.0f)},
+        { XMFLOAT3(-0.5, -0.5, -0.5), XMFLOAT3(-1.0f, +0.0f, +0.0f), XMFLOAT2(0, 0), XMFLOAT4(1, 1, 1, 1), XMFLOAT3(+0.0f, +0.0f, -1.0f), XMFLOAT3(+0.0f, +1.0f, +0.0f)},
+        { XMFLOAT3(-0.5, -0.5, +0.5), XMFLOAT3(-1.0f, +0.0f, +0.0f), XMFLOAT2(1, 0), XMFLOAT4(1, 1, 1, 1), XMFLOAT3(+0.0f, +0.0f, -1.0f), XMFLOAT3(+0.0f, +1.0f, +0.0f)},
     };
 
     for (auto& vertex : vertices)
@@ -378,19 +381,6 @@ BasicCube::BasicCube(
 
 }
 
-bool BasicCube::LoadTexture(D3D::DevicePtr& device, const wchar_t* filename)
-{
-    if (filename != L"\0")
-    {
-        return mTexture->Load(device, filename);
-
-    }
-    return mTexture->Load(device);
-}
-void BasicCube::SetRenderState(D3D::DeviceContextPtr& imm_context)
-{
-    //mTexture->Set(imm_context, 0);
-}
 
 
 
@@ -418,6 +408,8 @@ BasicCylinder::BasicCylinder(
     vertex.normal = DirectX::XMFLOAT3(0.0f, +1.0f, 0.0f);
     vertex.texcoord = DirectX::XMFLOAT2(0, 0);
     vertex.color = DirectX::XMFLOAT4(1, 1, 1, 1);
+    //vertex.tangent = DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f);
+    //vertex.binormal = DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f);
     mVertices.emplace_back(vertex);
     // top cap ring
     for (u_int i = 0; i < slices; ++i)
@@ -428,7 +420,10 @@ BasicCylinder::BasicCylinder(
         vertex.normal = DirectX::XMFLOAT3(0.0f, +1.0f, 0.0f);
         vertex.texcoord = DirectX::XMFLOAT2(0, 0);
         vertex.color = DirectX::XMFLOAT4(1, 1, 1, 1);
-
+        //Vector3 tan(-z, 0, x);
+        //tan.normalize();
+        //vertex.tangent = DirectX::XMFLOAT3(tan.x, 0.0f, tan.z);
+        //vertex.binormal = tan.cross(vertex.normal);
         mVertices.emplace_back(vertex);
     }
     base_index = 0;
@@ -447,6 +442,8 @@ BasicCylinder::BasicCylinder(
     vertex.normal = XMFLOAT3(0.0f, -1.0f, 0.0f);
     vertex.texcoord = DirectX::XMFLOAT2(0, 0);
     vertex.color = DirectX::XMFLOAT4(1, 1, 1, 1);
+    //vertex.tangent = XMFLOAT3(-1.0f, 0.0f, 0.0f);
+    //vertex.binormal = XMFLOAT3(0.0f, 0.0f, 1.0f);
 
     mVertices.emplace_back(vertex);
     // bottom cap ring
@@ -458,6 +455,10 @@ BasicCylinder::BasicCylinder(
         vertex.normal = XMFLOAT3(0.0f, -1.0f, 0.0f);
         vertex.texcoord = DirectX::XMFLOAT2(0, 0);
         vertex.color = DirectX::XMFLOAT4(1, 1, 1, 1);
+        //Vector3 tan(-z, 0, x);
+        //tan.normalize();
+        //vertex.tangent = DirectX::XMFLOAT3(tan.x, 0.0f, tan.z);
+        //vertex.binormal = tan.cross(vertex.normal);
 
         mVertices.emplace_back(vertex);
     }
@@ -482,6 +483,10 @@ BasicCylinder::BasicCylinder(
         vertex.normal = XMFLOAT3(x, 0.0f, z);
         vertex.texcoord = DirectX::XMFLOAT2(0, 0);
         vertex.color = DirectX::XMFLOAT4(1, 1, 1, 1);
+        //Vector3 tan(-z, 0, x);
+        //tan.normalize();
+        //vertex.tangent = DirectX::XMFLOAT3(tan.x, 0.0f, tan.z);
+        //vertex.binormal = tan.cross(vertex.normal);
 
         mVertices.emplace_back(vertex);
 
@@ -489,6 +494,10 @@ BasicCylinder::BasicCylinder(
         vertex.normal = XMFLOAT3(x, 0.0f, z);
         vertex.texcoord = DirectX::XMFLOAT2(0, 0);
         vertex.color = DirectX::XMFLOAT4(1, 1, 1, 1);
+        //Vector3 tan(-z, 0, x);
+        //tan.normalize();
+        //vertex.tangent = DirectX::XMFLOAT3(tan.x, 0.0f, tan.z);
+        //vertex.binormal = tan.cross(vertex.normal);
 
         mVertices.emplace_back(vertex);
     }
@@ -517,9 +526,6 @@ BasicCylinder::BasicCylinder(
 
 }
 
-void BasicCylinder::SetRenderState(D3D::DeviceContextPtr& imm_context)
-{
-}
 
 
 //******************************************************************************
@@ -557,6 +563,8 @@ BasicSphere::BasicSphere(
     top_vertex.position = DirectX::XMFLOAT3(0.0f, +radius, 0.0f);
     top_vertex.normal = DirectX::XMFLOAT3(0.0f, +1.0f, 0.0f);
     top_vertex.color = DirectX::XMFLOAT4(1, 1, 1, 1);
+    top_vertex.tangent = DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f);
+    top_vertex.binormal = DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f);
     GetUV(top_vertex);
 
     Vertex bottom_vertex;
@@ -564,6 +572,8 @@ BasicSphere::BasicSphere(
     bottom_vertex.normal = DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f);
     bottom_vertex.texcoord = DirectX::XMFLOAT2(0, 0);
     bottom_vertex.color = DirectX::XMFLOAT4(1, 1, 1, 1);
+    top_vertex.tangent = DirectX::XMFLOAT3(-1.0f, 0.0f, 0.0f);
+    top_vertex.binormal = DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f);
     GetUV(bottom_vertex);
 
 
@@ -576,7 +586,7 @@ BasicSphere::BasicSphere(
     // Compute vertices for each stack ring (do not count the poles as rings).
     for (u_int i = 1; i <= stacks - 1; ++i)
     {
-        float phi = i*phi_step;
+        float phi = i * phi_step;
 
         // Vertices of ring.
         for (u_int j = 0; j <= slices; ++j)
@@ -596,6 +606,12 @@ BasicSphere::BasicSphere(
             v.normal = p;
             GetUV(v);
             v.color = DirectX::XMFLOAT4(1, 1, 1, 1);
+            Vector3 tan(-v.normal.z, 0.0f, v.normal.x);
+            tan.normalize();
+            v.tangent = DirectX::XMFLOAT3(tan.x, 0.0f, tan.z);
+            Vector3 binormal = tan.cross(p);
+            v.binormal = binormal;
+
             if (j == slices / 2)
             {
                 v.texcoord.x = 1.0f;
@@ -605,8 +621,6 @@ BasicSphere::BasicSphere(
             }
 
             mVertices.emplace_back(v);
-
-
         }
     }
 
@@ -666,20 +680,7 @@ BasicSphere::BasicSphere(
     CreateBuffers(device/*, vertices.data(), indices.data(), vertices.size(), indices.size()*/);
 }
 
-bool BasicSphere::LoadTexture(D3D::DevicePtr& device, const wchar_t* filename)
-{
-    if (filename != L"\0" || filename != L"")
-    {
-        return mTexture->Load(device, filename);
 
-    }
-    return mTexture->Load(device);
-}
-
-void BasicSphere::SetRenderState(D3D::DeviceContextPtr& imm_context)
-{
-    //mTexture->Set(imm_context, 0);
-}
 
 
 
@@ -827,9 +828,5 @@ BasicCapsule::BasicCapsule(
 
     CreateBuffers(device/*, vertices.data(), indices.data(), vertices.size(), indices.size()*/);
 
-}
-
-void BasicCapsule::SetRenderState(D3D::DeviceContextPtr& imm_context)
-{
 }
 

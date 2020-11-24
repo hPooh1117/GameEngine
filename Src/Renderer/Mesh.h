@@ -18,6 +18,8 @@ public:
         DirectX::XMFLOAT3 normal;
         DirectX::XMFLOAT2 texcoord;
         DirectX::XMFLOAT4 color;
+        DirectX::XMFLOAT3 tangent;
+        DirectX::XMFLOAT3 binormal;
     };
 
     struct CBufferForMesh
@@ -30,12 +32,11 @@ public:
     {
         DirectX::XMFLOAT4 mat_color = { 1, 1, 1, 1 };
         DirectX::XMFLOAT3 specularColor;
-        float brdfFactor;
         float metalness;
         float roughness;
-        float dummy0 = 0.0f;
-        float dummy1 = 0.0f;
-
+        float diffuse = 0.0f;
+        float specular = 0.0f;
+        int   textureConfig;
     };
 
 protected:

@@ -13,7 +13,7 @@ class SphereColliderComponent;
 class PhysicsManager final
 {
 private:
-	static constexpr float RESTITUTION_FACTOR = 0.8f;
+	static constexpr float RESTITUTION_FACTOR = 0.65f;
 	int mNumberOfSphere = 0;
 	std::vector<std::shared_ptr < ObjectForTree<SphereColliderComponent>>> m_pObjTrees;
 	std::unique_ptr< LinearQuadTree<SphereColliderComponent>> m_pQuadTree;

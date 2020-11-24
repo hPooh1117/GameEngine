@@ -1,24 +1,59 @@
 #pragma once
 #include <memory>
-#include <array>
+#include <vector>
+
 
 #include "D3D_Helper.h"
 
 class Shader;
 class Texture;
+class ComputedTexture;
+struct ShaderMacro;
 
-class Blur
+
+
+class BlurExecuter
 {
-	std::unique_ptr<Texture> mpPass0Tex;
-	std::unique_ptr<Texture> mpPass1Tex;
+public:
+	enum BlurPass
+	{
+		EHorizontal,
+		EVertical,
 
-	std::array<std::shared_ptr<Shader>, 2> mpShaders;
+		BLUR_PASS_MAX
+	};
+
+	static constexpr UINT COMPUTE_KERNEL_DIMENSION = 1024;
+
+private:
+	struct CBForBlurSettings
+	{
+		UINT kernelRange;
+		UINT strength;
+		UINT bHorizontal;
+		float weight[10];
+		float param[3];
+	};
+
+	UINT mKernelRange;
+	UINT mBlurStrength;
+	float mKernelWeights[10] = {0};
+
+	D3D::BufferPtr mpCBuffer;
+	std::unique_ptr<ComputedTexture> mpBlurTex[BLUR_PASS_MAX];
 
 public:
-	Blur(D3D::DevicePtr& p_device);
-	~Blur();
+	BlurExecuter();
+	~BlurExecuter() = default;
 
-	void ActivateBlurPass();
-	void RenderBlur();
-	void Deactivate();
+	void Initialize(D3D::DevicePtr& p_device);
+	void CreateShader(D3D::DevicePtr& p_device);
+	void ChangeSetting(UINT strength, UINT kernel_range);
+	void ActivateBlur(D3D::DeviceContextPtr& p_imm_context, bool b_horizontal);
+	void ExecuteBlur(D3D::DeviceContextPtr& p_imm_context);
+	void Deactivate(D3D::DeviceContextPtr& p_imm_context);
+
+	void RenderUI();
+private:
+	void CalculateKernelRange();
 };

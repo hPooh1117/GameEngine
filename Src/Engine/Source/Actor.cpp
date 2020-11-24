@@ -46,7 +46,7 @@ void Actor::Update(float elapsed_time)
 //	std::shared_ptr<Shader>& shader
 //)
 //{
-//	auto component = MeshComponent::Initialize(shared_from_this());
+//	auto component = MeshComponent::Create(shared_from_this());
 //	component->Create();
 //	if (component->Load(mesh_id, renderer))
 //	{
@@ -68,7 +68,7 @@ void Actor::Update(float elapsed_time)
 //	std::shared_ptr<Shader>& shader,
 //	const char* filename)
 //{
-//	auto component = MeshComponent::Initialize(shared_from_this());
+//	auto component = MeshComponent::Create(shared_from_this());
 //	component->Create();
 //	if (component->Load(filename, mesh_id, renderer))
 //	{
@@ -89,7 +89,7 @@ void Actor::Update(float elapsed_time)
 //	std::shared_ptr<Shader>& shader,
 //	const wchar_t* filename)
 //{
-//	auto component = MeshComponent::Initialize(shared_from_this());
+//	auto component = MeshComponent::Create(shared_from_this());
 //	component->Create();
 //	if (component->Load(filename, mesh_id, renderer))
 //	{

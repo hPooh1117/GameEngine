@@ -15,6 +15,8 @@
 #include "./Engine/ActorManager.h"
 //#include "./Engine/MeshRenderer.h"
 #include "./Engine/UIRenderer.h"
+#include "./Engine/ComputeExecuter.h"
+#include "./Engine/Settings.h"
 
 #include "./Renderer/Shader.h"
 #include "./Renderer/GraphicsEngine.h"
@@ -32,64 +34,74 @@ SceneB::SceneB(SceneManager * manager, Microsoft::WRL::ComPtr<ID3D11Device>& dev
     mNextScene = SceneID::SCENE_C;
 
 
-    ENGINE.GetLightPtr()->Init(4, 0);
+    ENGINE.GetLightPtr()->Init(128, 0);
+    ENGINE.GetLightPtr()->SetLightColor(Vector4(0.1f, 0.1f, 0.1f, 1.0f));
+    //ENGINE.GetLightPtr()->SetSpotData(0, Vector3(-5, 5, -5), Vector4(0.9f, 0.2f, 0.2f, 1.0f), Vector3(1.0f, -0.2f, 0.0f), 50.0f, 0.99f, 0.8f);
+    //ENGINE.GetLightPtr()->SetSpotData(1, Vector3(-5, 5, 5), Vector4(0.2f, 0.2f, 0.9f, 1.0f), Vector3(-1.0f, -0.2f, 0.0f), 50.0f, 0.99f, 0.8f);
+    //ENGINE.GetLightPtr()->SetSpotData(2, Vector3(5, 5, -5), Vector4(0.2f, 0.9f, 0.2f, 1.0f), Vector3(0.0f, -0.2f, 1.0f), 50.0f, 0.99f, 0.8f);
+    //ENGINE.GetLightPtr()->SetSpotData(3, Vector3(5, 5, 5), Vector4(0.7f, 0.7f, 0.7f, 1.0f), Vector3(0.0f, -0.2f, -1.0f), 50.0f, 0.99f, 0.8f);
+    //ENGINE.GetLightPtr()->SetPointData(0, Vector3(-5, 5, -5), Vector4(0.9f, 0.2f, 0.2f, 1.0f), 50.0f);
+    //ENGINE.GetLightPtr()->SetPointData(1, Vector3(-5, 5, 5), Vector4(0.2f, 0.2f, 0.9f, 1.0f),   50.0f);
+    //ENGINE.GetLightPtr()->SetPointData(2, Vector3(5, 5, -5), Vector4(0.2f, 0.9f, 0.2f, 1.0f),  50.0f);
+    //ENGINE.GetLightPtr()->SetPointData(3, Vector3(5, 5, 5), Vector4(0.7f, 0.7f, 0.7f, 1.0f),    50.0f);
+
     ENGINE.GetCameraPtr()->SetTarget(m_pPlayer);
 
-    ENGINE.CastShadow();
-    ENGINE.SetIsDefferedRendering(true);
-    ENGINE.SetSSAO(false);
+    Settings::Renderer renderSettings = {
+        true,   // shadow
+        false,  // ssao
+        true,   // deffered
+        false   // cubemap
+    };
+    ENGINE.SetRendererSettings(renderSettings);
 
-
-
+    mNumElement = 100;
 // ----------------------------------------------------------------------------------------------
 // アクター・コンポーネント作成
 // ----------------------------------------------------------------------------------------------
-    m_pPlayer = Actor::Initialize(ActorID::kPlayer);
-    m_pPlayer->SetScale(5, 5, 5);
-    m_pPlayer->SetPosition(Vector3(0, 4, 0));
+    int count = 0;
+    m_pPlayer = Actor::Initialize(count++);
+    m_pPlayer->SetScale(0.05f, 0.05f, 0.05f);
+    m_pPlayer->SetPosition(Vector3(0, 0.5f, 0));
     m_pPlayer->AddComponent<NewMeshComponent>();
-    m_pPlayer->GetComponent<NewMeshComponent>()->RegistMesh(MeshTypeID::E_BasicSphere, ShaderType::EDefferedNormal, nullptr, FbxType::EDefault);
-    m_pPlayer->GetComponent<NewMeshComponent>()->RegistTexture(L"./Data/Images/earthmap.jpg", 0);
-    m_pPlayer->GetComponent<NewMeshComponent>()->RegistTexture(L"./Data/Images/earthnormal.jpg", 1);
-    m_pPlayer->GetComponent<NewMeshComponent>()->RegistTexture(L"./Data/Images/earthbump.jpg", 2);
-    m_pPlayer->GetComponent<NewMeshComponent>()->RegistAdditionalShader(ShaderType::EToShadow, ShaderUsage::EShader);
+    m_pPlayer->GetComponent<NewMeshComponent>()->RegisterMesh(MeshTypeID::E_SkinnedMesh, ShaderID::EDefferedNormalForSkinning, L"./Data/Models/Female/Idle.fbx", FbxType::EMaya);
+    m_pPlayer->GetComponent<NewMeshComponent>()->RegisterMotion("Idle", L"./Data/Models/Female/Idle.fbx");
+    m_pPlayer->GetComponent<NewMeshComponent>()->RegisterMotion("Walking", L"./Data/Models/Female/Walking.fbx");
+    m_pPlayer->GetComponent<NewMeshComponent>()->RegisterMotion("Running", L"./Data/Models/Female/Running.fbx");
+    m_pPlayer->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Images/PBR/Metal_Panel_Normal.jpg", TextureConfig::ENormalMap);
+    m_pPlayer->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Images/PBR/Metal_Panel_Height.png", TextureConfig::EHeightMap);
+    m_pPlayer->GetComponent<NewMeshComponent>()->RegisterAdditionalShader(ShaderID::EToShadowForSkinning, ShaderUsage::EShader);
     ENGINE.GetActorManagerPtr()->AddActor(m_pPlayer);
 
-    m_pCat = Actor::Initialize(ActorID::kNonPlayer);
-    m_pCat->SetPosition(Vector3(4, 1, 0));
-    m_pCat->SetScale(0.5f, 0.5f, 0.5f);
-    m_pCat->AddComponent<NewMeshComponent>();
-    m_pCat->GetComponent<NewMeshComponent>()->RegistMesh(MeshTypeID::E_SkinnedMesh, ShaderType::EDefferedShadowForSkinned, L"./Data/Models/oswell/cat_mdl.fbx", FbxType::EMaya);
-    m_pCat->GetComponent<NewMeshComponent>()->RegistAdditionalShader(ShaderType::EToShadow, ShaderUsage::EShader);
-    ENGINE.GetActorManagerPtr()->AddActor(m_pCat);
+    m_pPlayer->GetComponent<NewMeshComponent>()->Play("Idle");
 
-    m_pOswell = Actor::Initialize(ActorID::kEnemy);
-    m_pOswell->SetPosition(Vector3(-4, 3, 0));
-    m_pOswell->SetScale(0.05f, 0.05f, 0.05f);
-    m_pOswell->AddComponent<NewMeshComponent>();
-    m_pOswell->GetComponent<NewMeshComponent>()->RegistMesh(MeshTypeID::E_SkinnedMesh, ShaderType::EDefferedShadowForSkinning, L"./Data/Models/oswell/oswell_test1.fbx", FbxType::EMaya);
-    m_pOswell->GetComponent<NewMeshComponent>()->RegistMotion("Move", L"./Data/Models/oswell/oswell_movemove.fbx");
-    m_pOswell->GetComponent<NewMeshComponent>()->RegistAdditionalShader(ShaderType::EToShadowForSkinning, ShaderUsage::EShader);
-    ENGINE.GetActorManagerPtr()->AddActor(m_pOswell);
-
-    m_pShiba = Actor::Initialize(ActorID::kNonPlayer0);
-    m_pShiba->SetPosition(Vector3(0, 0.5f, -4));
-    m_pShiba->AddComponent < NewMeshComponent>();
-    m_pShiba->GetComponent<NewMeshComponent>()->RegistMesh(MeshTypeID::E_SkinnedMesh, ShaderType::EDefferedNormalForSkinned, L"./Data/Models/0810/shiba_mdl.fbx", FbxType::EMaya);
-    m_pShiba->GetComponent<NewMeshComponent>()->RegistTexture(L"./Data/Models/0810/shina_N.png", 1);
-    m_pShiba->GetComponent<NewMeshComponent>()->RegistTexture(L"./Data/Models/0810/shiba_H.png", 2);
-    m_pShiba->GetComponent<NewMeshComponent>()->RegistAdditionalShader(ShaderType::EToShadow, ShaderUsage::EShader);
-    ENGINE.GetActorManagerPtr()->AddActor(m_pShiba);
-
-    m_pField = Actor::Initialize(ActorID::kFloor);
+    m_pField = Actor::Initialize(count++);
     m_pField->SetPosition(Vector3(0, 0, 0));
     m_pField->SetScale(200, 200, 200);
     m_pField->AddComponent<NewMeshComponent>();
-    m_pField->GetComponent<NewMeshComponent>()->RegistMesh(MeshTypeID::E_StaticMesh, ShaderType::EDefferedNormal, L"./Data/Models/OBJ/sea/sea.obj", FbxType::EDefault);
-    m_pField->GetComponent<NewMeshComponent>()->RegistTexture(L"./Data/Models/OBJ/sea/Nsea.png", 1);
-    m_pField->GetComponent<NewMeshComponent>()->RegistTexture(L"./Data/Models/OBJ/sea/Hsea.png", 2);
-    m_pField->GetComponent<NewMeshComponent>()->RegistAdditionalShader(ShaderType::EToShadow, ShaderUsage::EShader);
+    m_pField->GetComponent<NewMeshComponent>()->RegisterMesh(MeshTypeID::E_StaticMesh, ShaderID::EDefferedSea, L"./Data/Models/OBJ/sea/sea.obj", FbxType::EDefault);
+    m_pField->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Models/OBJ/sea/Nsea.png", TextureConfig::ENormalMap);
+    m_pField->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Models/OBJ/sea/Hsea.png", TextureConfig::EHeightMap);
+    m_pField->GetComponent<NewMeshComponent>()->RegisterAdditionalShader(ShaderID::EToShadow, ShaderUsage::EShader);
     ENGINE.GetActorManagerPtr()->AddActor(m_pField);
+
+
+
+    //mSimpleBufferVec.resize(mNumElement);
+    //for (auto i = 0; i < mNumElement; ++i)
+    //{
+    //    mSimpleBufferVec[i].i = (i + 1) * 2;
+    //    mSimpleBufferVec[i].f = static_cast<float>(i + 1) * 2.0f;
+    //}
+    
+    //if (ENGINE.GetComputeExecuter()->CreateStructuredBufferOnGPU(device, ComputeExecuter::ESample, sizeof(SimpleBuffer), (UINT)mSimpleBufferVec.size(), mSimpleBufferVec.data()))
+    //    Log::Info("Created StructuredBuffer.(id : %d)", ComputeExecuter::ESample);
+    //if (ENGINE.GetComputeExecuter()->CreateStructuredBufferOnGPU(device, ComputeExecuter::ESample, sizeof(SimpleBuffer), (UINT)mSimpleBufferVec.size(), mSimpleBufferVec.data(), true))
+    //    Log::Info("Created OutputBuffer.(id : %d", ComputeExecuter::ESample);
+    //if (ENGINE.GetComputeExecuter()->CreateBufferSRV(device, ComputeExecuter::ESample))
+    //    Log::Info("Created SRV for CS.");
+    //if (ENGINE.GetComputeExecuter()->CreateBufferUAV(device, ComputeExecuter::ESample))
+    //    Log::Info("Created UAV for CS.");
 }
 
 void SceneB::InitializeScene()
@@ -98,25 +110,101 @@ void SceneB::InitializeScene()
 
 void SceneB::Update(float elapsed_time)
 {
-    if (InputPtr.OnKeyDown("X"))
+    //if (InputPtr.OnKeyDown("X"))
+    //{
+    //    m_pOswell->GetComponent<NewMeshComponent>()->Play("Move");
+    //}
+
+    static float angle = XM_PI * 0.25f;
+    angle += elapsed_time;
+
+    float a = 8.0f * sinf(angle);
+    float s = sinf(angle) * a;
+    float c = cosf(angle) * a;
+    float halfS = sinf(angle + XM_PI * 0.25f) * a;
+    float halfC = cosf(angle + XM_PI * 0.25f) * a;
+    float astS = sinf(angle + XM_PI * -0.25f) * a;
+    float astC = cosf(angle + XM_PI * -0.25f) * a;
+    float range = Math::Lerp(5.0f, 30.0f, abs(sinf(angle)));
+    Vector4 R(0.9f, 0.20f, 0.05f, 1.0f);
+    Vector4 G(0.2f, 0.99f, 0.3f, 1.0f);
+    Vector4 B(0.1f, 0.4f, 0.99f, 1.0f);
+
+    LightController* light = ENGINE.GetLightPtr().get();
+    for (auto i = 0; i < 4; ++i)
     {
-        m_pOswell->GetComponent<NewMeshComponent>()->Play("Move");
+        light->SetPointData(0 + i * 16,  Vector3(s,      3, c),       R, range);
+        light->SetPointData(1 + i * 16,  Vector3(-s,     3, c),       G, range);
+        light->SetPointData(2 + i * 16,  Vector3(halfS,  3, halfC),   B, range);
+        light->SetPointData(3 + i * 16,  Vector3(-halfS, 3, halfC),   R, range);
+        light->SetPointData(4 + i * 16,  Vector3(s,      3, -c),      G, range);
+        light->SetPointData(5 + i * 16,  Vector3(-s,     3, -c),      B, range);
+        light->SetPointData(6 + i * 16,  Vector3(halfS,  3, -halfC),  R, range);
+        light->SetPointData(7 + i * 16,  Vector3(-halfS, 3, -halfC),  G, range);
+        light->SetPointData(8 + i * 16,  Vector3(astS,   3, astC),    B, range);
+        light->SetPointData(9 + i * 16,  Vector3(-astS,  3, astC),    R, range);
+        light->SetPointData(10 + i * 16, Vector3(astS,   3, -astC),   G, range);
+        light->SetPointData(11 + i * 16, Vector3(-astS,  3, -astC),   B, range);
+        light->SetPointData(12 + i * 16, Vector3(astC,   3, astS),    R, range);
+        light->SetPointData(13 + i * 16, Vector3(-astC,  3, astS),    G, range);
+        light->SetPointData(14 + i * 16, Vector3(astC,   3, -astS),   B, range);
+        light->SetPointData(15 + i * 16, Vector3(-astC,  3, -astS),   R, range);
+
+
+
+        s *= 1.5f; astS *= 1.5f; halfS *= 1.5f;
+        c *= 1.5f; astC *= 1.5f; halfC *= 1.5f;
     }
 
-    static float angle = XM_PI / 4;
-    angle += elapsed_time;
-    float s = sinf(angle) * 5.0f;
-    float c = cosf(angle) * 5.0f;
-    ENGINE.GetLightPtr()->SetPointData(0, Vector3(-s, 3, c), Vector4(0.7f, 0.5f, 0.4f, 1.0f), 15.0f);
-    ENGINE.GetLightPtr()->SetPointData(1, Vector3(-c, 3, s), Vector4(0.7f, 0.3f, 0.4f, 1.0f), 15.0f);
-    ENGINE.GetLightPtr()->SetPointData(2, Vector3(s, 3, -c), Vector4(0.3f, 0.4f, 0.7f, 1.0f), 15.0f);
-    ENGINE.GetLightPtr()->SetPointData(3, Vector3(c, 3, s), Vector4(0.7f, 0.3f, 0.3f, 1.0f), 15.0f);
 
+    //ENGINE.GetLightPtr()->SetSpotData(0, Vector3(-5, 5, -5), Vector4(0.9f, 0.2f, 0.2f, 1.0f), Vector3(1.0f, -0.2f, 0.0f), 50.0f, 0.99f, 0.8f);
+    //ENGINE.GetLightPtr()->SetSpotData(1, Vector3(-5, 5, 5), Vector4(0.2f, 0.2f, 0.9f, 1.0f), Vector3(-1.0f, -0.2f, 0.0f), 50.0f, 0.99f, 0.8f);
+    //ENGINE.GetLightPtr()->SetSpotData(2, Vector3(5, 5, -5), Vector4(0.2f, 0.9f, 0.2f, 1.0f), Vector3(0.0f, -0.2f, 1.0f), 50.0f, 0.99f, 0.8f);
+    //ENGINE.GetLightPtr()->SetSpotData(3, Vector3(5, 5, 5), Vector4(0.7f, 0.7f, 0.7f, 1.0f), Vector3(0.0f, -0.2f, -1.0f), 50.0f, 0.99f, 0.8f);
+}
+
+void SceneB::PreCompute(std::unique_ptr<GraphicsEngine>& p_graphics)
+{
 }
 
 void SceneB::Render(std::unique_ptr<GraphicsEngine>& p_graphics,
     float elapsed_time)
 {
+    D3D::DevicePtr pDevice = p_graphics->GetDevicePtr();
+    D3D::DeviceContextPtr pImmContext = p_graphics->GetImmContextPtr();
+
+    //static float flag = true;
+    //if (flag)
+    //{
+    //    SimpleBuffer *result = new SimpleBuffer[mNumElement];
+    //    ENGINE.GetComputeExecuter()->Compute(pImmContext, ComputeExecuter::ESample);
+    //    ENGINE.GetComputeExecuter()->FetchDataComputed<SimpleBuffer>(pDevice, pImmContext, ComputeExecuter::ESample, mNumElement, result);
+
+    //    for (int i = 0; i < mNumElement; ++i)
+    //    {
+    //        Log::Info("in : %d %f", mSimpleBufferVec[i].i, mSimpleBufferVec[i].f);
+
+    //        int resultI = mSimpleBufferVec[i].i + mSimpleBufferVec[i].i;
+    //        float resultF = sinf(mSimpleBufferVec[i].f) * cosf(mSimpleBufferVec[i].f);
+
+    //        Log::Info("CPU Result : %d %f", resultI, resultF);
+    //        Log::Info("GPU Result : %d %f\n", result[i].i, result[i].f);
+    //    }
+
+    //    delete[] result;
+    //    flag = false;
+    //}
+
+    ENGINE.GetUIRenderer()->SetNextWindowSettings(Vector2(0, SCREEN_HEIGHT - 200), Vector2(300, 200));
+    ENGINE.GetUIRenderer()->BeginRenderingNewWindow("Motion");
+    if (ImGui::Button("Idle"))    m_pPlayer->GetComponent<NewMeshComponent>()->Play("Idle");
+    if (ImGui::Button("Walking")) m_pPlayer->GetComponent<NewMeshComponent>()->Play("Walking");
+    if (ImGui::Button("Running")) m_pPlayer->GetComponent<NewMeshComponent>()->Play("Running");
+
+    m_pPlayer->GetComponent<NewMeshComponent>()->RenderUI();
+
+    ENGINE.GetUIRenderer()->FinishRenderingWindow();
+
 }
 
 SceneB::~SceneB()

@@ -1,4 +1,14 @@
 
+inline int HasColorMap(int texture_config)       { return ((texture_config & 1)   > 0 ? 1 : 0); }
+inline int HasNormalMap(int texture_config)      { return ((texture_config & 2)   > 0 ? 1 : 0); }
+inline int HasHeightMap(int texture_config)      { return ((texture_config & 4)   > 0 ? 1 : 0); }
+inline int HasMetallicMap(int texture_config)    { return ((texture_config & 8)   > 0 ? 1 : 0); }
+inline int HasRoughnessMap(int texture_config)   { return ((texture_config & 16)  > 0 ? 1 : 0); }
+inline int HasAOMap(int texture_config)          { return ((texture_config & 32)  > 0 ? 1 : 0); }
+inline int HasSpecularMap(int texture_config)    { return ((texture_config & 64)  > 0 ? 1 : 0); }
+inline int HasEnvironmentMap(int texture_config) { return ((texture_config & 128) > 0 ? 1 : 0); }
+inline int HasShadowMap(int texture_config)      { return ((texture_config & 256) > 0 ? 1 : 0); }
+
 float3 diffuse(float3 normal, float3 L, float3 C, float3 K)
 {
     float D = dot(normal, -L);
@@ -17,6 +27,15 @@ float3 blinnPhongSpecular(float3 N, float3 L, float3 C, float3 E, float3 K, floa
     return S;
 }
 
+float3 CalculatePhongSpecular(float3 N, float3 L, float3 C, float3 E, float3 K, float power)
+{
+    float3 R = normalize(reflect(L, N));
+    float3 S = max(0, dot(R, E));
+    S = pow(S, power) * K * C;
+    
+    return S;
+}
+
 float3 fog(float3 color, float3 viewPos, float3 Pos, float3 fogColor, float Near, float Far)
 {
     //フォグ計算--線形補間フォグ--
@@ -31,6 +50,19 @@ float3 hemiSphereLight(float3 N, float3 skyColor, float3 groundColor)
     float skyBlend = (N.y + 1.0f) * 0.5f;
     float groundBlend = 1.0 - skyBlend;
     return skyColor * skyBlend + groundColor * groundBlend;
+}
+
+float3 ApplyNormalMap(float3x3 mat, Texture2D tex, SamplerState ss, float2 texcoord)
+{
+    float3 N = tex.Sample(ss, texcoord).xyz;
+    N = N * 2.0 - 1.0;
+    return normalize(mul(mat, N));
+}
+
+float ApplyHeightMap(Texture2D tex, SamplerState ss, float2 texcoord)
+{
+    float H = tex.Sample(ss, texcoord).r;
+    return H * 2.0 - 1.0;
 }
 
 float3 ToonLight(float3 N, float3 L, float3 C, float3 K)
@@ -115,103 +147,3 @@ float3 FurSpecular(float3 N, float3 L, float3 C, float3 E, float3 K, float Power
 
 
 
-//--------------------------------------------------------------------------------------------------------------
-// BRDF (Bidirectional Reflectance Distribution Function)
-//--------------------------------------------------------------------------------------------------------------
-
-// 鏡面反射BRDF -> Cook-Torranceモデル
-//
-// Fr(v, l) = D(h, a) * G(v, l, a) * F(v, h, f0) / 4(n, v)(n, l)
-//
-// D(h, a)     : 法線分布関数(Normal Distribution Function) ->Beckman, Phong, GGX(Trowbrdige-Retiz)
-// G(v, l, a)  : 幾何減衰...マイクロファセットによる光の減衰 -> Smith関数のSchlick近似とHeight-Correlated Smith関数
-// F(v, h, f0) : フレネル反射...視線ベクトルと法線によって反射率が変わる現象 -> Schlickによる近似式
-
-
-static const float Pi = 3.141592653589f;
-static const float InvPi = 0.318309886183871f;
-static const float _DielectricF0 = 0.04;
-
-// D項の計算
-float Fd_Burley(float ndotv, float ndotl, float ldoth, float roughness)
-{
-    float fd90 = 0.5 + 2 * ldoth * ldoth * roughness;
-    float lightScatter = (1 + (fd90 - 1) * pow(1 - ndotl, 5));
-    float viewScatter = (1 + (fd90 - 1) * pow(1 - ndotv, 5));
-
-    float diffuse = lightScatter * viewScatter;
-
-    // diffuse *= UNITY_INV_PI; // 本来はこのDiffuseをπで割るべきだけどUnityではレガシーなライティングとの互換性を保つため割らない
-
-    return diffuse;
-}
-
-// V項の計算
-float V_SmithGGXCorrelated(float ndotl, float ndotv, float alpha)
-{
-    float lambdaV = ndotl * (ndotv * (1 - alpha) + alpha);
-    float lambdaL = ndotv * (ndotl * (1 - alpha) + alpha);
-
-    return 0.5f / (lambdaV + lambdaL + 0.0001);
-}
-
-// D項の計算
-float DistributionGGX(float perceptualRoughness, float ndoth, float3 normal, float3 halfDir)
-{
-    float3 ncrossh = cross(normal, halfDir);
-    float a = ndoth * perceptualRoughness;
-    float k = perceptualRoughness / (dot(ncrossh, ncrossh) + a * a);
-    float d = k * k * 1 / InvPi;
-    return min(d, 65504.0f);
-}
-
-// F項の計算
-float3 F_Schlick(float3 f0, float cos)
-{
-    return f0 + (1 - f0) * pow(1 - cos, 5);
-}
-
-// Diffuse, SpecularをBRDFで算出
-float4 BRDF(
-    float3 albedo,
-    float metalness,
-    float perceptualRoughness,
-    float3 normal,
-    float3 viewDir,
-    float3 lightDir,
-    float3 lightColor
-)
-{
-    float3 halfDir = normalize(lightDir + viewDir);
-    float ndotv = abs(dot(normal, viewDir));
-    float ndotl = max(0, dot(normal, lightDir));
-    float ndoth = max(0, dot(normal, halfDir));
-    float ldoth = max(0, dot(lightDir, halfDir));
-    float reflectivity = lerp(_DielectricF0, 1, metalness);
-    float3 f0 = lerp(_DielectricF0, albedo, metalness);
-
-    // Diffuse
-    float diffuseTerm = Fd_Burley(ndotv, ndotl, ldoth, perceptualRoughness) * ndotl;
-    float3 diffuse = albedo * (1 - reflectivity) * lightColor * diffuseTerm;
-
-    // Indirect Diffuse
-    //diffuse += albedo * (1 - reflectivity) * indirectDiffuse;
-
-    // Specular
-    float alpha = perceptualRoughness * perceptualRoughness;
-    float V = V_SmithGGXCorrelated(ndotl, ndotv, alpha);
-    float D = DistributionGGX(perceptualRoughness, ndotv, normal, halfDir);
-    float3 F = F_Schlick(f0, ldoth); // マイクロファセットベースのスペキュラBRDFではcosにはldothが使われる
-    float3 specular = V * D * F * ndotl * lightColor;
-
-    specular *= Pi; // 本来はSpecularにπを掛けるべきではないが、Unityではレガシーなライティングとの互換性を保つため、Diffuseを割らずにSpecularにPIを掛ける
-    specular = max(0, specular);
-
-    // Indirect Specular
-    //float surfaceReduction = 1.0 / (alpha * alpha + 1.0);
-    //float f90 = saturate((1 - perceptualRoughness) + reflectivity);
-    //specular += surfaceReduction * indirectSpecular * lerp(f0, f90, pow(1 - ndotv, 5));
-
-    float3 color = diffuse + specular;
-    return float4(color, 1);
-}

@@ -108,7 +108,7 @@ public:
 		last_time = this_time;
 
 		// Force nonnegative.  The DXSDK's CDXUTTimer mentions that if the 
-		// processor goes into a power Save mode or we get shuffled to another
+		// processor goes into a power SerializeAndSaveMeshes mode or we get shuffled to another
 		// processor, then mDeltaTime can be negative.
 		if (delta_time < 0.0)
 		{

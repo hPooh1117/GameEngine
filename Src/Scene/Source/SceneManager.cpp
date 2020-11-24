@@ -55,7 +55,7 @@ void SceneManager::InitializeLoadingScene()
 void SceneManager::InitializeCurrentScene()
 {
 	
-	mSceneStack.emplace(std::make_unique<SceneF>(this, m_pDevice));
+	mSceneStack.emplace(std::make_unique<SceneA>(this, m_pDevice));
 	mSceneStack.top()->SetCurrntSceneID(mCurrentScene);
 	mSceneStack.top()->InitializeScene();
 	Log::Info("Initialized %s", mSceneStack.top()->GetCurrentSceneName().c_str());
@@ -138,28 +138,34 @@ void SceneManager::RenderCurrentScene(std::unique_ptr<GraphicsEngine>& p_graphic
 
 }
 
+void SceneManager::PreComputeForNextScene(std::unique_ptr<GraphicsEngine>& p_graphics)
+{
+	mSceneStack.top()->PreCompute(p_graphics);
+}
+
 void SceneManager::RenderUI()
 {
 	using namespace ImGui;
 
-	ENGINE.GetUIRenderer()->SetNextWindowSettings(Vector2(0, 0), Vector2(100, 400));
+	ENGINE.GetUIRenderer()->SetNextWindowSettings(Vector2(0, 23), Vector2(150, 400));
 	ENGINE.GetUIRenderer()->BeginRenderingNewWindow("Scene", false);
 	
 	for (auto i = 0u; i < static_cast<unsigned int>(SceneID::SCENE_NUM_MAX); ++i)
 	{
-		if (Button(mSceneStack.top()->GetSceneName(i).c_str(), ImVec2(80, 30)))
+		if (Button(mSceneStack.top()->GetSceneName(i).c_str(), ImVec2(110, 30)))
 		{
 			mSceneStack.top()->SetNextSceneID(static_cast<SceneID>(i));
 			mSceneStack.top()->ToggleChangeFlag();
 		}
 	}
-
+	Text("*** Current Scene ***");
+	Text("%s", mSceneStack.top()->GetCurrentSceneName().c_str());
 
 
 	ENGINE.GetUIRenderer()->FinishRenderingWindow();
 }
 
-bool SceneManager::GetLoadingScene()
+bool SceneManager::IsLoading()
 {
 	return m_bIsLoading;
 }

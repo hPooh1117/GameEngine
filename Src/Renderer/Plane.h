@@ -1,14 +1,14 @@
 #pragma once
 #include "Mesh.h"
 
-class Texture;
+class NewTexture;
 class Plane final : public Mesh
 {
 private:
 	D3D::BufferPtr m_pVertexBuffer;
 	D3D::BufferPtr m_pIndexBuffer;
 
-	//std::unique_ptr<Texture> mpTextures;
+	std::unique_ptr<NewTexture> mpTexture;
 
 public:
 	Plane(D3D::DevicePtr& device, const wchar_t* filename);
@@ -50,14 +50,14 @@ private:
 
 private:
 	std::vector<VertexForBatch> mVertices;
-	unsigned int m_instances_count = 0;
-	Instance* m_instance;
+	unsigned int mInstancesCount = 0;
+	Instance* mpInstance;
 
 private:
-	Microsoft::WRL::ComPtr<ID3D11Buffer> m_pVertexBuffer;
-	Microsoft::WRL::ComPtr<ID3D11Buffer> m_instance_buffer;
+	Microsoft::WRL::ComPtr<ID3D11Buffer> mpVertexBuffer;
+	Microsoft::WRL::ComPtr<ID3D11Buffer> mpInstanceBuffer;
 
-	std::shared_ptr<Texture> m_pTexture;
+	std::unique_ptr<NewTexture> mpTexture;
 
 public:
 	PlaneBatch(

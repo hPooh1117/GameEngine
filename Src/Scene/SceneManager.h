@@ -36,9 +36,10 @@ public:
 
     void RenderLoadingScene(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time);
     void RenderCurrentScene(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time);
+    void PreComputeForNextScene(std::unique_ptr<GraphicsEngine>& p_graphics);
     void RenderUI();
 
-    bool GetLoadingScene();
+    bool IsLoading();
 
 
     void ChangeScene(const SceneID&, bool clearCurrentScene = false);

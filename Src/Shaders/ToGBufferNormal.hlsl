@@ -23,7 +23,7 @@ SamplerState shadow_sampler : register(s5);
 //
 // vertex shader(default)
 //
-PS_InputBumpShadow VSmain(VS_Input input)
+PS_InputBumpShadow VSmain(VS_InputB input)
 {
 	PS_InputBumpShadow output = (PS_InputBumpShadow)0;
 	float4 P = float4(input.position, 1);
@@ -31,14 +31,19 @@ PS_InputBumpShadow VSmain(VS_Input input)
 	float4 wPos = mul(P, world);
 
 	float3 N = mul(input.normal, (float3x3)world);
+	N = normalize(N);
+	float3 T = mul(input.tangent, (float3x3)world);
+	T = normalize(T);
+	float3 B = mul(input.binormal, (float3x3)world);
+	B = normalize(B);
 
 	// 接空間行列
-	float3 vy = { 0.0, 1.0, 0.001 };
-	float3 vz = N;
-	float3 vx = cross(vy, vz);
-	vx = normalize(vx);
-	vy = cross(vz, vx);
-	vy = normalize(vy);
+	//float3 vy = { 0.0, 1.0, 0.001 };
+	//float3 vz = N;
+	//float3 vx = cross(vy, vz);
+	//vx = normalize(vx);
+	//vy = cross(vz, vx);
+	//vy = normalize(vy);
 
 
 	output.position = mul(P, matWVP);
@@ -46,9 +51,9 @@ PS_InputBumpShadow VSmain(VS_Input input)
 	output.w_normal = N;
 	output.color = mat_color;
 	output.texcoord = input.texcoord;
-	output.v_tan = vx;
-	output.v_bin = vy;
-	output.v_normal = vz;
+	output.v_tan = /*vx*/T;
+	output.v_bin = /*vy*/B;
+	output.v_normal = /*vz*/N;
 	output.v_shadow = GetShadowTex(light_view_projection, wPos.xyz);
 	output.depth = output.position.zw;
 
@@ -66,14 +71,20 @@ PS_InputBumpShadow VSmainS(VS_InputS input)
 	float4 wPos = mul(P, world);
 
 	float3 N = mul(input.normal, (float3x3)world);
+	N = normalize(N);
+	float3 T = mul(input.tangent, (float3x3)world);
+	T = normalize(T);
+	float3 B = mul(input.binormal, (float3x3)world);
+	B = normalize(B);
+
 
 	// 接空間行列
-	float3 vy = { 0.0, 1.0, 0.001 };
-	float3 vz = N;
-	float3 vx = cross(vy, vz);
-	vx = normalize(vx);
-	vy = cross(vz, vx);
-	vy = normalize(vy);
+	//float3 vy = { 0.0, 1.0, 0.001 };
+	//float3 vz = N;
+	//float3 vx = cross(vy, vz);
+	//vx = normalize(vx);
+	//vy = cross(vz, vx);
+	//vy = normalize(vy);
 
 
 	output.position = mul(P, matWVP);
@@ -81,9 +92,9 @@ PS_InputBumpShadow VSmainS(VS_InputS input)
 	output.w_normal = N;
 	output.color = mat_color;
 	output.texcoord = input.texcoord;
-	output.v_tan = vx;
-	output.v_bin = vy;
-	output.v_normal = vz;
+	output.v_tan = /*vx*/T;
+	output.v_bin = /*vy*/B;
+	output.v_normal = /*vz*/N;
 	output.v_shadow = GetShadowTex(light_view_projection, wPos.xyz);
 	output.depth = output.position.zw;
 
@@ -109,15 +120,20 @@ PS_InputBumpShadow VSmainSkinning(VS_InputS input)
 
 	float4 wPos = mul(p, world);
 
-	float3 N = n.xyz;
+	float3 N = mul(input.normal, (float3x3)world);
+	N = normalize(N);
+	float3 T = mul(input.tangent, (float3x3)world);
+	T = normalize(T);
+	float3 B = mul(input.binormal, (float3x3)world);
+	B = normalize(B);
 
 	// 接空間行列
-	float3 vy = { 0.0, 1.0, 0.001 };
-	float3 vz = N;
-	float3 vx = cross(vy, vz);
-	vx = normalize(vx);
-	vy = cross(vz, vx);
-	vy = normalize(vy);
+	//float3 vy = { 0.0, 1.0, 0.001 };
+	//float3 vz = N;
+	//float3 vx = cross(vy, vz);
+	//vx = normalize(vx);
+	//vy = cross(vz, vx);
+	//vy = normalize(vy);
 
 
 	output.position = mul(p, matWVP);
@@ -125,9 +141,9 @@ PS_InputBumpShadow VSmainSkinning(VS_InputS input)
 	output.w_normal = N;
 	output.color = mat_color;
 	output.texcoord = input.texcoord;
-	output.v_tan = vx;
-	output.v_bin = vy;
-	output.v_normal = vz;
+	output.v_tan = /*vx*/T;
+	output.v_bin = B;
+	output.v_normal = /*vz*/N;
 	output.v_shadow = GetShadowTex(light_view_projection, wPos.xyz);
 	output.depth = output.position.zw;
 
@@ -160,22 +176,24 @@ PS_Output_AO PSmain(PS_InputBumpShadow input)
 	// 接空間からワールドへ変換
 	float3 invE = normalize(mul(vMat, E));
 
-	float H = height_texture.Sample(height_sampler, input.texcoord).r;
-	H = H * 2.0f - 1.0f;
-	input.texcoord.x -= invE.x * H * viewOffset;
-	input.texcoord.y -= invE.y * H * viewOffset;
+	float2 tex = input.texcoord;
+
+	float H = HasHeightMap(gTextureConfig) > 0 ? height_texture.Sample(decal_sampler, tex).r : 0.0f;
+	tex.x -= invE.x * H * viewOffset;
+	tex.y -= invE.y * H * viewOffset;
 
 	// 法線マップから法線取得
-	float3 N = normal_texture.Sample(normal_sampler, input.texcoord).xyz;
-	N = N * 2.0 - 1.0;
+	float3 N = HasNormalMap(gTextureConfig) > 0 ? ApplyNormalMap(vMat, normal_texture, decal_sampler, tex) :vz;
+	//N = N * 2.0 - 1.0;
+
 	// 接空間からワールドへ変換
-	N = normalize(mul(vMat, N));
+	//N = normalize(mul(vMat, N));
+	//N = normalize(input.v_normal);
 
-
-	output.color = diffuse_texture.Sample(decal_sampler, input.texcoord) * input.color;
+	output.color = diffuse_texture.Sample(decal_sampler, tex) * input.color;
 	output.normal = float4(N, 1);
 	output.position = P;
-	output.shadow = float4(GetShadow(shadow_texture, shadow_sampler, input.v_shadow, shadow_color, bias), 1);
+	output.shadow = HasShadowMap(gTextureConfig) > 0 ? float4(GetShadow(shadow_texture, decal_sampler, input.v_shadow, shadow_color, bias), 1) : float4(1,1,1,1);
 	output.depth = float4(input.depth.x / input.depth.y, 0, 0, 1);
 	//output.depth.r = LinearizeDepth(output.depth.r, 0.1, 1000.0);
 

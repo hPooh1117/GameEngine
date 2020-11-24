@@ -12,6 +12,8 @@
 #include "./Renderer/SkinnedMesh.h"
 #include "./Renderer/Texture.h"
 
+#include "./RenderPass/ShaderIDTable.h"
+
 #include "./Utilities/MyArrayFromVector.h"
 #include "./Utilities/ImGuiSelf.h"
 
@@ -43,7 +45,7 @@ using namespace DirectX;
 //
 ////----------------------------------------------------------------------------------------------------------------------------
 //
-//std::shared_ptr<MeshComponent> MeshComponent::Initialize(const std::shared_ptr<Actor>& owner)
+//std::shared_ptr<MeshComponent> MeshComponent::Create(const std::shared_ptr<Actor>& owner)
 //{
 //	return std::shared_ptr<MeshComponent>(new MeshComponent(owner));
 //}
@@ -181,6 +183,7 @@ using namespace DirectX;
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
+
 const std::string NewMeshComponent::MESH_TYPE_NAMES[MeshTypeID::ENUM_MESH_TYPE_MAX] = {
 	"None",
 	"BasicCube",
@@ -199,13 +202,17 @@ NewMeshComponent::NewMeshComponent(const std::shared_ptr<Actor>& p_owner)
 	:Component(p_owner),
 	mbIsSolid(true),
 	mCurrentMotionKey("default"),
-	mbChangedMotion(false)
+	mbChangedMotion(false),
+	mAnimeBlendTime(60),
+	mbIsPBR(false)
 {
 	mMeshID = MeshTypeID::E_Default;
 	mMaterialData.mat_color = { 1, 1, 1, 1 };
-	mMaterialData.brdfFactor = 1.0f;
+	mMaterialData.textureConfig = 0;
 	mMaterialData.metalness = 1.0f;
 	mMaterialData.roughness = 0.0f;
+	mMaterialData.diffuse = 1.0f;
+	mMaterialData.specular = 1.0f;
 	mMaterialData.specularColor = { 1.0f, 1.0f, 1.0f };
 }
 
@@ -239,12 +246,16 @@ void NewMeshComponent::Play(const char* name)
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-bool NewMeshComponent::RegistMesh(MeshTypeID mesh_type_id, ShaderType shader_id, const wchar_t* mesh_filename, unsigned int coord_system)
+bool NewMeshComponent::RegisterMesh(UINT mesh_type_id, UINT shader_id, const wchar_t* mesh_filename, UINT coord_system)
 {
 	mMeshID = mesh_type_id < MeshTypeID::ENUM_MESH_TYPE_MAX ? mesh_type_id : MeshTypeID::E_Default;
 	mFbxType = coord_system;
-	mShaderIDTable.emplace_back(shader_id);
-	if (mesh_filename != nullptr) mMeshFileName = mesh_filename;
+	mShaderIDTable.emplace(ShaderUsage::EMain, shader_id);
+	if (mesh_filename != nullptr)
+	{
+		mMeshFileName = mesh_filename;
+		mTextureConfig += static_cast<int>(TextureConfig::EColorMap);
+	}
 	else
 	{
 		TextureData data = {};
@@ -254,14 +265,14 @@ bool NewMeshComponent::RegistMesh(MeshTypeID mesh_type_id, ShaderType shader_id,
 		mTextureTable.emplace_back(data);
 	}
 
-	Log::Info("[MESH COMP] Regist Mesh ( ActorNo.%d ). ( MeshType : %s, ShaderType : %d, Filename : %s )",OwnerPtr->GetID(),  MESH_TYPE_NAMES[static_cast<u_int>(mMeshID)].c_str(), shader_id, mMeshFileName.c_str());
+	Log::Info("[MESH COMP] Regist Mesh ( ActorNo.%d ). ( MeshType : %s, ShaderType : %d )",OwnerPtr->GetID(),  MESH_TYPE_NAMES[static_cast<u_int>(mMeshID)].c_str(), shader_id);
 	return true;
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
 
-bool NewMeshComponent::RegistTexture(const wchar_t* tex_filename, unsigned int slot)
+bool NewMeshComponent::RegisterTexture(const wchar_t* tex_filename, TextureConfig textureConfig)
 {
 	if (tex_filename == nullptr)
 	{
@@ -270,16 +281,23 @@ bool NewMeshComponent::RegistTexture(const wchar_t* tex_filename, unsigned int s
 	}
 
 	
+	
 	TextureData data = {};
-	data.slot = slot;
+	data.slot = static_cast<unsigned int>(log2f(static_cast<float>(textureConfig)));
 	data.filename = tex_filename;
 
+	mTextureConfig += static_cast<int>(textureConfig);
+	Log::Info("[MESH COMP] Current TextureConfig is %d", mTextureConfig);
+	mMaterialData.textureConfig = mTextureConfig;
+
+	if (textureConfig == TextureConfig::EMetallicMap || textureConfig == TextureConfig::ERoughnessMap) mbIsPBR = true;
+
 	mTextureTable.emplace_back(data);
-	Log::Info("[MESH COMP] Regist Texture (ActorNo.%d). ( Slot : %d)", OwnerPtr->GetID(), MESH_TYPE_NAMES[mMeshID], slot/*, mMeshFileName*/);
+	Log::Info("[MESH COMP] Regist Texture (ActorNo.%d). ( Slot : %d)", OwnerPtr->GetID(), data.slot/*, mMeshFileName*/);
 	return true;
 }
 
-bool NewMeshComponent::RegistMotion(const char* name, const wchar_t* motion_filename)
+bool NewMeshComponent::RegisterMotion(const char* name, const wchar_t* motion_filename)
 {
 	mMotionFileTable[name] = motion_filename;
 	return true;
@@ -287,10 +305,12 @@ bool NewMeshComponent::RegistMotion(const char* name, const wchar_t* motion_file
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-bool NewMeshComponent::RegistAdditionalShader(ShaderType shader_id, unsigned int usage)
+bool NewMeshComponent::RegisterAdditionalShader(ShaderID shader_id, unsigned int usage)
 {
-	mShaderIDTable.emplace_back(shader_id);
+	mShaderIDTable.emplace(usage, shader_id);
 	Log::Info("[MESH COMP] Regist Additional Shader (ActorNo.%d). ( Usage : %d, ShaderType : %d", OwnerPtr->GetID(), usage, shader_id);
+	if (usage == ShaderUsage::EShader) mTextureConfig += static_cast<int>(TextureConfig::EShadowMap);
+	mMaterialData.textureConfig = mTextureConfig;
 	return false;
 }
 
@@ -308,14 +328,15 @@ const DirectX::XMFLOAT4& NewMeshComponent::GetMaterialColor()
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-ShaderType               NewMeshComponent::GetShaderID(u_int usage)
+UINT    NewMeshComponent::GetShaderID(u_int usage)
 {
 	if (usage == 1 && mShaderIDTable.size() == 1)
 	{
 		Log::Error("[MESH COMPONENT] Please register shader for SHADOW with mesh.");
 	}
 	
-	return mShaderIDTable[usage];
+	if (mShaderIDTable.find(usage) != mShaderIDTable.end()) return mShaderIDTable[usage];
+	else                                                    return ShaderID::UNREGISTERED_SHADER;
 }
 //--------------------------------------------------------------------------------------------------------------------------------
 
@@ -324,22 +345,52 @@ void NewMeshComponent::SetMaterialColor(const Vector4& color)
 	mMaterialData.mat_color = color;
 }
 
+void NewMeshComponent::SetMaterialColor(const Vector3& color)
+{
+	mMaterialData.mat_color.x = color.x;
+	mMaterialData.mat_color.y = color.y;
+	mMaterialData.mat_color.z = color.z;
+}
+
 void NewMeshComponent::SetBRDFFactors(float metalness, float roughness, const Vector3& specColor)
 {
 	mMaterialData.metalness = metalness;
 	mMaterialData.roughness = roughness;
 	mMaterialData.specularColor = specColor;
+	mbIsPBR = true;
 }
 
 
 void NewMeshComponent::RenderUI()
 {
-	ImGui::SliderFloat("Metalness", &mMaterialData.metalness, 0.0f, 1.0f);
+	if (mMeshID == MeshTypeID::E_SkinnedMesh) ImGui::SliderInt("AnimeBlendTime", &mAnimeBlendTime, 30, 240);
+
+	if (!mbIsPBR) return;
+
+	static int metallicFlag = 0;
+	ImGui::RadioButton("Metal", &metallicFlag, 1);
+	ImGui::SameLine();
+	ImGui::RadioButton("Dielectric", &metallicFlag, 0);
+	mMaterialData.metalness = static_cast<float>(metallicFlag);
+
 	ImGui::SliderFloat("Roughness", &mMaterialData.roughness, 0.0f, 1.0f);
-	MyArrayFromVector specColor = MyArrayFromVector(mMaterialData.specularColor);
-	ImGui::SliderFloat3("Specular Color", specColor.SetArray(), 0.0f, 1.0f);
-	ImGui::SliderFloat("BRDF Specular Factor", &mMaterialData.brdfFactor, 0.0f, 1.0f);
-	ImGui::Separator();
+	
+	static bool diffuseFlag = true;
+	ImGui::Checkbox("Diffuse", &diffuseFlag);
+	mMaterialData.diffuse = static_cast<float>(diffuseFlag);
+	
+	static bool specularFlag = true;
+	ImGui::Checkbox("Specular", &specularFlag);
+	mMaterialData.specular = static_cast<float>(specularFlag);
+
+	MyArrayFromVector color = MyArrayFromVector(mMaterialData.mat_color);
+	ImGui::ColorPicker4("Diffuse Color", color.SetArray());
+
+	
+	//MyArrayFromVector specColor = MyArrayFromVector(mMaterialData.specularColor);
+	//ImGui::SliderFloat3("Specular Color", specColor.SetArray(), 0.0f, 1.0f);
+	//ImGui::SliderFloat("BRDF Specular Factor", &mMaterialData.brdfFactor, 0.0f, 1.0f);
+	//ImGui::Separator();
 }
 
 std::shared_ptr<NewMeshComponent> NewMeshComponent::Initialize(const std::shared_ptr<Actor>& p_owner)

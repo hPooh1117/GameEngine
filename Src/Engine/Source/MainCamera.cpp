@@ -19,15 +19,6 @@ void MainCamera::Update(float elapsed_time)
 {
 	mDeltaTime = elapsed_time;
 
-	// set camera's direction vector
-	//XMMATRIX origin = XMMatrixRotationRollPitchYaw(m_origin.x, m_origin.y, m_origin.z);
-	//XMMATRIX R = XMLoadFloat4x4(&m_rotation);
-	//R *= origin;
-	//XMStoreFloat4x4(&m_rotation, /*R*/origin);
-	//Matrix r;
-	//r.CreateFromQuaternion(mRotation);
-	//m_forward = Vector3(r._31, r._32, r._33);
-	//m_up = Vector3(r._21, r._22, r._23);
 
 	// move camera position and orientation
 	SwitchMoveEnable();
@@ -48,11 +39,12 @@ void MainCamera::SwitchMoveEnable()
 
 void MainCamera::MoveCamera()
 {
-	if (ImGui::IsMouseHoveringAnyWindow()) return;
+	if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow)) return;
 
 	float speed = 5.0f;
 	Vector2 deltaMouse = InputPtr.GetMouseDelta();
 
+	// マウスMボタン押下 & マウス移動でカメラ平行移動
 	if ((GetKeyState(VK_MBUTTON) & 0x8000)/* && (deltaMouse.x != 0 && deltaMouse.y != 0)*/)
 	{
 		Vector3 delta3D = Vector3(-deltaMouse.x, deltaMouse.y, 0);
@@ -68,9 +60,9 @@ void MainCamera::MoveCamera()
 		delta.y = delta3D.x * X.y + delta3D.y * Y.y + delta3D.z * Z.y;
 		delta.z = delta3D.x * X.z + delta3D.y * Y.z + delta3D.z * Z.z;
 		mPos = Math::Lerp(mPos, mPos + delta * 0.06f, 0.8f);
-		
-		Log::Info("MouseDelta in CameraCoordinate ( %.2f, %.2f, %.2f )", delta.x, delta.y, delta.z);
 	}
+
+	// マウスホイールでカメラの前後平行移動
 	if (InputPtr.GetIsMouseWheelUp())
 	{
 		mPos += mForward * speed;
@@ -80,6 +72,7 @@ void MainCamera::MoveCamera()
 		mPos -= mForward * speed;
 	}
 
+	// マウス右クリック中のマウス移動で視野操作
 	float pitch = 0.0f, yaw = 0.0f;
 	if (InputPtr.IsConnected(0))    // ゲームパッド操作
 	{
@@ -95,11 +88,8 @@ void MainCamera::MoveCamera()
 		}
 	}
 
-	// カメラの上下に制限 
-	if (pitch < -90.0f * 0.01745f) pitch = -90.0f * 0.01745f;
-	if (pitch > 90.0f * 0.01745f) pitch = 90.0f * 0.01745f;
 
-
+	// カメラ視野移動の計算--------------------------------------
 	Quaternion q1, q2;
 
 	// 左右の軸はY軸
@@ -109,6 +99,7 @@ void MainCamera::MoveCamera()
 	Matrix r;
 	r = Matrix::CreateFromQuaternion(mRotation);
 
+	// 前方向、上方向の設定
 	mForward = Vector3(r._31, r._32, r._33);
 	mUp = Vector3(r._21, r._22, r._23);
 
@@ -117,6 +108,7 @@ void MainCamera::MoveCamera()
 	mRotation = Quaternion::Concatenate(mRotation, q1);
 
 	mTarget = mPos + mForward;
+	// ------------------------------------------------------
 }
 
 void MainCamera::ResetCameraPosition()
@@ -129,12 +121,28 @@ void MainCamera::ResetCameraPosition()
 
 void MainCamera::SetFocusPoint(const Vector3& pos)
 {
-	Vector3 focus = pos - mPos;
-	focus.normalize();
-
+	Quaternion q;
 	Vector3 axis;
+	float angle;
+
+
+	Vector3 focus = Vector3::Normalize(pos - mPos);
+
+	angle = acosf(Vector3::Dot(mForward, focus));
 	axis = mForward.cross(focus);
-	float angle = acosf(Vector3::Dot(mForward, focus));
-	mRotation.SetToRotateAxis(axis, angle);
+
+	if (angle > 0.001f * 0.001745f || angle < -0.001f * 0.001745f)
+	{
+
+		q.SetToRotateAxis(axis, angle);
+
+		mRotation = Quaternion::Concatenate(mRotation, q);
+	}
+
+	Matrix r;
+	r = Matrix::CreateFromQuaternion(mRotation);
+
+	mForward = Vector3(r._31, r._32, r._33);
+	mUp = Vector3(r._21, r._22, r._23);
 }
 

@@ -148,7 +148,7 @@
 ////{
 ////}
 ////
-////bool NewMeshRenderer::Initialize(D3D::DevicePtr& p_device)
+////bool NewMeshRenderer::Create(D3D::DevicePtr& p_device)
 ////{
 ////	return true;
 ////}

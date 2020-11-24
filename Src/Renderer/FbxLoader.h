@@ -41,21 +41,20 @@ private:
     D3D11_TEXTURE2D_DESC m_texture2D_desc = {};
 
 private:
-    static std::unordered_map < std::string, std::vector<MyFbxMesh>> mModelTable;
+    //static std::unordered_map < std::string, std::vector<MyFbxMesh>> mModelTable;
     unsigned int mNumberOfBones    = 0;
     unsigned int mNumberOfVertices = 0;
 
     std::unique_ptr<PerfTimer> m_pTimer;
 public:
     FbxLoader();
+    ~FbxLoader();
+
+    
     bool LoadFbxFile(Microsoft::WRL::ComPtr<ID3D11Device>& device,
         const char* fbxfilename, 
         std::vector<MyFbxMesh>& mesh_container);
-    //bool LoadFbxFile(D3D::DevicePtr& device,
-    //    const std::string& fbxfilename,
-    //    std::vector<MyFbxMesh>& mesh_container,
-    //    bool dummy
-    //);
+
 
     void LoadPosition(FbxMesh* mesh, std::vector<FbxInfo::Vertex>& vertices);
     void LoadNormal(FbxMesh* mesh, std::vector<FbxInfo::Vertex>& vertices);
@@ -69,11 +68,11 @@ public:
 
     bool AddMotion(std::string& name, const char* filename, std::vector<MyFbxMesh>& meshes);
 
-    void Save(const std::string filename, std::vector<MyFbxMesh>& mesh_container);
-    void SaveMotion(const std::string& filename, const std::string& key, std::vector<MyFbxMesh>& meshes);
+    void SerializeAndSaveMeshes(const std::string filename, std::vector<MyFbxMesh>& mesh_container);
+    void SerializeAndSaveMotion(const std::string& filename, const std::string& key, std::vector<MyFbxMesh>& meshes);
 
-    bool LoadAAA(Microsoft::WRL::ComPtr<ID3D11Device>& device, const std::string filename, std::vector<MyFbxMesh>& mesh_container);
-    bool LoadMMM(std::string& name, const std::string& filename, std::vector<MyFbxMesh>& meshes);
+    bool LoadSerializedMesh(Microsoft::WRL::ComPtr<ID3D11Device>& device, const std::string filename, std::vector<MyFbxMesh>& mesh_container);
+    bool LoadSerializedMotion(std::string& name, const std::string& filename, std::vector<MyFbxMesh>& meshes);
 
     void FetchBoneInfluences(
         const FbxMesh* fbx_mesh, 
@@ -89,5 +88,30 @@ public:
     //    FbxInfo::SkeltalAnimation& skeltal_animation, 
     //    u_int sampling_rate = 0);
 
-    ~FbxLoader();
 };
+
+//class NewFbxLoader
+//{
+//private:
+//    FbxInfo::Vertex*   mpVertices;
+//    UINT*              mpIndices;
+//
+//    FbxInfo::Texture*  mpAlbedoMaps;
+//    FbxInfo::Texture*  mpNormalMaps;
+//    FbxInfo::Texture*  mpHeightMaps;
+//    FbxInfo::Texture*  mpMetallicMaps;
+//    FbxInfo::Texture*  mpRoughnessMaps;
+//    FbxInfo::Texture*  mpAOMaps;
+//
+//    std::map<const char*, FbxInfo::Motion> mMotionTable;
+//
+//public:
+//    NewFbxLoader() = default;
+//    ~NewFbxLoader() = default;
+//
+//    bool LoadAndGatherFbxMesh(
+//        D3D::DevicePtr& p_device,
+//        const char* fbxfilename,
+//        std::vector<MyFbxMesh>& mesh_container);
+//
+//};

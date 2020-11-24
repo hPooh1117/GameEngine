@@ -2,7 +2,6 @@
 
 #include "Mesh.h"
 
-class Texture;
 
 class GeometricPrimitiveSelf : public Mesh
 {
@@ -20,7 +19,6 @@ public:
     virtual ~GeometricPrimitiveSelf();
 
     void CreateBuffers(D3D::DevicePtr& device) override;
-
     virtual void SetRenderState(D3D::DeviceContextPtr& imm_context) = 0;
 
     virtual void Render(
@@ -46,23 +44,16 @@ private:
    D3D::BufferPtr mConstantBufferForLine;
 public:
     BasicLine(D3D::DevicePtr& device);
-    virtual void SetRenderState(D3D::DeviceContextPtr& imm_context) override;
+    void SetRenderState(D3D::DeviceContextPtr& imm_context);
 };
 
 
 
 class BasicCube : public GeometricPrimitiveSelf
 {
-private:
-    std::unique_ptr<Texture> mTexture;
-
 public:
     BasicCube(D3D::DevicePtr& device);
-    bool LoadTexture(
-        D3D::DevicePtr& device,
-        const wchar_t* filename);
-
-    virtual void SetRenderState(D3D::DeviceContextPtr& imm_context) override;
+    void SetRenderState(D3D::DeviceContextPtr& imm_context){}
 
 };
 
@@ -74,16 +65,14 @@ public:
     BasicCylinder(
         D3D::DevicePtr& device,
         unsigned int slices = 8);
-    virtual void SetRenderState(D3D::DeviceContextPtr& imm_context) override;
+    void SetRenderState(D3D::DeviceContextPtr& imm_context) {}
+
 };
 
 
 
 class BasicSphere : public GeometricPrimitiveSelf
 {
-private:
-    std::unique_ptr<Texture> mTexture;
-
 public:
     BasicSphere(
         D3D::DevicePtr& device,
@@ -91,10 +80,7 @@ public:
         unsigned int stacks = 8,
         float radius = 0.5f
     );
-    bool LoadTexture(
-        D3D::DevicePtr& device,
-        const wchar_t* filename);
-    virtual void SetRenderState(D3D::DeviceContextPtr& imm_context) override;
+    void SetRenderState(D3D::DeviceContextPtr& imm_context) {}
 
 };
 
@@ -109,6 +95,6 @@ public:
         unsigned int stacks = 8,
         float radius = 0.5f,
         float height = 1.0f);
-    virtual void SetRenderState(D3D::DeviceContextPtr& imm_context) override;
+    void SetRenderState(D3D::DeviceContextPtr& imm_context) {}
 
 };

@@ -20,7 +20,7 @@ AmbientOcclusion::AmbientOcclusion()
 			static_cast<float>(SCREEN_WIDTH) / NOISE_TEX_RESOLUTION.x, 
 			static_cast<float>(SCREEN_HEIGHT) / NOISE_TEX_RESOLUTION.y)),
 	mSampleRadius(SAMPLE_RADIUS),
-	mPower(1.2f),
+	mPower(2.2f),
 	mBias(0.0f),
 	mBlurSize(5.0f)
 {
@@ -168,15 +168,16 @@ void AmbientOcclusion::Deactivate(std::unique_ptr<GraphicsEngine>& p_graphics)
 void AmbientOcclusion::RenderUI()
 {
 	using namespace ImGui;
+	Text("SSAO Settings");
 	SliderFloat("Intensity", &mPower, 0.0f, 5.0f);
 
 	SliderFloat("Sample Radius", &mSampleRadius, 0.1f, 5.0f);
 
 	SliderFloat("Ambient Bias", &mBias, 0.0f, 5.0f);
 
-	int blursize = mBlurSize;
-	SliderInt("Blur Size", &blursize, 0.0f, 10.0f);
-	mBlurSize = static_cast<float>(blursize);
+	//int blursize = mBlurSize;
+	//SliderInt("BlurExecuter Size", &blursize, 0.0f, 10.0f);
+	//mBlurSize = static_cast<float>(blursize);
 
 	Separator();
 }

@@ -78,7 +78,7 @@ void PointLight::RenderUI()
 
     for (auto i = 0; i < LIGHT_NUM_MAX; ++i)
     {
-        SetNextTreeNodeOpen(false, ImGuiSetCond_Once);
+        SetNextTreeNodeOpen(false, ImGuiCond_Once);
         std::string title = "Point Light " + std::to_string(i);
 
         if (TreeNode(title.data()))
@@ -93,6 +93,7 @@ void PointLight::RenderUI()
             SliderFloat4("Color", pointColor.SetArray(), 0.0f, 1.0f);
 
             TreePop();
+            
         }
     }
 

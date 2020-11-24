@@ -10,7 +10,7 @@ struct POINTLIGHT
     float4 pos;
     float4 color;
 };
-#define POINTMAX 4
+#define POINTMAX 64
 
 //----------------------------------
 // スポットライト構造体
@@ -29,7 +29,7 @@ struct SPOTLIGHT
     float4 color;
     float4 dir;
 };
-#define SPOTMAX 4
+#define SPOTMAX 32
 
 //----------------------------------
 // グローバル変数

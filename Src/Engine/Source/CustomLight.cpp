@@ -90,7 +90,7 @@ inline void CustomLight::RenderUI()
     {
         if (mSpotLightData[i].type == 0.0f) continue;
 
-        SetNextTreeNodeOpen(false, ImGuiSetCond_Once);
+        SetNextTreeNodeOpen(false, ImGuiCond_Once);
         std::string title = "Spot Light " + std::to_string(i);
 
         if (TreeNode(title.data()))
@@ -119,7 +119,7 @@ inline void CustomLight::RenderUI()
     {
         if (mPointLightData[i].type == 0.0f) continue;
 
-        SetNextTreeNodeOpen(false, ImGuiSetCond_Once);
+        SetNextTreeNodeOpen(false, ImGuiCond_Once);
         std::string title = "Point Light " + std::to_string(i);
 
         if (TreeNode(title.data()))

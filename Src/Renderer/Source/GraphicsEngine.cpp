@@ -153,7 +153,8 @@ void GraphicsEngine::InitImGui(HWND hwnd)
     // set up platform / renderer
     ImGui_ImplWin32_Init(hwnd);
     ImGui_ImplDX11_Init(m_pD3dDevice.Get(), m_pImmContext.Get());
-    ImGui::StyleColorsDark();
+    ImGui::StyleColorsClassic();
+    
 
     Log::Info("[ImGui] Initialized");
 #endif //USE_IMGUI
@@ -168,7 +169,7 @@ void GraphicsEngine::ActivateBackBuffer()
     // Unit1 7-②　レンダーターゲットのクリア
     //float ClearColor[4] = { 0.796f, 0.796f, 0.597f, 1.0f }; //R, G, B, A
     //float ClearColor[4] = { 0.1f, 0.1f, 0.1f, 1.0f }; //R, G, B, A
-    float ClearColor[4] = { 0.796f, 0.796f, 0.796f, 1.0f };
+    float ClearColor[4] = { 0.456f, 0.456f, 0.456f, 1.0f };
 
 
     m_pImmContext->ClearRenderTargetView(m_pSwapChain->getRenderTargetView().Get(), ClearColor);

@@ -43,11 +43,11 @@ public:
 	static constexpr UINT NUMBER_OF_SCREEN = 3;
 
 private:
-	std::array<D3D::RenderTargetVPtr, NUMBER_OF_GBUFFER> m_pRTVs;
-	std::array<D3D::RenderTargetVPtr, NUMBER_OF_LIGHTMAP> m_pRTVsForLights;
-	D3D::RenderTargetVPtr m_pRTVForLight;
-	std::array<D3D::RenderTargetVPtr, NUMBER_OF_SCREEN> m_pRTVForScreens;
-	D3D::DepthStencilVPtr m_pDSV;
+	std::array<D3D::RTVPtr, NUMBER_OF_GBUFFER> m_pRTVs;
+	std::array<D3D::RTVPtr, NUMBER_OF_LIGHTMAP> m_pRTVsForLights;
+	D3D::RTVPtr m_pRTVForLight;
+	std::array<D3D::RTVPtr, NUMBER_OF_SCREEN> m_pRTVForScreens;
+	D3D::DSVPtr m_pDSV;
 	D3D::Texture2DPtr m_pTexForDSV;
 
 	std::unique_ptr<Texture> m_pColorMap;

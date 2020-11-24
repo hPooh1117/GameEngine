@@ -51,7 +51,7 @@ bool TextureHolder::Initialize(D3D::DevicePtr& p_device)
 
 		hr = p_device->CreateSamplerState(
 			&CD3D11_SAMPLER_DESC(
-				D3D11_FILTER_ANISOTROPIC,
+				D3D11_FILTER_MIN_MAG_MIP_LINEAR,
 				D3D11_TEXTURE_ADDRESS_CLAMP,
 				D3D11_TEXTURE_ADDRESS_CLAMP,
 				D3D11_TEXTURE_ADDRESS_CLAMP,
@@ -110,7 +110,7 @@ bool TextureHolder::Initialize(D3D::DevicePtr& p_device)
     return true;
 }
 
-void TextureHolder::RegistTextureFromActors(D3D::DevicePtr& p_device, std::unique_ptr<ActorManager>& p_actors)
+void TextureHolder::RegisterTextureFromActors(D3D::DevicePtr& p_device, std::unique_ptr<ActorManager>& p_actors)
 {
 	for (auto i = 0u; i < p_actors->GetActorsSize(); ++i)
 	{
@@ -126,8 +126,8 @@ void TextureHolder::RegistTextureFromActors(D3D::DevicePtr& p_device, std::uniqu
 			}
 
 			std::unique_ptr<NewTexture> tex = std::make_unique<NewTexture>();
-			if (table[i].filename == L"DUMMY") tex->Load(p_device);
-			else                               tex->Load(p_device, table[i].filename.c_str());
+			if (table[i].filename == L"DUMMY" || table[i].filename == L"EMPTY")   tex->Load(p_device);
+			else                                                                  tex->Load(p_device, table[i].filename.c_str());
 
 			mTextureTable.emplace(table[i].filename.c_str(), std::move(tex));
 		}
@@ -140,9 +140,9 @@ void TextureHolder::ClearTextureTable()
 	mTextureTable.clear();
 }
 
-void TextureHolder::Set(D3D::DeviceContextPtr& p_imm_context, std::wstring filename, unsigned int slot)
+void TextureHolder::Set(D3D::DeviceContextPtr& p_imm_context, std::wstring filename, unsigned int slot, bool flag)
 {
-	mTextureTable.find(filename)->second->Set(p_imm_context, slot);
+	mTextureTable.find(filename)->second->Set(p_imm_context, slot, flag);
 }
 
 void TextureHolder::SetSampler(D3D::DeviceContextPtr& p_imm_context, unsigned int slot, unsigned int samplerid)

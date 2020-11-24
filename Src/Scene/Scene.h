@@ -23,7 +23,6 @@ protected:
     SceneID                                       mCurrentScene;
     SceneID                                       mNextScene;
     std::unordered_map<unsigned int, std::string> mSceneNameTable;
-
     //std::unique_ptr<Skybox>                       m_pSkyBox;
     //std::unique_ptr<Blender>                      m_pBlender;
     //std::unique_ptr<ActorManager>                 m_pActorManager;
@@ -42,6 +41,7 @@ public:
 
     virtual void InitializeScene() = 0;
     virtual void Update(float elapsed_time) = 0;
+    virtual void PreCompute(std::unique_ptr<GraphicsEngine>& p_graphics) = 0;
     virtual void Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time) = 0;
     
     const std::string& GetCurrentSceneName();

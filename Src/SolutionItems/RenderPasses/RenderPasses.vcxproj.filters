@@ -36,6 +36,9 @@
     <ClInclude Include="..\..\RenderPass\SSAOPasses.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\RenderPass\MakeCubeMapPasses.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\RenderPass\Source\ForwardPasses.cpp">
@@ -47,13 +50,16 @@
     <ClCompile Include="..\..\RenderPass\Source\ShadowPasses.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\RenderPass\PostProcessPasses.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\RenderPass\Source\DefferedPasses.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="..\..\RenderPass\Source\SSAOPasses.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\RenderPass\Source\PostProcessPasses.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\RenderPass\Source\MakeCubeMapPasses.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>

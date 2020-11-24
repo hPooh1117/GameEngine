@@ -16,23 +16,26 @@
 #include "./Renderer/RenderTarget.h"
 #include "./Renderer/VertexDecleration.h"
 
+#include "./Utilities/Log.h"
+
+
 
 void ShadowPass::Initialize(D3D::DevicePtr& device)
 {
-	AddVertexAndPixelShader(device, ShaderType::EToShadow,
+	AddVertexAndPixelShader(device, ShaderID::EToShadow,
         L"ShadowMap.hlsl",
         L"ShadowMap.hlsl",
         "VSshadow", "PSshadow", VEDType::VED_DEFAULT);
-    AddVertexAndPixelShader(device, ShaderType::EToShadowForSkinning,
+    AddVertexAndPixelShader(device, ShaderID::EToShadowForSkinning,
         L"ShadowMap.hlsl",
         L"ShadowMap.hlsl",
         "VSshadowSkinning", "PSshadow", VEDType::VED_SKINNED_MESH);
 
     mpShadowMap = std::make_unique<ShadowMap>(device);
 
-    mpRenderTargets->Create(device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT);
+    GetRenderTargetManager()->Create(device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::EShadow);
 
-    mpDSV->Initialize(device);
+    mpDSV->Create(device, SCREEN_WIDTH, SCREEN_HEIGHT);
 }
 
 
@@ -42,23 +45,34 @@ void ShadowPass::RenderShadow(std::unique_ptr<GraphicsEngine>& p_graphics, float
 
     mpShadowMap->Activate(p_graphics, ENGINE.GetLightPtr().get(), ENGINE.GetCameraPtr().get());
 
-    mpRenderTargets->Activate(pImmContext, mpDSV);
+    GetRenderTargetManager()->Activate(pImmContext, mpDSV, RenderTarget::EShadow);
 
     ENGINE.GetMeshRenderer()->RenderMesh(pImmContext, elapsed_time, RenderPassID::EShadowPass);
 
     p_graphics->ActivateBackBuffer();
 
-    mpRenderTargets->Deactivate(pImmContext, 5);
+    GetRenderTargetManager()->Deactivate(pImmContext, RenderTarget::EShadow, 1, 5);
 
     mpShadowMap->Deactivate(p_graphics);
 
-    mpShadowMap->RenderUI();
     //ENGINE.GetUIRenderer()->FinishRenderingWindow();
 
 
 }
 
-void ShadowPass::RenderUI()
+void ShadowPass::RenderUI(bool b_open)
 {
-    ImGui::Image((void*)mpRenderTargets->GetShaderResource(0).Get(), ImVec2(320, 180)/*, ImVec2(SCREEN_WIDTH, SCREEN_HEIGHT)*/);
+    if (!b_open) ImGui::SetNextItemOpen(b_open);
+
+    if (ImGui::TreeNode(RenderTarget::RENDER_TARGET_NAME_TABLE[RenderTarget::EShadow]))
+    {
+        mpShadowMap->RenderUI();
+
+        if (ImGui::ImageButton((void*)GetRenderTargetManager()->GetShaderResource(RenderTarget::EShadow).Get(), ImVec2(320, 180)))
+        {
+            mCurrentScreenNum = RenderTarget::EShadow;
+            mbIsOpen2ndScreen = true;
+        }
+        ImGui::TreePop();
+    }
 }

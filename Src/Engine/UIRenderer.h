@@ -55,7 +55,7 @@ public:
 	}
 	void SetText(std::string text);
 
-	void SetNextWindowSettings(const Vector2& pos, const Vector2& size);
+	void SetNextWindowSettings(const Vector2& pos, const Vector2& size, const Vector2& pivot = Vector2(0,0));
 	void SetNextSpriteFontSettings(const Vector2& pos, const Vector2& size, const Vector4& color);
 
 	UIRenderer(const UIRenderer&) = delete;

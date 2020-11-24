@@ -1,5 +1,5 @@
 #pragma once
-enum ShaderType : unsigned int
+enum ShaderID : unsigned int
 {
 	// CommonShader
 	ESprite,
@@ -16,7 +16,7 @@ enum ShaderType : unsigned int
 
 	EToonGeo,
 	EForwardPBR,
-	EForwardPBRSetting,
+	EForwardPBRForSkinned,
 	ESpotLightPhong,
 	ESpotLightPhongForSkinning,
 	ESpotLightBump,
@@ -25,6 +25,15 @@ enum ShaderType : unsigned int
 	EFromShadow,
 	EFromShadowForSkinning,
 	ETextureTest,
+	EFlat,
+	EFurShader,
+
+	ECubemapConvolution,
+	EMakeCubeMap,
+	EMakeCubeMapForSkinning,
+	EUseCubeMap,
+	EReflectSea, // using cubemap
+	ECubeMapEnv,
 
 	// DefferedPass
 	EDefferedSkybox,
@@ -37,7 +46,9 @@ enum ShaderType : unsigned int
 	EDefferedNormal,
 	EDefferedNormalForSkinned,
 	EDefferedNormalForSkinning,
-	EDefferedPreLighting,
+	EDefferedPreLighting, // POINT + DIRECTIONAL
+	EDefferedSea,
+	EDefferedLighting, // POINT + SPOT + DIRECTIONAL
 
 	// ShadowPasses
 	EToShadow,
@@ -49,4 +60,6 @@ enum ShaderType : unsigned int
 	EPostEffect,
 
 	ENUM_SHADER_MAX,
+
+	UNREGISTERED_SHADER = UINT32_MAX
 };

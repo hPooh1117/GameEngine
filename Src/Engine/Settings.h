@@ -21,6 +21,7 @@ namespace Settings
 		bool bIsDeffered;
 		bool bEnableAO;
 		bool bCastShadow;
+		bool bCubeMap;
 	};
 
 	struct Camera

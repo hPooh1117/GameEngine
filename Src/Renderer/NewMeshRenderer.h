@@ -29,6 +29,10 @@ public:
 	void RegistMeshDataFromActors(D3D::DevicePtr& p_device, const std::unique_ptr<ActorManager>& p_actors);
 	void RenderSkybox(D3D::DeviceContextPtr& p_imm_context, float elapsed_time, unsigned int current_pass_id);
 	void RenderMesh(D3D::DeviceContextPtr& p_imm_context, float elapsed_time, unsigned int current_pass_id);
+	UINT ChooseShaderUsageForMesh(UINT current_pass); // 現在の描画パスによって、idを選択
+	UINT ChooseShaderIdForSkybox(UINT current_pass);
 	void RenderUI();
 	void ClearAll();
+
+	void SetSkybox(int id);
 };

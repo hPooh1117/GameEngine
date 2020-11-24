@@ -13,6 +13,7 @@ public:
 
     virtual void InitializeScene() override;
     virtual void Update(float elapsed_time) override;
+    virtual void PreCompute(std::unique_ptr<GraphicsEngine>& p_graphics) override;
     virtual void Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time) override;
 
     ~SceneA();
@@ -21,7 +22,7 @@ private:
     std::shared_ptr<Actor> mpSphere;
     std::shared_ptr<Actor> mpEarth;
     std::shared_ptr<Actor> mpToon;
-    std::shared_ptr<Actor> m_pPBRTest;
+    std::shared_ptr<Actor> mpFlat;
     std::shared_ptr<Actor> m_field;
     std::shared_ptr<Actor> mpGrid;
 

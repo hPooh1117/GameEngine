@@ -163,6 +163,7 @@
     <ClInclude Include="..\..\Engine\AudioSystem.h" />
     <ClInclude Include="..\..\Engine\Camera.h" />
     <ClInclude Include="..\..\Engine\CameraController.h" />
+    <ClInclude Include="..\..\Engine\ComputeExecuter.h" />
     <ClInclude Include="..\..\Engine\CustomLight.h" />
     <ClInclude Include="..\..\Engine\DataStructures.h" />
     <ClInclude Include="..\..\Engine\DirectionalLight.h" />
@@ -170,7 +171,6 @@
     <ClInclude Include="..\..\Engine\Light.h" />
     <ClInclude Include="..\..\Engine\LightController.h" />
     <ClInclude Include="..\..\Engine\MainCamera.h" />
-    <ClInclude Include="..\..\Engine\MeshRenderer.h" />
     <ClInclude Include="..\..\Engine\OrthoView.h" />
     <ClInclude Include="..\..\Engine\Particle.h" />
     <ClInclude Include="..\..\Engine\ParticleManager.h" />
@@ -189,12 +189,12 @@
     <ClCompile Include="..\..\Engine\Source\ActorManager.cpp" />
     <ClCompile Include="..\..\Engine\Source\AudioSystem.cpp" />
     <ClCompile Include="..\..\Engine\Source\CameraController.cpp" />
+    <ClCompile Include="..\..\Engine\Source\ComputeExecuter.cpp" />
     <ClCompile Include="..\..\Engine\Source\CustomLight.cpp" />
     <ClCompile Include="..\..\Engine\Source\DirectionalLight.cpp" />
     <ClCompile Include="..\..\Engine\Source\GameSystem.cpp" />
     <ClCompile Include="..\..\Engine\Source\LightController.cpp" />
     <ClCompile Include="..\..\Engine\Source\MainCamera.cpp" />
-    <ClCompile Include="..\..\Engine\Source\MeshRenderer.cpp" />
     <ClCompile Include="..\..\Engine\Source\OrthoView.cpp" />
     <ClCompile Include="..\..\Engine\Source\ParticleManager.cpp" />
     <ClCompile Include="..\..\Engine\Source\PhysicsManager.cpp" />
@@ -203,11 +203,6 @@
     <ClCompile Include="..\..\Engine\Source\SpotLight.cpp" />
     <ClCompile Include="..\..\Engine\Source\TraceCamera.cpp" />
     <ClCompile Include="..\..\Engine\Source\UIRenderer.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Utilities\Utilities.vcxproj">
-      <Project>{40903909-6cb8-49ef-86f9-63a163979a5a}</Project>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -195,7 +195,7 @@ void Plane::Render(
 {
 	HRESULT hr = S_OK;
 
-	if (shader != nullptr)shader->activateShaders(imm_context);
+	if (shader != nullptr)shader->ActivateShaders(imm_context);
 
 	XMFLOAT4X4 W, WVP;
 	XMStoreFloat4x4(&W, world);
@@ -215,7 +215,10 @@ void Plane::Render(
 	matData.metalness = mat_data.metalness;
 	matData.roughness = mat_data.roughness;
 	matData.specularColor = mat_data.specularColor;
-	matData.brdfFactor = mat_data.brdfFactor;
+	matData.textureConfig = mat_data.textureConfig;
+	matData.diffuse = mat_data.diffuse;
+	matData.specular = mat_data.specular;
+
 
 	imm_context->UpdateSubresource(m_pConstantBufferMaterial.Get(), 0, nullptr, &matData, 0, 0);
 	imm_context->VSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());
@@ -296,14 +299,14 @@ PlaneBatch::PlaneBatch(
 	hr = device->CreateRasterizerState(&rrDesc, m_pRasterizerSolid.GetAddressOf());
 	if (FAILED(hr)) return;
 
-	m_pTexture = std::make_unique<Texture>();
+	mpTexture = std::make_unique<NewTexture>();
 	if (filename != L"\0")
 	{
-		m_pTexture->Load(device, filename);
+		mpTexture->Load(device, filename);
 	}
 	else
 	{
-		m_pTexture->Load(device);
+		mpTexture->Load(device);
 	}
 
 
@@ -334,7 +337,7 @@ void PlaneBatch::CreateBuffers(D3D::DevicePtr& device)
 			0
 		),
 		&vSrData,
-		m_pVertexBuffer.GetAddressOf()
+		mpVertexBuffer.GetAddressOf()
 	);
 	_ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
@@ -354,7 +357,7 @@ void PlaneBatch::CreateBuffers(D3D::DevicePtr& device)
 		srData.SysMemPitch = 0;
 		srData.SysMemSlicePitch = 0;
 
-		hr = device->CreateBuffer(&ibDesc, &srData, m_instance_buffer.GetAddressOf());
+		hr = device->CreateBuffer(&ibDesc, &srData, mpInstanceBuffer.GetAddressOf());
 		if (FAILED(hr)) return;
 	}
 	delete[] instances;
@@ -368,28 +371,28 @@ void PlaneBatch::Begin(D3D::DeviceContextPtr& imm_context, const std::shared_ptr
 {
 	HRESULT hr = S_OK;
 
-	shader->activateShaders(imm_context);
+	shader->ActivateShaders(imm_context);
 
 	UINT strides[2] = { sizeof(VertexForBatch), sizeof(Instance) };
 	UINT offsets[2] = { 0,0 };
 
-	ID3D11Buffer* vbs[2] = { m_pVertexBuffer.Get(), m_instance_buffer.Get() };
+	ID3D11Buffer* vbs[2] = { mpVertexBuffer.Get(), mpInstanceBuffer.Get() };
 	imm_context->IASetVertexBuffers(0, 2, vbs, strides, offsets);
 	imm_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
 	imm_context->RSSetState(m_pRasterizerSolid.Get());
 
-	m_pTexture->Set(imm_context);
+	mpTexture->Set(imm_context);
 
 
 	D3D11_MAP map = D3D11_MAP_WRITE_DISCARD;
 	D3D11_MAPPED_SUBRESOURCE mappedBuffer;
-	hr = imm_context->Map(m_instance_buffer.Get(), 0, map, 0, &mappedBuffer);
+	hr = imm_context->Map(mpInstanceBuffer.Get(), 0, map, 0, &mappedBuffer);
 	_ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
-	m_instance = static_cast<Instance*>(mappedBuffer.pData);
+	mpInstance = static_cast<Instance*>(mappedBuffer.pData);
 
-	m_instances_count = 0;
+	mInstancesCount = 0;
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
@@ -405,18 +408,18 @@ void PlaneBatch::Render(
 	bool isSolid
 )
 {
-	_ASSERT_EXPR(m_instances_count < MAX_INSTANCES, L"Too Many Instances is EXISTING");
+	_ASSERT_EXPR(mInstancesCount < MAX_INSTANCES, L"Too Many Instances is EXISTING");
 
-	if (shader != nullptr) shader->activateShaders(imm_context);
+	if (shader != nullptr) shader->ActivateShaders(imm_context);
 
 	DirectX::XMMATRIX view_proj = camera->GetViewMatrix() * camera->GetProjMatrix(imm_context);
-	XMStoreFloat4x4(&m_instance[m_instances_count].ndc_transform, DirectX::XMMatrixTranspose(world * view_proj));
+	XMStoreFloat4x4(&mpInstance[mInstancesCount].ndc_transform, DirectX::XMMatrixTranspose(world * view_proj));
 
-	//m_instance[m_instances_count].texcoord_transform = DirectX::XMFLOAT4(0, 0, 1, 1);
-	m_instance[m_instances_count].color = mat_data.mat_color;
+	//mpInstance[mInstancesCount].texcoord_transform = DirectX::XMFLOAT4(0, 0, 1, 1);
+	mpInstance[mInstancesCount].color = mat_data.mat_color;
 
 
-	m_instances_count++;
+	mInstancesCount++;
 
 }
 
@@ -429,25 +432,25 @@ void PlaneBatch::Render(
 	const DirectX::XMFLOAT4& mat_color,
 	bool particle_mode)
 {
-	_ASSERT_EXPR(m_instances_count < MAX_INSTANCES, L"Too Many Instances is EXISTING");
+	_ASSERT_EXPR(mInstancesCount < MAX_INSTANCES, L"Too Many Instances is EXISTING");
 
 	DirectX::XMMATRIX view_proj = camera->GetViewMatrix() * camera->GetProjMatrix(imm_context);
 	XMMATRIX W = world;
 	if (particle_mode) W = camera->GetInvViewMatrix() * world;
-	XMStoreFloat4x4(&m_instance[m_instances_count].ndc_transform, DirectX::XMMatrixTranspose(W * view_proj));
+	XMStoreFloat4x4(&mpInstance[mInstancesCount].ndc_transform, DirectX::XMMatrixTranspose(W * view_proj));
 
-	m_instance[m_instances_count].color = mat_color;
+	mpInstance[mInstancesCount].color = mat_color;
 
 
-	m_instances_count++;
+	mInstancesCount++;
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
 void PlaneBatch::End(D3D::DeviceContextPtr& imm_context)
 {
-	imm_context->Unmap(m_instance_buffer.Get(), 0);
-	imm_context->DrawInstanced(4, m_instances_count, 0, 0);
+	imm_context->Unmap(mpInstanceBuffer.Get(), 0);
+	imm_context->DrawInstanced(4, mInstancesCount, 0, 0);
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------

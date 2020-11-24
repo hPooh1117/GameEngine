@@ -9,6 +9,7 @@ class Vector2 : public DirectX::XMFLOAT2
 public:
 	Vector2() :DirectX::XMFLOAT2(0, 0) {}
 	Vector2(float x, float y) :DirectX::XMFLOAT2(x, y) {}
+	Vector2(const DirectX::XMFLOAT2& v):DirectX::XMFLOAT2(v){}
 	Vector2(const Vector2& v) { x = v.x; y = v.y; }
 	~Vector2() {}
 

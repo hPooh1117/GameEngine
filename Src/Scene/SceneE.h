@@ -16,6 +16,8 @@ public:
 	virtual void InitializeScene() override;
 
 	virtual void Update(float elapsed_time) override;
+	virtual void PreCompute(std::unique_ptr<GraphicsEngine>& p_graphics) override;
+
 	void         RegistUIClients();
 	virtual void Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time) override;
 	~SceneE();

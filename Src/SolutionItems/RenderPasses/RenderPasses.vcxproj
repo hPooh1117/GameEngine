@@ -24,6 +24,7 @@
     <ProjectGuid>{ebd2a057-c1de-4a2c-8b81-9497e7e0e964}</ProjectGuid>
     <RootNamespace>RenderPasses</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>RenderPass</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -151,6 +152,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\RenderPass\DefferedPasses.h" />
     <ClInclude Include="..\..\RenderPass\ForwardPasses.h" />
+    <ClInclude Include="..\..\RenderPass\MakeCubeMapPasses.h" />
     <ClInclude Include="..\..\RenderPass\PostProcessPasses.h" />
     <ClInclude Include="..\..\RenderPass\RenderPasses.h" />
     <ClInclude Include="..\..\RenderPass\ShaderIDTable.h" />
@@ -158,9 +160,10 @@
     <ClInclude Include="..\..\RenderPass\SSAOPasses.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\RenderPass\PostProcessPasses.cpp" />
     <ClCompile Include="..\..\RenderPass\Source\DefferedPasses.cpp" />
     <ClCompile Include="..\..\RenderPass\Source\ForwardPasses.cpp" />
+    <ClCompile Include="..\..\RenderPass\Source\MakeCubeMapPasses.cpp" />
+    <ClCompile Include="..\..\RenderPass\Source\PostProcessPasses.cpp" />
     <ClCompile Include="..\..\RenderPass\Source\RenderPasses.cpp" />
     <ClCompile Include="..\..\RenderPass\Source\ShadowPasses.cpp" />
     <ClCompile Include="..\..\RenderPass\Source\SSAOPasses.cpp" />

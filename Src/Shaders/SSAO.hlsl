@@ -133,7 +133,7 @@ float3 DecodeSphereMap(float2 e)
 //
 //	return positionView;
 //}
-
+//
 //
 // Pixel Shader
 //
@@ -223,9 +223,11 @@ PS_Output_SSAO PSmain(PS_Input input)
 	float depth = depthBufferColor.r;
 	float4 projP = float4(input.projPos.xy, depth, 1);
 	float4 viewP = mul(projP, inv_proj);
-	float4 wPos = mul(projP, inv_viewproj);
-	wPos.xyz /= wPos.w;
 	viewP /= viewP.w;
+
+	//float4 wPos = mul(projP, inv_viewproj);
+	//float4 wPos = mul(viewP, inv_view);
+	//wPos.xyz /= wPos.w;
 
 	float3 N = normal_texture.Sample(decal_sampler, input.texcoord).xyz;
 

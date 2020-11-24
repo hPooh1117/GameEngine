@@ -39,9 +39,6 @@
     <ClInclude Include="..\..\Renderer\Mesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Renderer\MultiRenderTarget.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Renderer\Plane.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -78,9 +75,6 @@
     <ClInclude Include="..\..\Renderer\Primitive.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Renderer\Blur.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Renderer\NewMeshRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -99,6 +93,15 @@
     <ClInclude Include="..\..\Renderer\ZPartitioningShadow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Renderer\SubView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\ComputedTexture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\Blur.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Renderer\Source\Blender.cpp">
@@ -111,9 +114,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Renderer\Source\GraphicsEngine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Renderer\Source\MultiRenderTarget.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Renderer\Source\Plane.cpp">
@@ -152,9 +152,6 @@
     <ClCompile Include="..\..\Renderer\Source\Primitive.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Renderer\Source\Blur.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Renderer\Source\NewMeshRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -171,6 +168,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Renderer\Source\ZPartitioningShadow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Renderer\SubView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Renderer\ComputedTexture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Renderer\Source\Blur.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

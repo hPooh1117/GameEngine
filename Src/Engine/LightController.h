@@ -67,7 +67,6 @@ public:
 	LightController(D3D::DevicePtr& p_device);
 	~LightController() = default;
 
-	//--< CORE INTERFACE >--------------------------------------------------------------
 	bool Init(unsigned int pointLightNum, unsigned int spotLightNum);
 	void Update(float elapsed_time);
 
@@ -81,14 +80,14 @@ public:
 
 	
 
-	//--< DATA INTERACTION >------------------------------------------------------------
 	void SendLightData(
 		PointLightGPU&       pointData, 
 		SpotLightGPU&        spotLightData, 
 		DirectilnalLightGPU& dirctionalData);
 	
-	//--< SETTER >----------------------------------------------------------------------
-	void SetLightColor(const Vector4& color);
+	void SetLightColor(const Vector4& color) { mLightColor = color; }
+	void SetLightColor(const Vector3& color) { SetLightColor(color.x, color.y, color.z); }
+	void SetLightColor(float r, float g, float b) { mLightColor.x = r, mLightColor.y = g, mLightColor.z = b; }
 
 	void SetPointData(
 		unsigned int        index, 
@@ -110,10 +109,8 @@ public:
 		D3D::DeviceContextPtr& pImmContext, 
 		CameraController* pCamera); // 消去予定（定数バッファは他の場所で作りたい）
 
-	//--< GETTER >----------------------------------------------------------------------
 	inline const Vector4& GetLightDirection();
 
-	//--< RENDER >----------------------------------------------------------------------
 	void RenderUI();
 
 };

@@ -145,6 +145,11 @@ PS_Input VSmainSkinning(VS_InputS input)
 	return output;
 }
 
+struct VS_Input_B
+{
+
+};
+
 PS_InputBump VSmainSBump(VS_InputS input)
 {
 	PS_InputBump output = (PS_InputBump)0;
@@ -162,9 +167,13 @@ PS_InputBump VSmainSBump(VS_InputS input)
 	float3 vN = wN;
 	float3 vB = { 0, 1, -0.001f };
 	float3 vT;
+	//vB = normalize(vB);
+	//vT = normalize(cross(vB, vN));
+	//vB = normalize(cross(vN, vT));
+	vT = mul(input.tangent, (float3x3)world);
+	vT = normalize(vT);
+	vB = mul(input.binormal, (float3x3)world);
 	vB = normalize(vB);
-	vT = normalize(cross(vB, vN));
-	vB = normalize(cross(vN, vT));
 
 	output.color = input.color;
 

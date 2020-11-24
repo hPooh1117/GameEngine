@@ -2,6 +2,7 @@
 #include "Mesh.h"
 #include <string>
 #include <array>
+#include <algorithm>
 
 class Texture;
 class NewTexture;
@@ -9,7 +10,6 @@ class NewTexture;
 enum SkyboxTextureID
 {
     EFootprintCourt,
-    EOldIndustrialHall,
     ERidgecrestRoad,
     ESerpentineValley,
     ETokyoBigSight,
@@ -27,11 +27,12 @@ private:
 
     unsigned int mCurrentID;
     std::array<std::unique_ptr<NewTexture>, ENUM_SKYBOXID_MAX> mpTextures;
-    std::unique_ptr<Texture> mpTexture;
+    std::unique_ptr<NewTexture> mpTexture;
 
     Microsoft::WRL::ComPtr<ID3D11Buffer>            mpVertexBuffer;
     Microsoft::WRL::ComPtr<ID3D11Buffer>            mpIndexBuffer;
     D3D::SamplerStatePtr                            mpClampSampler;
+    bool mbIsDrawing = true;
 public:
 	Skybox(Microsoft::WRL::ComPtr<ID3D11Device>& device,
         const wchar_t* filename = L"\0",
@@ -53,6 +54,8 @@ public:
     ) override;
 
     void RenderUI();
+
+    void SetCurrentSkybox(int id) { mCurrentID = std::clamp<int>(id, 0, ENUM_SKYBOXID_MAX - 1); }
 
     virtual ~Skybox();
 };

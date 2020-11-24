@@ -1,6 +1,6 @@
 #pragma once
-const unsigned int SCREEN_WIDTH = 1600;
-const unsigned int SCREEN_HEIGHT = 900;
+const unsigned int SCREEN_WIDTH = 1280;
+const unsigned int SCREEN_HEIGHT = 720;
 
 #include <d3d11.h>
 #include <wrl\client.h>

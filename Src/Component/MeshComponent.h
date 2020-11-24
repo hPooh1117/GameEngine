@@ -65,7 +65,7 @@ class LightController;
 //public:
 //	~MeshComponent();
 //
-//	static std::shared_ptr<MeshComponent> Initialize(const std::shared_ptr<Actor>& owner);
+//	static std::shared_ptr<MeshComponent> Create(const std::shared_ptr<Actor>& owner);
 //
 //	virtual bool Create() override;
 //	virtual void Destroy() override;
@@ -134,8 +134,23 @@ enum ShaderUsage
 {
 	EMain,
 	EShader,
-
+	ECubeMap,
 	ENUM_SHADER_USAGE_MAX,
+};
+
+enum class TextureConfig
+{
+	ENoneMap        = 0,   // Slot
+	EColorMap       = 1,   // 0
+	ENormalMap      = 2,   // 1
+	EHeightMap      = 4,   // 2
+	EMetallicMap    = 8,   // 3
+	ERoughnessMap   = 16,  // 4
+ 	EAOMap          = 32,  // 5
+	ESpecularMap    = 64,  // 6
+	EEnvironmentMap = 128, // 7
+	EShadowMap      = 256, // 8
+	ECubeMap        = 512, // 9
 };
 
 struct TextureData
@@ -157,17 +172,22 @@ public:
 private:
 	//*** VARIABLES ***
 	// DATA TABLE
-	std::vector<ShaderType>                        mShaderIDTable;
+	std::unordered_map<UINT, UINT>                 mShaderIDTable;
 	std::vector<TextureData>                       mTextureTable;
 	std::unordered_map<std::string, std::wstring>  mMotionFileTable;
-	std::wstring                                   mMeshFileName;
+	std::wstring                                   mMeshFileName; 
 	unsigned int                                   mFbxType;
-	MeshTypeID                                     mMeshID;
+	UINT                                           mMeshID;
 	MaterialData                                   mMaterialData;
 	
 	bool                                           mbIsSolid;
 	std::string									   mCurrentMotionKey;
 	bool										   mbChangedMotion;
+	bool										   mbIsPBR;
+	bool                                           mbDiffuseLight;
+	bool                                           mbSpecularLight;
+	int                                            mTextureConfig;
+	int                                            mAnimeBlendTime;
 	//*** FUNCTIONS ***
 
 	//------------------------------------------------------
@@ -190,26 +210,28 @@ public:
 	//------------------------------------------------------
 	// ìoò^ópä÷êî
 	//------------------------------------------------------
-	bool RegistMesh(MeshTypeID mesh_type_id, ShaderType shader_id, const wchar_t* mesh_filename, unsigned int coord_system = FbxType::EDefault);
-	bool RegistTexture(const wchar_t* tex_filename, unsigned int slot);
-	bool RegistMotion(const char* name, const wchar_t* motion_filename);
-	bool RegistAdditionalShader(ShaderType shader_id, unsigned int usage);
+	bool RegisterMesh(UINT mesh_type_id, UINT shader_id, const wchar_t* mesh_filename, UINT coord_system = FbxType::EDefault);
+	bool RegisterTexture(const wchar_t* tex_filename, TextureConfig textureConfig);
+	bool RegisterMotion(const char* name, const wchar_t* motion_filename);
+	bool RegisterAdditionalShader(ShaderID shader_id, unsigned int usage);
 
 
-	MeshTypeID                GetMeshTypeID() { return mMeshID; }
+	UINT                      GetMeshTypeID() { return mMeshID; }
 	const DirectX::XMMATRIX&  GetWorldMatrix();
 	const DirectX::XMFLOAT4&  GetMaterialColor();
 	bool                      GetIsSolid() { return mbIsSolid; }
-	ShaderType                GetShaderID(u_int usage);
+	UINT                      GetShaderID(u_int usage);
 	const std::wstring&       GetMeshFileName() { return mMeshFileName; }
-	unsigned int              GetFbxType() { return mFbxType; }
+	UINT                      GetFbxType() { return mFbxType; }
 	std::vector<TextureData>& GetTextureTable() { return mTextureTable; }
 	MotionTable&              GetMotionTable() { return mMotionFileTable; }
 	const std::string&        GetCurrentName() { return mCurrentMotionKey; }
 	bool					  GetWasChangedMotion() { return mbChangedMotion; }
+	int                       GetAnimeBlendTime() { return mAnimeBlendTime; }
 	const MaterialData&		  GetMaterialData() { return mMaterialData; }
 
 	void SetMaterialColor(const Vector4& color);
+	void SetMaterialColor(const Vector3& color);
 	void SetBRDFFactors(float metalness, float roughness, const Vector3& specColor = { 1, 1, 1 });
 	void RenderUI();
 

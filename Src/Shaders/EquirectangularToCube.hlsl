@@ -43,6 +43,18 @@ cbuffer CBPerMatrix : register(b0)
 
 };
 
+cbuffer CBPerLight : register(b2)
+{
+	float4 light_color;
+	float4 light_dir;
+	float4 ambient_color;
+	float4 eye_pos;
+	float  env_alpha;
+	float  reflact;
+	float  time;
+	float  dummy2;
+};
+
 //--------------------------------------------
 //	テクスチャ
 //--------------------------------------------
@@ -67,8 +79,9 @@ PS_Input_ VSmain(VS_Input input)
 	return output;
 }
 
-#define PI 3.14159265359f
-#define TWO_PI 6.28318530718f
+#define PI 3.14159265359
+#define TWO_PI 6.28318530718
+#define INV_GAMMA  1 / 2.2
 
 float2 SampleSphericalMap(float3 v)
 {
@@ -102,8 +115,11 @@ PS_Input_Deffered VSmainDeffered(VS_Input input)
 float4 PSmain(PS_Input_ input) : SV_TARGET
 {
 	float2 uv = SampleSphericalMap(normalize(input.localPos));
-	float4 color = equirectangular_texture.Sample(decal_sampler, uv);
-	return color;
+	float4 color = equirectangular_texture.Sample(decal_sampler, uv) * light_color;
+	float3 hdrColor = color.rgb / (color.rgb + float3(1.0, 1.0, 1.0));
+	hdrColor = pow(abs(hdrColor), INV_GAMMA);
+
+	return float4(hdrColor, 1.0);
 }
 
 PS_Output PSmainDeffered(PS_Input_Deffered input)
@@ -119,3 +135,4 @@ PS_Output PSmainDeffered(PS_Input_Deffered input)
 	output.depth = float4(input.depth.x / input.depth.y, 0, 0, 1);
 	return output;
 }
+

@@ -9,7 +9,7 @@
 Texture2D diffuse_texture : register(t0);
 SamplerState decal_sampler : register(s0);
 
-Texture2D environment_texture : register(t1);
+Texture2D environment_texture : register(t7);
 SamplerState environment_sampler : register(s1);
 
 
@@ -149,6 +149,7 @@ float4 PSmain(PS_InputEnv input) : SV_TARGET
 	ref = ref * 0.5 + 0.5;
 	ref.y = -ref.y;
 	float4  envColor = environment_texture.Sample(decal_sampler, ref.xy);
+	envColor = pow(abs(envColor), 1 / 2.2);
 	color = color * (1.0 - env_alpha) + envColor * env_alpha;
 
 	color *= input.color * float4(A + D + S, 1.0f);

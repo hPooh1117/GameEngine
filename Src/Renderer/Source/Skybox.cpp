@@ -14,7 +14,8 @@ using namespace DirectX;
 
 const wchar_t* Skybox::SKYBOX_TEXTURE[ENUM_SKYBOXID_MAX] = {
     L"Footprint_Court/Footprint_Court_8k_TMap.jpg",
-    L"Old_Industrial_Hall/fin4_preview.jpg",
+    //L"Footprint_Court/Footprint_Court_2k.hdr",
+    //L"Old_Industrial_Hall/fin4_preview.jpg",
     L"Ridgecrest_Road/Ridgecrest_Road_4k_Bg.jpg",
     L"Serpentine_Valley/Serpentine_Valley_8k.jpg",
     L"Tokyo_BigSight/Tokyo_BigSight_8k.jpg",
@@ -114,8 +115,8 @@ mCurrentID(SkyboxTextureID::EFootprintCourt)
         mpTextures[i]->Load(device, (TEXTURE_PATH + std::wstring(SKYBOX_TEXTURE[i])).c_str());
     }
 
-    //mpTexture = std::make_unique<Texture>();
-    //mpTexture->Load(device, filename);
+    mpTexture = std::make_unique<NewTexture>();
+    mpTexture->Load(device);
 
 #pragma region OLDIMPL
     //
@@ -376,12 +377,15 @@ void Skybox::Render(
     bool isSolid
     )
 {
+    //if (!mbIsDrawing) return;
+
     HRESULT hr = S_OK;
 
-    if (shader != nullptr) shader->activateShaders(imm_context);
+    if (shader != nullptr) shader->ActivateShaders(imm_context);
 
     if (mCurrentID < 0 || mCurrentID >= SkyboxTextureID::ENUM_SKYBOXID_MAX) mCurrentID = 0;
     mpTextures[mCurrentID]->Set(imm_context, 0);
+    if (!mbIsDrawing) mpTexture->Set(imm_context, 0);
 
     XMFLOAT4X4 W, WVP;
     XMStoreFloat4x4(&W, world);
@@ -414,10 +418,15 @@ void Skybox::Render(
 
 void Skybox::RenderUI()
 {
+    
     if (ImGui::TreeNode("Skybox"))
     {
+        ImGui::Text("Skybox existence");
+        if (ImGui::Button("ON")) mbIsDrawing = true;
+        ImGui::SameLine();
+        if (ImGui::Button("OFF")) mbIsDrawing = false;
+
         if (ImGui::Button("FootprintCourt"))    mCurrentID = SkyboxTextureID::EFootprintCourt;
-        if (ImGui::Button("OldIndustrialHall")) mCurrentID = SkyboxTextureID::EOldIndustrialHall;
         if (ImGui::Button("RidgecrestRoad"))    mCurrentID = SkyboxTextureID::ERidgecrestRoad;
         if (ImGui::Button("SerpentineValley"))  mCurrentID = SkyboxTextureID::ESerpentineValley;
         if (ImGui::Button("TokyoBigSight"))     mCurrentID = SkyboxTextureID::ETokyoBigSight;

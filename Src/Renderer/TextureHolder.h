@@ -37,11 +37,11 @@ public:
 
 	bool Initialize(D3D::DevicePtr& p_device);
 
-	void RegistTextureFromActors(D3D::DevicePtr& p_device, std::unique_ptr<ActorManager>& p_actors);
+	void RegisterTextureFromActors(D3D::DevicePtr& p_device, std::unique_ptr<ActorManager>& p_actors);
 
 
 	void ClearTextureTable();
 
-	void Set(D3D::DeviceContextPtr& p_imm_context, std::wstring filename, unsigned int slot);
+	void Set(D3D::DeviceContextPtr& p_imm_context, std::wstring filename, unsigned int slot, bool flag = true);
 	void SetSampler(D3D::DeviceContextPtr& p_imm_context, unsigned int slot, unsigned int samplerid = SamplerID::EWrap);
 };

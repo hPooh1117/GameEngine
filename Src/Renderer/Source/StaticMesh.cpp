@@ -64,13 +64,14 @@ StaticMesh::StaticMesh(Microsoft::WRL::ComPtr<ID3D11Device>& device, const wchar
 
     for (auto &material : mMaterials)
     {
-        material.texture = std::make_shared<Texture>();
+        std::unique_ptr<NewTexture> tex = std::make_unique<NewTexture>();
         if (material.map_Kd == L"\0")
         {
-            material.texture->Load(device);
+            tex->Load(device);
             continue;
         }
-        material.texture->Load(device, material.map_Kd.data());
+        tex->Load(device, material.map_Kd.data());
+        material.texture = std::move(tex);
     }
 
 
@@ -187,7 +188,7 @@ void StaticMesh::Render(
 
     HRESULT hr = S_OK;
 
-    if (shader != nullptr) shader->activateShaders(imm_context);
+    if (shader != nullptr) shader->ActivateShaders(imm_context);
 
     UINT stride = sizeof(Vertex);
     UINT offset = 0;
@@ -226,7 +227,9 @@ void StaticMesh::Render(
         matData.metalness = mat_data.metalness;
         matData.roughness = mat_data.roughness;
         matData.specularColor = mat_data.specularColor;
-        matData.brdfFactor = mat_data.brdfFactor;
+        matData.textureConfig = mat_data.textureConfig;
+        matData.diffuse = mat_data.diffuse;
+        matData.specular = mat_data.specular;
 
         imm_context->UpdateSubresource(m_pConstantBufferMesh.Get(), 0, nullptr, &meshData, 0, 0);
         imm_context->UpdateSubresource(m_pConstantBufferMaterial.Get(), 0, nullptr, &matData, 0, 0);
@@ -247,10 +250,10 @@ void StaticMesh::Render(
 
         for (auto &subset : mSubsets)
         {
-            //if (material.newmtl == subset.usemtl)
-            //{
+            if (material.newmtl == subset.usemtl)
+            {
                 imm_context->DrawIndexed(subset.index_count, subset.index_start, 0);
-            //}
+            }
         }
     }
 
@@ -273,6 +276,17 @@ void StaticMesh::LoadOBJFile(Microsoft::WRL::ComPtr<ID3D11Device>& device, const
     _ASSERT_EXPR_A(file, L"OBJ file was not found.");
 
     wchar_t command[256];
+    Vector3 v0, v1, v2;
+
+    Vector2 uv0, uv1, uv2;
+
+    Vector3 deltaPos1, deltaPos2;
+
+    Vector2 deltaUV1, deltaUV2;
+
+    float r;
+    Vector3 tangent, binormal;
+
     while (file)
     {
         file >> command;
@@ -299,32 +313,57 @@ void StaticMesh::LoadOBJFile(Microsoft::WRL::ComPtr<ID3D11Device>& device, const
         }
         else if (wcscmp(command, L"f") == 0)
         {
+            Vertex vertices[3];
             for (auto i = 0; i < 3; ++i)
             {
-                Vertex vertex;
                 u_int v, vt, vn;
 
                 file >> v;
-                vertex.position = positions[v - 1];
+                vertices[i].position = positions[v - 1];
                 if (L'/' == file.peek())
                 {
                     file.ignore();
                     if (L'/' != file.peek())
                     {
                         file >> vt;
-                        vertex.texcoord = texcoords[vt - 1];
+                        vertices[i].texcoord = texcoords[vt - 1];
                     }
                     if (L'/' == file.peek())
                     {
                         file.ignore();
                         file >> vn;
-                        vertex.normal = normals[vn - 1];
+                        vertices[i].normal = normals[vn - 1];
                     }
-                    vertex.color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+                    vertices[i].color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
                 }
-                mVertices.emplace_back(vertex);
+            }
+            v0 = vertices[0].position;
+            v1 = vertices[1].position;
+            v2 = vertices[2].position;
+
+            uv0 = vertices[0].texcoord;
+            uv1 = vertices[1].texcoord;
+            uv2 = vertices[2].texcoord;
+
+            deltaPos1 = v1 - v0;
+            deltaPos2 = v2 - v0;
+
+            deltaUV1 = uv1 - uv0;
+            deltaUV2 = uv2 - uv0;
+
+            r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
+            tangent = (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y)* r;
+            binormal = (deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV2.x) * r;
+            
+            for (auto i = 0; i < 3; ++i)
+            {
+                //vertices[i].tangent = tangent;
+                //vertices[i].binormal = binormal;
+
+                mVertices.emplace_back(vertices[i]);
                 mIndices.emplace_back(currentIndex++);
             }
+
             file.ignore(1024, L'\n');
         }
         else if (0 == wcscmp(command, L"mtllib"))
@@ -385,9 +424,8 @@ void StaticMesh::LoadMTLFile(Microsoft::WRL::ComPtr<ID3D11Device>& device, const
     {
         for (auto& subset : mSubsets)
         {
-            Material material;
-            material.map_Kd = L"\0";
-            mMaterials.emplace_back(material);
+            mMaterials.emplace_back(Material());
+            mMaterials.back().map_Kd = L"\0";
         }
     }
 
@@ -404,7 +442,7 @@ void StaticMesh::LoadMTLFile(Microsoft::WRL::ComPtr<ID3D11Device>& device, const
             file.ignore();
             wchar_t map_Kd[256];
             file >> map_Kd;
-            ResourceManager::CreateFilenameToRefer(map_Kd, objfilename, map_Kd);
+            ResourceManager::CreateFilenameToRefer(map_Kd, objfilename, map_Kd, false);
             mMaterials.rbegin()->map_Kd = map_Kd;
             file.ignore(1024, L'\n');
         }
@@ -412,10 +450,10 @@ void StaticMesh::LoadMTLFile(Microsoft::WRL::ComPtr<ID3D11Device>& device, const
         {
             file.ignore();
             wchar_t newmtl[256];
-            Material material;
             file >> newmtl;
-            material.newmtl = newmtl;
-            mMaterials.emplace_back(material);
+            
+            mMaterials.emplace_back(Material());
+            mMaterials.back().newmtl = newmtl;
         }
         else if (wcscmp(command, L"Ka") == 0)
         {

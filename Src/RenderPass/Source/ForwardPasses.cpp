@@ -15,6 +15,10 @@
 #include "./Renderer/Texture.h"
 #include "./Renderer/VertexDecleration.h"
 
+#include "./Utilities/Log.h"
+
+
+
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
@@ -30,39 +34,57 @@ void ForwardPass::Initialize(D3D::DevicePtr& device)
 {
 	InitializeCommonShader(device);
 
-	AddVertexAndPixelShader(device, ShaderType::ELambert, L"Lambert.hlsl", L"Lambert.hlsl", "VSmain", "PSmain", VEDType::VED_DEFAULT);
+	AddVertexAndPixelShader(device, ShaderID::ELambert,                   L"Lambert.hlsl",                 L"Lambert.hlsl",               "VSmain", "PSmain", VEDType::VED_DEFAULT);
+																          				                   					              
+	//AddVertexAndPixelShader(device, ShaderID::ELambertSkinned,            L"Lambert.hlsl",                 L"Lambert.hlsl",               "VSmainSkinning", "PSmain", VEDType::VED_SKINNED_MESH);
+																          				                   					              
+	//AddVertexAndPixelShader(device, ShaderID::EPhong,                     L"Phong.hlsl",                   L"Phong.hlsl",                 "VSmain", "PSmain", VEDType::VED_DEFAULT);
+																          				                   						          
+	AddVertexAndPixelShader(device, ShaderID::ELine,                      L"line.hlsl",                    L"line.hlsl",                  "VSMainDuplicate", "PSmain", VEDType::VED_GEOMETRIC_LINE);
+	AddGeometryShader(device,       ShaderID::ELine,                      L"line.hlsl",                    "GSmainDuplicate");	          
+																          						          						          
+	AddVertexAndPixelShader(device, ShaderID::EEnvironmentMap,            L"EnvironmentMap.hlsl",          L"EnvironmentMap.hlsl",        "VSmain", "PSmain", VEDType::VED_DEFAULT);
+																          														          
+																          														          
+	AddVertexAndPixelShader(device, ShaderID::ENormalMap,                 L"NormalMap.hlsl",               L"NormalMap.hlsl",             "VSmain", "PSmain", VEDType::VED_DEFAULT);
+																          					               						          
+	AddVertexAndPixelShader(device, ShaderID::EToonGeo,                   L"ToonGeo.hlsl",                 L"ToonGeo.hlsl",               "VSmain", "PSmain", VEDType::VED_DEFAULT);
+	AddGeometryShader(device,       ShaderID::EToonGeo,                   L"ToonGeo.hlsl",                 "GSmain");
+																          					               
+	AddVertexAndPixelShader(device, ShaderID::EForwardPBR,                L"ForwardBRDF.hlsl",             L"ForwardBRDF.hlsl",           "VSmain", "PSmain2", VEDType::VED_GEOMETRIC_PRIMITIVE);
+	//AddVertexAndPixelShader(device, ShaderID::EForwardPBRForSkinned,      L"ForwardBRDF.hlsl",             L"ForwardBRDF.hlsl",           "VSmainS", "PSmain2", VEDType::VED_SKINNED_MESH);
 
-	AddVertexAndPixelShader(device, ShaderType::ELambertSkinned, L"Lambert.hlsl", L"Lambert.hlsl", "VSmainSkinning", "PSmain", VEDType::VED_SKINNED_MESH);
 
-	AddVertexAndPixelShader(device, ShaderType::EPhong, L"Phong.hlsl", L"Phong.hlsl", "VSmain", "PSmain", VEDType::VED_DEFAULT);
+	AddVertexAndPixelShader(device, ShaderID::ESpotLightPhong,            L"PhongForSpotLight.hlsl",       L"PhongForSpotLight.hlsl",     "VSmain", "PSmain", VEDType::VED_DEFAULT);
+	AddVertexAndPixelShader(device, ShaderID::ESpotLightPhongForSkinning, L"PhongForSpotLight.hlsl",       L"PhongForSpotLight.hlsl",     "VSmainSkinning", "PSmain", VEDType::VED_SKINNED_MESH);
+	AddVertexAndPixelShader(device, ShaderID::ESpotLightBump,             L"PhongForSpotLight.hlsl",       L"PhongForSpotLight.hlsl",     "VSmainBump", "PSmainBump", VEDType::VED_DEFAULT);
+	AddVertexAndPixelShader(device, ShaderID::ESpotLightOcean,            L"SpotLightSea.hlsl",            L"SpotLightSea.hlsl",          "VSmain", "PSmain", VEDType::VED_DEFAULT);
+																	      
+	AddVertexAndPixelShader(device, ShaderID::EFromShadow,                L"ShadowMap.hlsl",               L"ShadowMap.hlsl",             "VSmain2", "PSmain", VEDType::VED_DEFAULT);
+	AddVertexAndPixelShader(device, ShaderID::EFromShadowForSkinning,     L"ShadowMap.hlsl",               L"ShadowMap.hlsl",             "VSmainSkinning", "PSmain", VEDType::VED_SKINNED_MESH);
+																	      
+	//AddVertexAndPixelShader(device, ShaderID::ETextureTest,               L"EquirectangularToCube.hlsl",   L"EquirectangularToCube.hlsl", "VSmain", "PSmain", VEDType::VED_DEFAULT);
+																	      
+	AddVertexAndPixelShader(device, ShaderID::EFlat,                      L"FlatShaderGeo.hlsl",           L"FlatShaderGeo.hlsl",         "VSmain", "PSmain", VEDType::VED_DEFAULT);
+	AddGeometryShader(device,       ShaderID::EFlat,                      L"FlatShaderGeo.hlsl",           "GSmain");
+																	      						           
+	//AddVertexAndPixelShader(device, ShaderID::EFurShader,                 L"FurShaderGeo.hlsl",            L"FurShaderGeo.hlsl",          "VSmain", "PSmain", VEDType::VED_DEFAULT);
+	//AddGeometryShader(device,       ShaderID::EFurShader,                 L"FurShaderGeo.hlsl",            "GSmain");
 
-	AddVertexAndPixelShader(device, ShaderType::ELine, L"line.hlsl", L"line.hlsl", "VSMainDuplicate", "PSmain", VEDType::VED_GEOMETRIC_PRIMITIVE);
-	AddGeometryShader(device,       ShaderType::ELine, L"line.hlsl", "GSmainDuplicate");
+	//AddVertexAndPixelShader(device, ShaderID::ECubemapConvolution,        L"CubemapConvolution.hlsl",	   L"CubemapConvolution.hlsl",	  "VSmain", "PSmain", VEDType::VED_DEFAULT);
 
-	AddVertexAndPixelShader(device, ShaderType::EEnvironmentMap, L"EnvironmentMap.hlsl", L"EnvironmentMap.hlsl", "VSmain", "PSmain", VEDType::VED_DEFAULT);
+	AddVertexAndPixelShader(device, ShaderID::EUseCubeMap,				  L"UseCubeMap.hlsl",  L"UseCubeMap.hlsl", "VSmain", "PSmain", VEDType::VED_DEFAULT);
+	AddVertexAndPixelShader(device, ShaderID::EReflectSea,				  L"ReflectSea.hlsl",  L"ReflectSea.hlsl", "VSmain", "PSmain", VEDType::VED_GEOMETRIC_PRIMITIVE);
 
+	AddVertexAndPixelShader(device, ShaderID::ECubeMapEnv,					  L"Skybox.hlsl",      L"Skybox.hlsl",     "VSmain", "PSmain", VEDType::VED_DEFAULT);
 
-	AddVertexAndPixelShader(device, ShaderType::ENormalMap, L"NormalMap.hlsl", L"NormalMap.hlsl", "VSmain", "PSmain", VEDType::VED_DEFAULT);
-
-	AddVertexAndPixelShader(device, ShaderType::EToonGeo, L"ToonGeo.hlsl", L"ToonGeo.hlsl", "VSmain", "PSmain", VEDType::VED_DEFAULT);
-	AddGeometryShader(device,       ShaderType::EToonGeo, L"ToonGeo.hlsl", "GSmain");
-
-	AddVertexAndPixelShader(device, ShaderType::EForwardPBR, L"ForwardBRDF.hlsl", L"ForwardBRDF.hlsl", "VSmain", "PSmain", VEDType::VED_DEFAULT);
-	AddVertexAndPixelShader(device, ShaderType::EForwardPBRSetting, L"ForwardBRDF.hlsl", L"ForwardBRDF.hlsl", "VSmain", "PSmainSetting", VEDType::VED_DEFAULT);
+	GetRenderTargetManager()->Create(device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, RenderTarget::EForward);
 
 
-	AddVertexAndPixelShader(device, ShaderType::ESpotLightPhong, L"PhongForSpotLight.hlsl", L"PhongForSpotLight.hlsl", "VSmain", "PSmain", VEDType::VED_DEFAULT);
-	AddVertexAndPixelShader(device, ShaderType::ESpotLightPhongForSkinning, L"PhongForSpotLight.hlsl", L"PhongForSpotLight.hlsl", "VSmainSkinning", "PSmain", VEDType::VED_SKINNED_MESH);
-	AddVertexAndPixelShader(device, ShaderType::ESpotLightBump, L"PhongForSpotLight.hlsl", L"PhongForSpotLight.hlsl", "VSmainBump", "PSmainBump", VEDType::VED_DEFAULT);
-	AddVertexAndPixelShader(device, ShaderType::ESpotLightOcean, L"SpotLightSea.hlsl", L"SpotLightSea.hlsl", "VSmain", "PSmain", VEDType::VED_DEFAULT);
+	mpDSV->Create(device, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-	AddVertexAndPixelShader(device, ShaderType::EFromShadow, L"ShadowMap.hlsl", L"ShadowMap.hlsl", "VSmain2", "PSmain", VEDType::VED_DEFAULT);
-	AddVertexAndPixelShader(device, ShaderType::EFromShadowForSkinning, L"ShadowMap.hlsl", L"ShadowMap.hlsl", "VSmainSkinning", "PSmain", VEDType::VED_SKINNED_MESH);
+	mbIsInitialized = true;
 
-	AddVertexAndPixelShader(device, ShaderType::ETextureTest, L"EquirectangularToCube.hlsl", L"EquirectangularToCube.hlsl", "VSmain", "PSmain", VEDType::VED_DEFAULT);
-
-	mpRenderTargets->Create(device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB);
-	mpDSV->Initialize(device);
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
@@ -73,12 +95,10 @@ void ForwardPass::RenderForwardLighting(std::unique_ptr<GraphicsEngine>& p_graph
 
 	p_graphics->mBlender.SetBlendState(pImmContext, Blender::BLEND_ALPHA);
 
-	mpRenderTargets->Activate(pImmContext, mpDSV);
+	GetRenderTargetManager()->Activate(pImmContext, mpDSV, RenderTarget::EForward, 1);
 
 
 	ENGINE.GetMeshRenderer()->RenderMesh(pImmContext, elapsed_time, RenderPassID::EForwardPass);
-
-
 	ENGINE.GetMeshRenderer()->RenderSkybox(pImmContext, elapsed_time, RenderPassID::EForwardPass);
 
 
@@ -87,14 +107,26 @@ void ForwardPass::RenderForwardLighting(std::unique_ptr<GraphicsEngine>& p_graph
 	p_graphics->ActivateBackBuffer();
 
 
-	mpRenderTargets->Deactivate(pImmContext);
+	GetRenderTargetManager()->Deactivate(pImmContext, RenderTarget::EForward, 1);
 }
 
-void ForwardPass::RenderUI()
-{
-	ImGui::Text("Lighting");
+//--------------------------------------------------------------------------------------------------------------------------------
 
-	ImGui::Image((void*)mpRenderTargets->GetShaderResource(0).Get(), ImVec2(320, 180));
+void ForwardPass::RenderUI(bool b_open)
+{
+	if (!b_open) ImGui::SetNextItemOpen(b_open);
+
+	if (ImGui::TreeNode(RenderTarget::RENDER_TARGET_NAME_TABLE[RenderTarget::EForward]))
+	{
+		if (ImGui::ImageButton((void*)GetRenderTargetManager()->GetShaderResource(RenderTarget::EForward).Get(), ImVec2(320, 180)))
+		{
+			mCurrentScreenNum = RenderTarget::EForward;
+			mbIsOpen2ndScreen = true;
+		}
+
+		ImGui::TreePop();
+
+	}
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------

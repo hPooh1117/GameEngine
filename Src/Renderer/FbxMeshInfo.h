@@ -14,6 +14,7 @@ namespace FbxInfo
 	static constexpr unsigned int MAX_INFLUENCES = 4;
 	static constexpr unsigned int MAX_BONES = 150;
 	static constexpr unsigned int MAX_MOTIONS = 10;
+	static constexpr float        SAMPLE_TIME = 1.0f / 60.0f;
 
 	struct Vertex
 	{
@@ -24,6 +25,7 @@ namespace FbxInfo
 		FLOAT bone_weights[MAX_INFLUENCES] = { 1, 0, 0, 0 };
 		INT   bone_indices[MAX_INFLUENCES] = {};
 		DirectX::XMFLOAT3 tangent = {};
+		DirectX::XMFLOAT3 binormal = {};
 
 		Vertex() = default;
 		Vertex(const Vertex&) = default;
@@ -33,12 +35,18 @@ namespace FbxInfo
 	struct Material
 	{
 		DirectX::XMFLOAT4 color = {1.0f, 1.0f, 1.0f, 1.0f};
-		std::shared_ptr<Texture> texture;
+		std::shared_ptr<NewTexture> texture;
 		std::wstring texture_filename;
 
 		Material() = default;
 		Material(const Material&) = default;
 		Material& operator=(const Material&) = default;
+	};
+
+	struct Texture
+	{
+		std::unique_ptr<NewTexture> p_texture;
+		const wchar_t* filename;
 	};
 
 	struct Subset
@@ -52,14 +60,6 @@ namespace FbxInfo
 		Subset& operator=(const Subset& other) = default;
 	};
 
-	struct Bone
-	{
-		DirectX::XMFLOAT4X4 transform = {};
-		std::string name;
-		Bone() = default;
-		Bone(const Bone&) = default;
-		Bone& operator=(const Bone&) = default;
-	};
 
 	struct BoneData
 	{
@@ -74,7 +74,6 @@ namespace FbxInfo
 
 	struct Motion
 	{
-		static constexpr float  SAMPLE_TIME = 1.0f / 60.0f;
 
 
 		unsigned int   frameSize = 0;
@@ -87,6 +86,16 @@ namespace FbxInfo
 		Motion& operator=(const Motion&) = default;
 	};
 
+#pragma region OldImpl
+	//struct Bone
+//{
+//	DirectX::XMFLOAT4X4 transform = {};
+//	std::string name;
+//	Bone() = default;
+//	Bone(const Bone&) = default;
+//	Bone& operator=(const Bone&) = default;
+//};
+
 	//struct Weight
 	//{
 	//	int count;
@@ -94,17 +103,17 @@ namespace FbxInfo
 	//	float weight[4];
 	//};
 
-	typedef std::vector<Bone> Skeltal;
-	struct SkeltalAnimation : public std::vector<Skeltal>
-	{
-		float sampling_time = 1 / 24.0f;
-		float animation_tick = 0.0f;
-		int number_of_frame;
-		SkeltalAnimation() = default;
-		SkeltalAnimation(const SkeltalAnimation&) = default;
-		SkeltalAnimation& operator=(const SkeltalAnimation&) = default;
-	};
-
+	//typedef std::vector<Bone> Skeltal;
+	//struct SkeltalAnimation : public std::vector<Skeltal>
+	//{
+	//	float sampling_time = 1 / 24.0f;
+	//	float animation_tick = 0.0f;
+	//	int number_of_frame;
+	//	SkeltalAnimation() = default;
+	//	SkeltalAnimation(const SkeltalAnimation&) = default;
+	//	SkeltalAnimation& operator=(const SkeltalAnimation&) = default;
+	//};
+#pragma endregion
 }
 
 struct MyFbxMesh
@@ -123,9 +132,9 @@ public:
 
 	std::vector<FbxInfo::BoneData> m_bone_data;
 
-	std::map<std::string, FbxInfo::Motion> m_motions;
+	std::map<std::string, FbxInfo::Motion> mMotions;
 
-	FbxInfo::SkeltalAnimation m_skeltal_animation;
+	//FbxInfo::SkeltalAnimation m_skeltal_animation;
 
 	int m_start_frame = 0;
 

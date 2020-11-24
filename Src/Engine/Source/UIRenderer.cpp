@@ -3,6 +3,7 @@
 #include "GameSystem.h"
 
 #include "./Renderer/Sprite.h"
+#include "./Renderer/RenderTarget.h"
 
 #include "./RenderPass/RenderPasses.h"
 #include "./Utilities/Log.h"
@@ -41,9 +42,9 @@ void UIRenderer::BeginRenderingNewWindow(const char* window_title, bool isOpen)
 
 	// code of render
 	//static bool f_open = true;
-	mbFileOpen = isOpen;
 	//ImGui::Begin(window_title, &mbFileOpen);
-	ImGui::Begin(window_title, &mbFileOpen);
+	ImGuiWindowFlags flags = ImGuiWindowFlags_MenuBar;
+	ImGui::Begin(window_title, &mbFileOpen, flags);
 
 
 #endif // USE_IMGUI
@@ -106,7 +107,7 @@ void UIRenderer::RenderSpriteFontQueue(D3D::DeviceContextPtr& p_imm_context)
 {
 	if (mFontDataQueue.empty()) return;
 
-	ENGINE.GetRenderPass(RenderPassID::EForwardPass)->SetShader(p_imm_context, ShaderType::ESprite);
+	ENGINE.GetRenderPass(RenderPassID::EForwardPass)->SetShader(p_imm_context, ShaderID::ESprite);
 
 
 	for (auto& data : mFontDataQueue)
@@ -120,7 +121,7 @@ void UIRenderer::RenderSpriteFontQueue(D3D::DeviceContextPtr& p_imm_context)
 
 void UIRenderer::RenderFullScreenQuad(D3D::DeviceContextPtr& p_imm_context)
 {
-	ENGINE.GetRenderPass(RenderPassID::EForwardPass)->SetShader(p_imm_context, ShaderType::ESprite);
+	ENGINE.GetRenderPass(RenderPassID::EForwardPass)->SetShader(p_imm_context, ShaderID::ESprite);
 
 }
 
@@ -145,9 +146,9 @@ void UIRenderer::ClearFontQueue()
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-void UIRenderer::SetNextWindowSettings(const Vector2 &pos, const Vector2 &size)
+void UIRenderer::SetNextWindowSettings(const Vector2 &pos, const Vector2 &size, const Vector2& pivot)
 {
-	ImGui::SetNextWindowPos(ImVec2(pos.x, pos.y), ImGuiCond_Once);
+	ImGui::SetNextWindowPos(ImVec2(pos.x, pos.y), ImGuiCond_Once, ImVec2(pivot.x, pivot.y));
 	ImGui::SetNextWindowSize(ImVec2(size.x, size.y), ImGuiCond_Once);
 
 }

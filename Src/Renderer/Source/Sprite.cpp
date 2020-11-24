@@ -18,7 +18,7 @@ Sprite::Sprite(D3D::DevicePtr& device)
 {
     HRESULT hr = S_OK;
 
-    m_pTexture = std::unique_ptr<Texture>();
+    m_pTexture = std::unique_ptr<NewTexture>();
 
     // 頂点情報のセット
     vertex vertices[] = {
@@ -71,7 +71,7 @@ Sprite::Sprite(D3D::DevicePtr& device, const wchar_t* filename)
 {
     HRESULT hr = S_OK;
 
-    m_pTexture = std::make_unique<Texture>();
+    m_pTexture = std::make_unique<NewTexture>();
     m_pTexture->Load(device, filename);
 
     // 頂点情報のセット
@@ -140,7 +140,7 @@ void Sprite::Render(
     const Vector4& color)
 {
 
-    if (p_shader != nullptr) p_shader->activateShaders(imm_context);
+    if (p_shader != nullptr) p_shader->ActivateShaders(imm_context);
 
     UINT stride = sizeof(vertex);
     UINT offset = 0;
@@ -221,7 +221,7 @@ void Sprite::Render(
 void Sprite::Render(
     D3D::DeviceContextPtr& imm_context,
     Shader* p_shader,
-    std::unique_ptr<Texture>& p_texture,
+    std::unique_ptr<NewTexture>& p_texture,
     const Vector2& pos,
     const Vector2& size,
     const Vector2& tex_pos, 
@@ -229,7 +229,7 @@ void Sprite::Render(
     const float angle, 
     const Vector4& color)
 {
-    if (p_shader != nullptr) p_shader->activateShaders(imm_context);
+    if (p_shader != nullptr) p_shader->ActivateShaders(imm_context);
 
     UINT stride = sizeof(vertex);
     UINT offset = 0;
@@ -309,7 +309,7 @@ void Sprite::Render(
 
 void Sprite::RenderScreen(D3D::DeviceContextPtr& imm_context, Shader* p_shader, const Vector2& pos, const Vector2& size)
 {
-    if (p_shader != nullptr) p_shader->activateShaders(imm_context);
+    if (p_shader != nullptr) p_shader->ActivateShaders(imm_context);
 
     UINT stride = sizeof(vertex);
     UINT offset = 0;

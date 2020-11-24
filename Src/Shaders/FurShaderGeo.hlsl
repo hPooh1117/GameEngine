@@ -9,7 +9,7 @@ Texture2D diffuse_texture : register(t0);
 SamplerState decal_sampler : register(s0);
 
 Texture2D fur_texture : register(t1);
-SamplerState fur_sampler : register(s1);
+//SamplerState fur_sampler : register(s1);
 
 //----------------------------------
 // ƒOƒ[ƒoƒ‹•Ï”
@@ -142,7 +142,7 @@ float4 PSmain(PS_Input input) : SV_TARGET
 	float3 A = ambient_color.rgb;
 	float3 C = light_color.rgb;
 
-	float  alpha = fur_texture.Sample(fur_sampler, input.texcoord).g;
+	float  alpha = fur_texture.Sample(decal_sampler, input.texcoord).g;
 	float4 color = diffuse_texture.Sample(decal_sampler, input.texcoord);
 
 	float3 Kd = float3(1, 1, 1);

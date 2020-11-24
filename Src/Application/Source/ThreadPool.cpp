@@ -18,7 +18,7 @@ ThreadPool::~ThreadPool()
 {
 	{
 		std::unique_lock<std::mutex> lock(mEventMutex);
-		m_bIsStopping = true;
+		mbIsStopping = true;
 	}
 
 	mEventVar.notify_all();
@@ -37,13 +37,14 @@ void ThreadPool::Execute()
 		{
 			std::unique_lock <std::mutex> lock(mEventMutex);
 
-			mEventVar.wait(lock, [=]() {return m_bIsStopping || !mTaskQueue.queue.empty(); });
+			mEventVar.wait(lock, [=]() { return mbIsStopping || !mTaskQueue.queue.empty(); });
 
-			if (m_bIsStopping) break;
+			if (mbIsStopping) break;
 
 			task = std::move(mTaskQueue.queue.front());
 			mTaskQueue.queue.pop();
 		}
+
 		task();
 	}
 }

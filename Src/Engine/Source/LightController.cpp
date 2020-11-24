@@ -173,13 +173,6 @@ void LightController::SendLightData(
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-void LightController::SetLightColor(const Vector4& color)
-{
-	mLightColor = color;
-}
-
-//--------------------------------------------------------------------------------------------------------------------------------
-
 void LightController::SetPointData(
 	unsigned int       index,
 	const Vector3& pos,
@@ -290,82 +283,86 @@ void LightController::RenderUI()
 {
 	using namespace ImGui;
 
-	SliderFloat("X-Angle", &mPitch, -180.0f, 180.0f);
-	SliderFloat("Y-Angle", &mYaw, -180.0f, 180.0f);
-
-	
-	Text("Direction : %.2f, ", mLightDirection.x);
-	SameLine();
-	Text("%.2f, ", mLightDirection.y);
-	SameLine();
-	Text("%.2f", mLightDirection.z);
-
-	MyArrayFromVector color = MyArrayFromVector(mLightColor);
-	SliderFloat4("Light Color", color.SetArray(), 0.0f, 1.0f);
-
-	MyArrayFromVector ambColor = MyArrayFromVector(mAmbientColor);
-	SliderFloat3("Ambient Color", ambColor.SetArray(), 0.0f, 1.0f);
-
-	SliderFloat("Environment Factor", &mEnvironmentMapAlpha, 0.0f, 1.0f);
-
-	SliderFloat("TessFactor", &mTessFactor, 0.0f, 10.0f);
-
-	for (auto i = 0u; i < NUM_POINT_LIGHT; ++i)
+	if (TreeNode("Light"))
 	{
-		if (i >= mPointLights.size()) break;
+		SliderFloat("X-Angle", &mPitch, -180.0f, 180.0f);
+		SliderFloat("Y-Angle", &mYaw, -180.0f, 180.0f);
 
-		SetNextTreeNodeOpen(false, ImGuiSetCond_Once);
-		std::string title = "Point Light " + std::to_string(i);
 
-		if (TreeNode(title.data()))
+		Text("Direction : %.2f, ", mLightDirection.x);
+		SameLine();
+		Text("%.2f, ", mLightDirection.y);
+		SameLine();
+		Text("%.2f", mLightDirection.z);
+
+		MyArrayFromVector color = MyArrayFromVector(mLightColor);
+		SliderFloat4("Light Color", color.SetArray(), 0.0f, 1.0f);
+
+		MyArrayFromVector ambColor = MyArrayFromVector(mAmbientColor);
+		SliderFloat3("Ambient Color", ambColor.SetArray(), 0.0f, 1.0f);
+
+		//SliderFloat("Environment Factor", &mEnvironmentMapAlpha, 0.0f, 1.0f);
+
+		//SliderFloat("TessFactor", &mTessFactor, 0.0f, 10.0f);
+
+		for (auto i = 0u; i < NUM_POINT_LIGHT; ++i)
 		{
-			RadioButton("Enable", mPointLights[i].b_enable);
-			if (mPointLights[i].b_enable == false) continue;
+			if (i >= mPointLights.size()) break;
+			
+			SetNextTreeNodeOpen(false, ImGuiCond_Once);
+			std::string title = "Point Light " + std::to_string(i);
 
-			Text("Index %d", mPointLights[i].index);
-			SliderFloat("Range", &mPointLights[i].range, 0.0f, 50.0f);
+			if (TreeNode(title.data()))
+			{
+				RadioButton("Enable", mPointLights[i].b_enable);
+				if (mPointLights[i].b_enable == false) continue;
 
-			MyArrayFromVector pos = MyArrayFromVector(mPointLights[i].pos);
-			SliderFloat3("Position", pos.SetArray(), -10.0f, 10.0f);
+				Text("Index %d", mPointLights[i].index);
+				SliderFloat("Range", &mPointLights[i].range, 0.0f, 50.0f);
 
-			MyArrayFromVector pointColor = MyArrayFromVector(mPointLights[i].color);
-			SliderFloat4("Color", pointColor.SetArray(), 0.0f, 1.0f);
+				MyArrayFromVector pos = MyArrayFromVector(mPointLights[i].pos);
+				SliderFloat3("Position", pos.SetArray(), -10.0f, 10.0f);
 
-			TreePop();
+				MyArrayFromVector pointColor = MyArrayFromVector(mPointLights[i].color);
+				SliderFloat4("Color", pointColor.SetArray(), 0.0f, 1.0f);
+
+				TreePop();
+			}
+
 		}
 
-	}
+		Text("Spot Light Controllable : %s", m_bSpotLightControllable ? "True" : "False");
 
-	Text("Spot Light Controllable : %s", m_bSpotLightControllable ? "True" : "False");
-
-	for (auto j = 0u; j < NUM_SPOT_LIGHT; ++j)
-	{
-		if (j >= mSpotLights.size()) break;
-
-		SetNextTreeNodeOpen(false, ImGuiSetCond_Once);
-		std::string title = "Spot Light " + std::to_string(j);
-
-		if (TreeNode(title.data()))
+		for (auto j = 0u; j < NUM_SPOT_LIGHT; ++j)
 		{
-			RadioButton("Enable", mSpotLights[j].b_enable);
-			if (mSpotLights[j].b_enable == false) continue;
+			if (j >= mSpotLights.size()) break;
 
-			Text("Index %.1f", mSpotLights[j].index);
-			SliderFloat("Range", &mSpotLights[j].range, 0.0f, 50.0f);
+			SetNextTreeNodeOpen(false, ImGuiCond_Once);
+			std::string title = "Spot Light " + std::to_string(j);
 
-			MyArrayFromVector pos = MyArrayFromVector(mSpotLights[j].pos);
-			SliderFloat3("Position", pos.SetArray(), -10.0f, 10.0f);
+			if (TreeNode(title.data()))
+			{
+				RadioButton("Enable", mSpotLights[j].b_enable);
+				if (mSpotLights[j].b_enable == false) continue;
 
-			MyArrayFromVector spotColor = MyArrayFromVector(mSpotLights[j].color);
-			SliderFloat4("Color", spotColor.SetArray(), 0.0f, 1.0f);
+				Text("Index %.1f", mSpotLights[j].index);
+				SliderFloat("Range", &mSpotLights[j].range, 0.0f, 50.0f);
 
-			SliderFloat("Angle", &mSpotLights[j].angle, -DirectX::XM_PI, DirectX::XM_PI);
+				MyArrayFromVector pos = MyArrayFromVector(mSpotLights[j].pos);
+				SliderFloat3("Position", pos.SetArray(), -10.0f, 10.0f);
 
-			SliderFloat("Height", &mSpotLights[j].height, -1.0f, 0.0f);
+				MyArrayFromVector spotColor = MyArrayFromVector(mSpotLights[j].color);
+				SliderFloat4("Color", spotColor.SetArray(), 0.0f, 1.0f);
 
-			TreePop();
+				SliderFloat("Angle", &mSpotLights[j].angle, -DirectX::XM_PI, DirectX::XM_PI);
+
+				SliderFloat("Height", &mSpotLights[j].height, -1.0f, 0.0f);
+
+				TreePop();
+			}
+
 		}
-
+		TreePop();
 	}
 	Separator();
 }

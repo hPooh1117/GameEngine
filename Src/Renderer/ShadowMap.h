@@ -18,8 +18,8 @@ private:
 	//std::unique_ptr<Shader> m_pShadowMapShader;
 	//Microsoft::WRL::ComPtr<ID3D11Texture2D> m_pShadowMapTexture;
 	//Microsoft::WRL::ComPtr<ID3D11Texture2D> m_pShadowMapDepth;
-	//D3D::RenderTargetVPtr m_pRTVShadowMap;
-	//D3D::DepthStencilVPtr m_pDSVShadowMap;
+	//D3D::RTVPtr m_pRTVShadowMap;
+	//D3D::DSVPtr m_pDSVShadowMap;
 	//std::unique_ptr<Texture> m_pShadowTex;
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer> m_pCBufferForShadow;

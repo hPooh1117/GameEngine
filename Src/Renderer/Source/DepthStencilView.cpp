@@ -3,12 +3,12 @@
 #include "./Application/Helper.h"
 #include "./Utilities/misc.h"
 
-bool DepthStencilView::Initialize(D3D::DevicePtr& p_device)
+bool DepthStencilView::Create(D3D::DevicePtr& p_device, UINT width, UINT height)
 {
 	D3D::Texture2DPtr tex2D = nullptr;
 	D3D11_TEXTURE2D_DESC texDesc = {};
-	texDesc.Width = SCREEN_WIDTH;
-	texDesc.Height = SCREEN_HEIGHT;
+	texDesc.Width = width;
+	texDesc.Height = height;
 	texDesc.MipLevels = 1;
 	texDesc.ArraySize = 1;
 	texDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -40,6 +40,41 @@ bool DepthStencilView::Initialize(D3D::DevicePtr& p_device)
 	_ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
 	return true;
+}
+
+void DepthStencilView::CreateCubeDepthStencil(D3D::DevicePtr& p_device, UINT width, UINT height)
+{
+	auto result = S_OK;
+
+	D3D::Texture2DPtr tex2D;
+	D3D11_TEXTURE2D_DESC desc;
+	ZeroMemory(&desc, sizeof(desc));
+	desc.Width = width;
+	desc.Height = height;
+	desc.MipLevels = 1;
+	desc.ArraySize = 6;
+	desc.Format = DXGI_FORMAT_D32_FLOAT;
+	desc.SampleDesc.Count = 1;
+	desc.SampleDesc.Quality = 0;
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.CPUAccessFlags = 0;
+	desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	desc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
+
+	result = p_device->CreateTexture2D(&desc, NULL, tex2D.GetAddressOf());
+	_ASSERT_EXPR_A(SUCCEEDED(result), hr_trace(result));
+
+	D3D11_DEPTH_STENCIL_VIEW_DESC dsDesc;
+	ZeroMemory(&dsDesc, sizeof(dsDesc));
+	dsDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	dsDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
+	dsDesc.Texture2DArray.FirstArraySlice = 0;
+	dsDesc.Texture2DArray.ArraySize = 6;
+	dsDesc.Texture2DArray.MipSlice = 0;
+	dsDesc.Flags = D3D11_RESOURCE_MISC_TEXTURECUBE;
+
+	result = p_device->CreateDepthStencilView(tex2D.Get(), NULL, mpDSV.GetAddressOf());
+	_ASSERT_EXPR_A(SUCCEEDED(result), hr_trace(result));
 }
 
 void DepthStencilView::Clear(D3D::DeviceContextPtr& p_imm_context)

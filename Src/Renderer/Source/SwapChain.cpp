@@ -12,6 +12,20 @@
 Swapchain::Swapchain(Microsoft::WRL::ComPtr<ID3D11Device>& device, HWND& hwnd)
 {
     HRESULT result = S_OK;
+    //{
+    //    DXGI_SAMPLE_DESC MSAA;
+    //    for (auto i = 0; i <= D3D11_MAX_MULTISAMPLE_SAMPLE_COUNT; ++i)
+    //    {
+    //        UINT quality;
+    //        result = device->CheckMultisampleQualityLevels(DXGI_FORMAT_D24_UNORM_S8_UINT, i, &quality);
+    //        if (quality > 0)
+    //        {
+    //            MSAA.Count = i;
+    //            MSAA.Quality = quality - 1;
+    //        }
+    //    }
+
+    //}
     {
         DXGI_SWAP_CHAIN_DESC scDesc = {};
         ZeroMemory(&scDesc, sizeof(scDesc));
@@ -23,7 +37,7 @@ Swapchain::Swapchain(Microsoft::WRL::ComPtr<ID3D11Device>& device, HWND& hwnd)
         scDesc.SampleDesc.Count = 1;
         scDesc.SampleDesc.Quality = 0;
         scDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-        scDesc.BufferCount = 8/*DXGI_MAX_SWAP_CHAIN_BUFFERS*/;
+        scDesc.BufferCount = 8;
         scDesc.OutputWindow = hwnd;
         scDesc.Windowed = TRUE;
         scDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
@@ -52,7 +66,7 @@ Swapchain::Swapchain(Microsoft::WRL::ComPtr<ID3D11Device>& device, HWND& hwnd)
     result = m_swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)(&pTexture2D));
     pTexture2D->Release();
     _ASSERT_EXPR(SUCCEEDED(result), hr_trace(result));
-
+    
     result = device->CreateRenderTargetView(pTexture2D, NULL, m_render_target_view.GetAddressOf());
     if (FAILED(result))
     {

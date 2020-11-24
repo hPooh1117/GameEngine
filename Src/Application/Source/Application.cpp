@@ -8,6 +8,7 @@
 #include "./Engine/Settings.h"
 #include "./Engine/Singleton.h"
 
+#include "./Renderer/RenderTarget.h"
 
 #include "./Renderer/GraphicsEngine.h"
 #include "./Renderer/Swapchain.h"
@@ -48,7 +49,7 @@ bool Application::Init()
 	Window::ShowAndUpdateWindow();
 
 	//m_pGameSystem = std::make_unique<GameSystem>(m_pGraphicsEngine->GetDevicePtr());
-	ENGINE.Initialize(m_pGraphicsEngine->GetDevicePtr());
+	ENGINE.Initialize(m_pGraphicsEngine);
 
 	return true;
 
@@ -60,7 +61,7 @@ void Application::Update(float elapsed_time)
 	InputPtr.HandleInput(mHwnd);
 
 	//m_pGameSystem->Update(elapsed_time);
-	ENGINE.Update(m_pGraphicsEngine->GetDevicePtr(), elapsed_time);
+	ENGINE.Update(m_pGraphicsEngine, elapsed_time);
 
 	
 

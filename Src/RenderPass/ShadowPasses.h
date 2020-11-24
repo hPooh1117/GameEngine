@@ -17,6 +17,6 @@ public:
     virtual void Initialize(D3D::DevicePtr& device) override;
 
     void RenderShadow(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time);
-    void RenderUI();
+    void RenderUI(bool b_open);
 };
 

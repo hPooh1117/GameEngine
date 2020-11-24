@@ -84,7 +84,7 @@ public:
 	DirectX::XMMATRIX GetProjMatrix(D3D::DeviceContextPtr& p_imm_context);
 	DirectX::XMMATRIX GetInvProjMatrix(D3D::DeviceContextPtr& p_imm_context);
 	DirectX::XMMATRIX GetInvProjViewMatrix(D3D::DeviceContextPtr& p_imm_context);
-	const std::shared_ptr<Camera>& GetCameraPtr(unsigned int mode);
+	//const std::shared_ptr<Camera>& GetCameraPtr(unsigned int mode);
 	DirectX::XMMATRIX GetOrthoView();
 	DirectX::XMMATRIX GetOrthoProj(D3D::DeviceContextPtr& p_imm_context);
 
@@ -92,6 +92,7 @@ public:
 	void SetTarget(std::shared_ptr<Actor>& p_actor);
 	void SetOrthoPos(Vector3 pos);
 	void SetPositionOfMoveableCamera(const Vector3& pos);
+	void SetFocusPointOfMovableCamera(const Vector3& pos);
 
 	//--< RENDER UI >-------------------------------------------------------------------
 	virtual void RenderUI();

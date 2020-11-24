@@ -37,6 +37,7 @@ PS_InputBump VSmain(VS_Input input)
 	vB = normalize(vB);
 	vT = normalize(cross(vB, vN));
 	vB = normalize(cross(vN, vT));
+		
 
 	output.color = input.color;
 

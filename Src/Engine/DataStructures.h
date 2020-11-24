@@ -2,7 +2,7 @@
 #include "./Utilities/Vector.h"
 
 
-static constexpr unsigned int NUM_POINT_LIGHT = 4;
+static constexpr unsigned int NUM_POINT_LIGHT = 64;
 static constexpr unsigned int NUM_SPOT_LIGHT  = 4;
 
 struct PointLightGPU
@@ -74,7 +74,10 @@ struct MaterialData
 {
 	DirectX::XMFLOAT4 mat_color;
 	DirectX::XMFLOAT3 specularColor;
-	float brdfFactor;
 	float metalness;
 	float roughness;
+	float diffuse;
+	float specular;
+	int   textureConfig;
 };
+

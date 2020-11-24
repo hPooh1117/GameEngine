@@ -21,6 +21,8 @@ class LightController;
 class Skybox;
 class TextureHolder;
 class UIRenderer;
+class ComputeExecuter;
+
 
 class RenderPass;
 class ForwardPass;
@@ -28,12 +30,28 @@ class ShadowPass;
 class PostProcessPass;
 class DefferedPass;
 class SSAOPass;
+class MakeCubeMapPass;
+
+namespace Settings { struct Renderer; }
 
 class GameSystem
 {
-
 public:
     static const unsigned int THREAD_SIZE;
+
+    enum class Process
+    {
+        EUpdate,
+        EShadowPass,
+        EMainRenderPass,
+        ESSAOPass,
+        EPostProcessPass,
+        ETotlaRender,
+        EUIPass,
+
+        PROCESS_NUM_MAX,
+    };
+    static constexpr unsigned int PROCESS_MAX = (unsigned int)Process::PROCESS_NUM_MAX;
 
 public:
     static std::mutex                 mLoadingMutex;
@@ -45,7 +63,8 @@ private:
     std::unique_ptr<PerfTimer>        mpTimer;
     std::shared_ptr<ThreadPool>       mpThreadPool;
 
-    bool m_bIsLoading;
+    bool mbIsLoadingRenderPasses;
+    bool mbIsLoadingScene;
 
     std::unique_ptr<ActorManager>     mpActorManager;
     std::unique_ptr<CameraController> mpCamera;
@@ -54,35 +73,43 @@ private:
     std::unique_ptr<TextureHolder>    mpTextureHolder;
     std::unique_ptr<NewMeshRenderer>  mpMeshRenderer;
 
+    std::unique_ptr<ComputeExecuter>  mpComputeExecuter;
+
     std::unique_ptr<ForwardPass>      mpForwardPass;
     std::unique_ptr<ShadowPass>       mpShadowPass;
     std::unique_ptr<PostProcessPass>  mpPostProcessPass;
     std::unique_ptr<DefferedPass>     mpDefferedPass;
     std::unique_ptr<SSAOPass>         mpSSAOPass;
+    std::unique_ptr<MakeCubeMapPass>  mpCubeMapPass;
 
     bool mbIsCastingShadow;
     bool mbIsDeffered;
     bool mbIsSSAO;
+    bool mbIsCubeMap;
 
     u_int mCurrentPass;
     unsigned int mCurrentScreenNo;
+
+    float mFrameTimer = .0f;
 
 public:
     GameSystem();
     ~GameSystem();
 
-    void Initialize(D3D::DevicePtr& p_device);
-    void Update(D3D::DevicePtr& p_device, float elapsed_time);
+    void Initialize(std::unique_ptr<GraphicsEngine>& p_graphics);
+    void Update(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time);
     void Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time);
-    void RenderUIByRenderPasses();
     void RenderUI(std::unique_ptr<GraphicsEngine>& p_graphics);
 
-    void LoadScene();
+private:
+    void RenderUIByRenderPasses(std::unique_ptr<GraphicsEngine>& p_graphics);
 
-    void NotCastShadow() { mbIsCastingShadow = false; }
-    void CastShadow() { mbIsCastingShadow = true; }
-    void SetIsDefferedRendering(bool flag) { mbIsDeffered = flag; }
-    void SetSSAO(bool flag) { mbIsSSAO = flag; }
+public:
+    void LoadScene();
+    void CheckShaderActivated();
+
+
+    void SetRendererSettings(const Settings::Renderer& settings);
     void SetCurrentWindowSize(D3D::DevicePtr& p_device, unsigned int width, unsigned int height);
 
     std::unique_ptr<ActorManager>&      GetActorManagerPtr() { return mpActorManager; }
@@ -92,7 +119,9 @@ public:
     std::unique_ptr<NewMeshRenderer>&   GetMeshRenderer() { return mpMeshRenderer; }
     std::unique_ptr<UIRenderer>&        GetUIRenderer()     { return mpUIRenderer; }
     std::unique_ptr<TextureHolder>&     GetTextureHolderPtr() { return mpTextureHolder; }
+    std::unique_ptr<ComputeExecuter>& GetComputeExecuter() { return mpComputeExecuter; }
     bool GetSSAOActivate() { return mbIsSSAO; }
 };
 
 #define  ENGINE Singleton<GameSystem>::Get()
+ 
