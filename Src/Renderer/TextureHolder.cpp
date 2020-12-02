@@ -125,7 +125,7 @@ void TextureHolder::RegisterTextureFromActors(D3D::DevicePtr& p_device, std::uni
 				continue;
 			}
 
-			std::unique_ptr<NewTexture> tex = std::make_unique<NewTexture>();
+			std::unique_ptr<Texture> tex = std::make_unique<Texture>();
 			if (table[i].filename == L"DUMMY" || table[i].filename == L"EMPTY")   tex->Load(p_device);
 			else                                                                  tex->Load(p_device, table[i].filename.c_str());
 

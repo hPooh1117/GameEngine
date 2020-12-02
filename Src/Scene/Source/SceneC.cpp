@@ -123,6 +123,10 @@ void SceneC::Render(std::unique_ptr<GraphicsEngine>& p_graphics,
 {
 }
 
+void SceneC::RenderUI()
+{
+}
+
 SceneC::~SceneC()
 {
 }

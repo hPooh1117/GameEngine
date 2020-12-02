@@ -9,8 +9,9 @@ Texture2D albedo_texture : register(t0);
 SamplerState decal_sampler : register(s0);
 
 Texture2D normal_texture : register(t1);
-Texture2D position_texture : register(t2);
-Texture2D shadow_texture : register(t3);
+//Texture2D position_texture : register(t2);
+Texture2D shadow_texture : register(t2);
+Texture2D<float4> depth_texture : register(t3);
 
 //--------------------------------------------
 //	エントリーポイント
@@ -41,7 +42,18 @@ PS_Output_Light PSmain(PS_Input input)
 {
 	PS_Output_Light output = (PS_Output_Light)0;
 
-	float3 P = position_texture.Sample(position_sampler, input.texcoord).xyz;
+	float depth = depth_texture.Sample(border_sampler, input.texcoord).r;
+	float4 projP = float4(input.projPos.xy, depth, 1);
+	//float4 viewP = mul(projP, inv_proj);
+	//viewP /= viewP.w;
+
+	float4 wPos = mul(projP, inv_viewproj);
+	//wPos.xyz /= wPos.w;
+	//wPos = mul(wPos, inv_view);
+	//float4 wPos = mul(viewP, inv_view);
+	wPos.xyz /= wPos.w;
+
+	float3 P = wPos.xyz;
 	float3 N = normal_texture.Sample(normal_sampler, input.texcoord).xyz;
 	float3 E = normalize(eye_pos.xyz - P);
 	float3 L = normalize(light_dir.xyz);

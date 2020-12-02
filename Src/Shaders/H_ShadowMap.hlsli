@@ -11,24 +11,23 @@
 //--------------------------------------------
 static const float bias = 0.001;
 static const float3 shadow_color = { 0.6f, 0.6f, 0.6f };
-static const uint MAX_SAMPLES = 16;
 
-cbuffer CBPerAO : register(b5)
-{
-	row_major float4x4 inv_proj;
-	row_major float4x4 inv_view;
-	row_major float4x4 proj;
-	row_major float4x4 inv_viewproj;
-	float2   screen_size;
-	float2   noise_scale;
-	float    radius;
-	float    power;
-	float    kernelSize;
-	float    ambient_bias;
-	float4   sample_pos[MAX_SAMPLES];
-	float    blurSize;
-	float3   dummyVector;
-}
+//cbuffer CBPerAO : register(b5)
+//{
+//	row_major float4x4 inv_proj;
+//	row_major float4x4 inv_view;
+//	row_major float4x4 proj;
+//	row_major float4x4 view;
+//	float2   screen_size;
+//	float2   noise_scale;
+//	float    radius;
+//	float    power;
+//	float    kernelSize;
+//	float    ambient_bias;
+//	float4   sample_pos[MAX_SAMPLES];
+//	float    blurSize;
+//	float3   dummyVector;
+//}
 
 
 cbuffer CBPerShadow : register(b6)

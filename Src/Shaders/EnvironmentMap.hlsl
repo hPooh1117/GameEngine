@@ -12,6 +12,10 @@ SamplerState decal_sampler : register(s0);
 Texture2D environment_texture : register(t7);
 SamplerState environment_sampler : register(s1);
 
+static const float GAMMA = 2.2;
+static const float EXPOSURE = 1.0;
+static const float PURE_WHITE = 1.0;
+
 
 //--------------------------------------------
 //	データフォーマット
@@ -146,10 +150,29 @@ float4 PSmain(PS_InputEnv input) : SV_TARGET
 
 	// Environment Map
 	float3 ref = reflect(-E, N);
-	ref = ref * 0.5 + 0.5;
-	ref.y = -ref.y;
-	float4  envColor = environment_texture.Sample(decal_sampler, ref.xy);
-	envColor = pow(abs(envColor), 1 / 2.2);
+
+	ref.x = acos(ref.x) / 3.1416;
+	ref.y = acos(ref.y) / 3.1416;
+
+	ref.x *= 0.5;
+	//ref.x = ref.z < 0.0 ? 1.0 - ref.x : ref.x;
+
+
+	float3 envSrcColor = environment_texture.Sample(decal_sampler, ref.xy).rgb * EXPOSURE;
+
+	// Reinhard tonemapping operator.
+	// see: "Photographic Tone Reproduction for Digital Images" 2002
+	// src: https://t-pot.com/program/123_ToneMapping/index.html
+	float luminance = dot(envSrcColor, float3(0.2126, 0.7152, 0.0722));
+	float mappedLuminance = (luminance * (1.0 + luminance / (PURE_WHITE * PURE_WHITE))) / (1.0 + luminance);
+
+	// 平均輝度でスケーリング
+	float3 mappedColor = (mappedLuminance / luminance) * envSrcColor;
+
+	// ガンマ補正
+	float4 envColor = float4(pow(abs(mappedColor), 1.0 / GAMMA), 1.0);
+
+	//envColor = pow(abs(envColor), 1 / 2.2);
 	color = color * (1.0 - env_alpha) + envColor * env_alpha;
 
 	color *= input.color * float4(A + D + S, 1.0f);

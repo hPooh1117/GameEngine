@@ -8,7 +8,7 @@
 #include "D3D_Helper.h"
 #include "./Utilities/Vector.h"
 
-class NewTexture;
+class Texture;
 class Shader;
 
 class Sprite
@@ -28,7 +28,7 @@ private:
     Microsoft::WRL::ComPtr<ID3D11RasterizerState>    m_pRasterizerState;
 
 private:
-    std::unique_ptr<NewTexture> m_pTexture;
+    std::unique_ptr<Texture> m_pTexture;
 
 public:
     Sprite(D3D::DevicePtr& device); // テクスチャなし
@@ -49,7 +49,7 @@ public:
     void Render(
         D3D::DeviceContextPtr& imm_context,
         Shader* p_shader,
-        std::unique_ptr<NewTexture>& p_texture,
+        std::unique_ptr<Texture>& p_texture,
         const Vector2& pos,
         const Vector2& size,
         const Vector2& tex_pos,

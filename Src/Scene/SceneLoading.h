@@ -21,5 +21,6 @@ public:
 	virtual void PreCompute(std::unique_ptr<GraphicsEngine>& p_graphics) override;
 
 	virtual void Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time);
+	virtual void RenderUI() override;
 };
 

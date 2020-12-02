@@ -3,6 +3,7 @@
 #include "./Application/Input.h"
 #include "./Application/Helper.h"
 
+
 #include "./Utilities/Log.h"
 #include "./Utilities/ImGuiSelf.h"
 using namespace DirectX;
@@ -19,13 +20,12 @@ void MainCamera::Update(float elapsed_time)
 {
 	mDeltaTime = elapsed_time;
 
-
 	// move camera position and orientation
 	SwitchMoveEnable();
 
-	if (m_bEnableMoving) MoveCamera();
-
 	ResetCameraPosition();
+
+	if (m_bEnableMoving) MoveCamera();
 }
 
 
@@ -39,7 +39,6 @@ void MainCamera::SwitchMoveEnable()
 
 void MainCamera::MoveCamera()
 {
-	if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow)) return;
 
 	float speed = 5.0f;
 	Vector2 deltaMouse = InputPtr.GetMouseDelta();

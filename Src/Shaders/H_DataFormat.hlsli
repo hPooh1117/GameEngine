@@ -8,7 +8,9 @@ cbuffer CBPerMatrix : register(b0)
     row_major float4x4 world;
 
 
-    row_major float4x4 inv_projview;
+    float4x4 inv_viewproj;
+    float4x4 inv_view_mat;
+    float4x4 inv_proj_mat;
 
 };
 

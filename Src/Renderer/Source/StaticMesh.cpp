@@ -64,7 +64,7 @@ StaticMesh::StaticMesh(Microsoft::WRL::ComPtr<ID3D11Device>& device, const wchar
 
     for (auto &material : mMaterials)
     {
-        std::unique_ptr<NewTexture> tex = std::make_unique<NewTexture>();
+        std::unique_ptr<Texture> tex = std::make_unique<Texture>();
         if (material.map_Kd == L"\0")
         {
             tex->Load(device);
@@ -203,24 +203,17 @@ void StaticMesh::Render(
     //imm_context->RSSetViewports(numViewport, &viewport);
     //imm_context->PSSetShader(mPixelShader.Get(), NULL, 0);
 
-    XMFLOAT4X4 W, WVP;
-    XMStoreFloat4x4(&W, world);
-    if (isShadow)
-    {
-        XMStoreFloat4x4(&WVP, world * camera->GetOrthoView() * camera->GetOrthoProj(imm_context));
-    }
-    else
-    {
-        XMStoreFloat4x4(&WVP, world * camera->GetViewMatrix() * camera->GetProjMatrix(imm_context));
-    }
+    CBufferForMesh meshData = {};
+    DirectX::XMStoreFloat4x4(&meshData.world, world);
+    DirectX::XMStoreFloat4x4(&meshData.WVP, world * (isShadow ? camera->GetOrthoView() * camera->GetOrthoProj(imm_context) : camera->GetViewMatrix() * camera->GetProjMatrix(imm_context)));
+    XMStoreFloat4x4(&meshData.invViewProj, camera->GetInvProjViewMatrix(imm_context));
+    DirectX::XMStoreFloat4x4(&meshData.invView, camera->GetInvViewMatrix());
+    DirectX::XMStoreFloat4x4(&meshData.invProj, camera->GetInvProjMatrix(imm_context));
+
 
 
     for (auto &material : mMaterials)
     {
-        CBufferForMesh meshData = {};
-        meshData.WVP = WVP;
-        meshData.world = W;
-        XMStoreFloat4x4(&meshData.invProj, camera->GetInvProjViewMatrix(imm_context));
 
         CBufferForMaterial matData = {};
         matData.mat_color = mat_data.mat_color;

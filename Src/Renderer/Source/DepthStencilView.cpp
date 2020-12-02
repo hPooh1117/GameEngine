@@ -11,11 +11,11 @@ bool DepthStencilView::Create(D3D::DevicePtr& p_device, UINT width, UINT height)
 	texDesc.Height = height;
 	texDesc.MipLevels = 1;
 	texDesc.ArraySize = 1;
-	texDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	texDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;;
 	texDesc.SampleDesc.Count = 1;
 	texDesc.SampleDesc.Quality = 0;
 	texDesc.Usage = D3D11_USAGE_DEFAULT;
-	texDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	texDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL/* | D3D11_BIND_SHADER_RESOURCE*/;
 	texDesc.CPUAccessFlags = 0;
 	texDesc.MiscFlags = 0;
 
@@ -30,6 +30,7 @@ bool DepthStencilView::Create(D3D::DevicePtr& p_device, UINT width, UINT height)
 	dsvDesc.Format = texDesc.Format;
 	dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 	dsvDesc.Texture2D.MipSlice = 0;
+	//dsvDesc.Flags = D3D11_DSV_READ_ONLY_DEPTH;
 
 	// 深度ステンシルビュー生成
 	hr = p_device->CreateDepthStencilView(
@@ -38,6 +39,14 @@ bool DepthStencilView::Create(D3D::DevicePtr& p_device, UINT width, UINT height)
 		mpDSV.GetAddressOf()
 	);
 	_ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
+
+	//D3D11_SHADER_RESOURCE_VIEW_DESC srDesc = {};
+	//srDesc.Format = DXGI_FORMAT_R32_FLOAT;
+	//srDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	//srDesc.Texture2D.MostDetailedMip = 0;
+	//srDesc.Texture2D.MipLevels = -1;
+	//hr = p_device->CreateShaderResourceView(tex2D.Get(), &srDesc, mpSRV.GetAddressOf());
+	//_ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
 	return true;
 }
@@ -83,4 +92,11 @@ void DepthStencilView::Clear(D3D::DeviceContextPtr& p_imm_context)
 		mpDSV.Get(),
 		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
 		1.0f, 0);
+}
+
+void DepthStencilView::Set(D3D::DeviceContextPtr& p_imm_context, UINT slot)
+{
+	p_imm_context->PSSetShaderResources(slot, 1, mpSRV.GetAddressOf());
+	p_imm_context->DSSetShaderResources(slot, 1, mpSRV.GetAddressOf());
+	p_imm_context->CSSetShaderResources(slot, 1, mpSRV.GetAddressOf());
 }

@@ -7,6 +7,7 @@
 
 class GraphicsEngine;
 class Scene;
+namespace Settings{ struct Renderer; }
 
 class SceneManager
 {
@@ -20,6 +21,7 @@ private:
     SceneID                               mNextScene;
     bool                                  mClearFlag;
     bool                                  m_bIsLoading;
+    bool                                  mbIsInitialized;
 private:
     D3D::DevicePtr  m_pDevice;
 
@@ -27,6 +29,7 @@ public:
     SceneManager(D3D::DevicePtr& p_device);
     ~SceneManager();
 
+    void CreateScene(SceneID scene_id);
     void InitializeLoadingScene();
     void InitializeCurrentScene();
 
@@ -36,11 +39,14 @@ public:
 
     void RenderLoadingScene(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time);
     void RenderCurrentScene(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time);
+    void RenderUIForCurrentScene();
     void PreComputeForNextScene(std::unique_ptr<GraphicsEngine>& p_graphics);
     void RenderUI();
 
-    bool IsLoading();
+    bool IsLoading() { return m_bIsLoading; }
+    bool IsInitialized() { return mbIsInitialized; }
 
+    const Settings::Renderer& GetNextSceneSettings();
 
     void ChangeScene(const SceneID&, bool clearCurrentScene = false);
 };

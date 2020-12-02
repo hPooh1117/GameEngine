@@ -14,6 +14,7 @@
 
 #include "./Engine/GameSystem.h"
 #include "./Engine/UIRenderer.h"
+#include "./Engine/Settings.h"
 
 #include "./Utilities/Log.h"
 #include "./Utilities/ImGuiSelf.h"
@@ -22,13 +23,13 @@
 //----------------------------------------------------------------------------------------------------------------------------
 
 SceneManager::SceneManager(D3D::DevicePtr& p_device)
-	:mCurrentScene(SceneID::SCENE_A),
-	mNextScene(SceneID::SCENE_A),
+	:mCurrentScene(SceneID::SCENE_B),
 	mClearFlag(false),
 	m_bIsLoading(false),
-	m_pDevice(p_device)
+	m_pDevice(p_device),
+	mbIsInitialized(false)
 {
-
+	mNextScene = mCurrentScene;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------
@@ -43,6 +44,41 @@ SceneManager::~SceneManager()
 
 //----------------------------------------------------------------------------------------------------------------------------
 
+void SceneManager::CreateScene(SceneID scene_id)
+{
+	switch (static_cast<SceneID>(scene_id))
+	{
+		//case SceneID::SCENE01:
+		//	mSceneStack.emplace(std::make_unique<Scene01>(this, m_pDevice));
+		//	break;
+		//case SceneID::SCENETITLE:
+		//	mSceneStack.emplace(std::make_unique<SceneTitle>(this, m_pDevice));
+		//	break;
+	case SceneID::SCENE_A:
+		mSceneStack.emplace(std::make_unique<SceneA>(this, m_pDevice));
+		break;
+	case SceneID::SCENE_B:
+		mSceneStack.emplace(std::make_unique<SceneB>(this, m_pDevice));
+		break;
+	case SceneID::SCENE_C:
+		mSceneStack.emplace(std::make_unique<SceneC>(this, m_pDevice));
+		break;
+	case SceneID::SCENE_D:
+		mSceneStack.emplace(std::make_unique<SceneD>(this, m_pDevice));
+		break;
+	case SceneID::SCENE_E:
+		mSceneStack.emplace(std::make_unique<SceneE>(this, m_pDevice));
+		break;
+	case SceneID::SCENE_F:
+		mSceneStack.emplace(std::make_unique<SceneF>(this, m_pDevice));
+		break;
+	case SceneID::SCENE_TEST:
+		mSceneStack.emplace(std::make_unique<SceneTest>(this, m_pDevice));
+		break;
+	}
+
+}
+
 void SceneManager::InitializeLoadingScene()
 {
 	Log::Info("Initializing Scene...");
@@ -54,11 +90,15 @@ void SceneManager::InitializeLoadingScene()
 
 void SceneManager::InitializeCurrentScene()
 {
-	
-	mSceneStack.emplace(std::make_unique<SceneA>(this, m_pDevice));
+	m_bIsLoading = true;
+
+	CreateScene(mCurrentScene);
+
 	mSceneStack.top()->SetCurrntSceneID(mCurrentScene);
 	mSceneStack.top()->InitializeScene();
 	Log::Info("Initialized %s", mSceneStack.top()->GetCurrentSceneName().c_str());
+	m_bIsLoading = false;
+	mbIsInitialized = true;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------
@@ -87,40 +127,13 @@ void SceneManager::LoadNextScene()
 
 	Log::Info("Initializing Scene...");
 	
-	switch (mNextScene)
-	{
-	//case SceneID::SCENE01:
-	//	mSceneStack.emplace(std::make_unique<Scene01>(this, m_pDevice));
-	//	break;
-	//case SceneID::SCENETITLE:
-	//	mSceneStack.emplace(std::make_unique<SceneTitle>(this, m_pDevice));
-	//	break;
-	case SceneID::SCENE_A:
-		mSceneStack.emplace(std::make_unique<SceneA>(this, m_pDevice));
-		break;
-	case SceneID::SCENE_B:
-		mSceneStack.emplace(std::make_unique<SceneB>(this, m_pDevice));
-		break;
-	case SceneID::SCENE_C:
-		mSceneStack.emplace(std::make_unique<SceneC>(this, m_pDevice));
-		break;
-	case SceneID::SCENE_D:
-		mSceneStack.emplace(std::make_unique<SceneD>(this, m_pDevice));
-		break;
-	case SceneID::SCENE_E:
-		mSceneStack.emplace(std::make_unique<SceneE>(this, m_pDevice));
-		break;
-	case SceneID::SCENE_F:
-		mSceneStack.emplace(std::make_unique<SceneF>(this, m_pDevice));
-		break;
-	case SceneID::SCENE_TEST:
-		mSceneStack.emplace(std::make_unique<SceneTest>(this, m_pDevice));
-		break;
-	}
+	CreateScene(mNextScene);
+
 	mSceneStack.top()->SetCurrntSceneID(mNextScene);
 	mSceneStack.top()->InitializeScene();
 	Log::Info("Initialized %s", mSceneStack.top()->GetCurrentSceneName().c_str());
 	m_bIsLoading = false;
+	mbIsInitialized = true;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------
@@ -138,6 +151,11 @@ void SceneManager::RenderCurrentScene(std::unique_ptr<GraphicsEngine>& p_graphic
 
 }
 
+void SceneManager::RenderUIForCurrentScene()
+{
+	mSceneStack.top()->RenderUI();
+}
+
 void SceneManager::PreComputeForNextScene(std::unique_ptr<GraphicsEngine>& p_graphics)
 {
 	mSceneStack.top()->PreCompute(p_graphics);
@@ -147,8 +165,6 @@ void SceneManager::RenderUI()
 {
 	using namespace ImGui;
 
-	ENGINE.GetUIRenderer()->SetNextWindowSettings(Vector2(0, 23), Vector2(150, 400));
-	ENGINE.GetUIRenderer()->BeginRenderingNewWindow("Scene", false);
 	
 	for (auto i = 0u; i < static_cast<unsigned int>(SceneID::SCENE_NUM_MAX); ++i)
 	{
@@ -161,16 +177,16 @@ void SceneManager::RenderUI()
 	Text("*** Current Scene ***");
 	Text("%s", mSceneStack.top()->GetCurrentSceneName().c_str());
 
-
-	ENGINE.GetUIRenderer()->FinishRenderingWindow();
 }
 
-bool SceneManager::IsLoading()
-{
-	return m_bIsLoading;
-}
+
 
 //----------------------------------------------------------------------------------------------------------------------------
+
+const Settings::Renderer& SceneManager::GetNextSceneSettings()
+{
+	return  Scene::mSettings[static_cast<UINT>(mNextScene)];
+}
 
 void SceneManager::ChangeScene(const SceneID& nextScene, bool clearCurrentScene)
 {
@@ -181,6 +197,7 @@ void SceneManager::ChangeScene(const SceneID& nextScene, bool clearCurrentScene)
 	}
 
 	m_bIsLoading = true;
+	mbIsInitialized = false;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------

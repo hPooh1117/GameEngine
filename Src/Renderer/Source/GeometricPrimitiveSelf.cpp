@@ -174,21 +174,13 @@ void GeometricPrimitiveSelf::Render(
 
     SetRenderState(imm_context);
 
-    XMFLOAT4X4 W, WVP;
-    XMStoreFloat4x4(&W, world);
-    if (isShadow)
-    {
-        XMStoreFloat4x4(&WVP, world * camera->GetOrthoView() * camera->GetOrthoProj(imm_context));
-    }
-    else
-    {
-        XMStoreFloat4x4(&WVP, world * camera->GetViewMatrix() * camera->GetProjMatrix(imm_context));
-    }
 
     CBufferForMesh meshData = {};
-    meshData.WVP = WVP;
-    meshData.world = W;
-    XMStoreFloat4x4(&meshData.invProj, camera->GetInvProjViewMatrix(imm_context));
+    DirectX::XMStoreFloat4x4(&meshData.world, world);
+    DirectX::XMStoreFloat4x4(&meshData.WVP, world * (isShadow ? camera->GetOrthoView() * camera->GetOrthoProj(imm_context) : camera->GetViewMatrix() * camera->GetProjMatrix(imm_context)));
+    DirectX::XMStoreFloat4x4(&meshData.invViewProj, camera->GetInvProjViewMatrix(imm_context));
+    DirectX::XMStoreFloat4x4(&meshData.invView, camera->GetInvViewMatrix());
+    DirectX::XMStoreFloat4x4(&meshData.invProj, camera->GetInvProjMatrix(imm_context));
 
     CBufferForMaterial matData = {};
     matData.mat_color = mat_data.mat_color;

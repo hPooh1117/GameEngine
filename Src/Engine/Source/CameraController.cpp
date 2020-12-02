@@ -5,6 +5,9 @@
 #include "TraceCamera.h"
 #include "OrthoView.h"
 #include "Actor.h"
+#include "GameSystem.h"
+#include "UIRenderer.h"
+
 
 #include "./Application/Input.h"
 #include "./Application/Helper.h"
@@ -34,6 +37,9 @@ CameraController::CameraController()
     m_pOrthoView = std::make_shared<OrthoView>(Vector3(0, 0, 0));
     m_pOrthoView->SetOrtho(mOrthoWidth, mOrthoHeight, mOrthoNear, mOrthoFar);
 
+    mNearPlane = m_pCameras[kMoveable]->GetNearZ();
+    mFarPlane = m_pCameras[kTrace]->GetFarZ();
+
     Log::Info("[CAMERA] Initialized.");
     NotifyCurrentMode();
 }
@@ -54,28 +60,30 @@ bool CameraController::Initialize(Settings::Camera& cameraSettings)
 
 void CameraController::Update(float elapsed_time)
 {
-#ifdef _DEBUG
-    if (InputPtr.OnKeyTrigger("C"))
-    {
-        mPrevMode = mCurrentMode;
-        if (++mCurrentMode >= kNumMax) mCurrentMode = 0;
-        m_bIsBlended = true;
-        mBlendingTime = 0; // ブレンディング経過時間の初期化
-        NotifyCurrentMode();
-    }
-#endif
+//#ifdef _DEBUG
+//    if (InputPtr.OnKeyTrigger("C"))
+//    {
+//        mPrevMode = mCurrentMode;
+//        if (++mCurrentMode >= kNumMax) mCurrentMode = 0;
+//        m_bIsBlended = true;
+//        mBlendingTime = 0; // ブレンディング経過時間の初期化
+//        NotifyCurrentMode();
+//    }
+//#endif
 
-    if (m_bIsBlended) // ブレンド中なら
-    {
-        // 前回カメラも更新
-        m_pCameras[mPrevMode]->Update(elapsed_time);
+    //if (m_bIsBlended) // ブレンド中なら
+    //{
+    //    // 前回カメラも更新
+    //    m_pCameras[mPrevMode]->Update(elapsed_time);
 
-        // ブレンド経過時間を更新
-        mBlendingTime++;
+    //    // ブレンド経過時間を更新
+    //    mBlendingTime++;
 
-        // ブレンド時間Maxを超えればブレンド終了
-        if (mBlendingTime >= mBlendingTimeMax) m_bIsBlended = false;
-    }
+    //    // ブレンド時間Maxを超えればブレンド終了
+    //    if (mBlendingTime >= mBlendingTimeMax) m_bIsBlended = false;
+    //}
+
+    if (ENGINE.GetUIRenderer()->GetUIEnable() && ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow)) return;
 
     // 現在のカメラを更新
     m_pCameras[mCurrentMode]->Update(elapsed_time);
@@ -93,22 +101,22 @@ void CameraController::SetMatrix(D3D::DeviceContextPtr& p_imm_context)
     Vector3 target;
     Vector3 up;
 
-    if (m_bIsBlended) // ブレンド中なら
-    {
-        auto& itForPrev = m_pCameras[mPrevMode];
+    //if (m_bIsBlended) // ブレンド中なら
+    //{
+    //    auto& itForPrev = m_pCameras[mPrevMode];
 
-        float t = static_cast<float>(mBlendingTime) / static_cast<float>(mBlendingTimeMax);
+    //    float t = static_cast<float>(mBlendingTime) / static_cast<float>(mBlendingTimeMax);
 
-        pos = Math::Lerp(itForPrev->getPosition(), itForCurrent->getPosition(), t);
-        target = Math::Lerp(itForPrev->getTargetVector(), itForCurrent->getTargetVector(), t);
-        up = Math::Lerp(itForPrev->getUpVector(), itForCurrent->getUpVector(), t);
-    }
-    else
-    {
-        pos = itForCurrent->getPosition();
-        target = itForCurrent->getTargetVector();
-        up = itForCurrent->getUpVector();
-    }
+    //    pos = Math::Lerp(itForPrev->GetPosition(), itForCurrent->GetPosition(), t);
+    //    target = Math::Lerp(itForPrev->GetTargetVector(), itForCurrent->GetTargetVector(), t);
+    //    up = Math::Lerp(itForPrev->GetUpVector(), itForCurrent->GetUpVector(), t);
+    //}
+    //else
+    //{
+        pos = itForCurrent->GetPosition();
+        target = itForCurrent->GetTargetVector();
+        up = itForCurrent->GetUpVector();
+    //}
 
     // カメラから情報をもらう
     mCameraPos = pos;
@@ -132,9 +140,12 @@ void CameraController::CreateViewMatrix()
     XMVECTOR target = XMLoadFloat3(&mCameraTarget);
     XMVECTOR up = XMLoadFloat3(&mCameraUp);
 
-    XMMATRIX view = XMMatrixLookAtLH(eye, target, up);
+    XMMATRIX view = DirectX::XMMatrixLookAtLH(eye, target, up);
 
     XMStoreFloat4x4(&mView, view);
+    
+    XMMATRIX inv = DirectX::XMMatrixInverse(nullptr, view);
+    XMStoreFloat4x4(&mInvView, inv);
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
@@ -142,17 +153,17 @@ void CameraController::CreateViewMatrix()
 void CameraController::CreateProjectionMatrix(D3D::DeviceContextPtr& p_imm_context)
 {
     auto& it = m_pCameras[mCurrentMode];
-    float nearZ = it->getNearZ();
-    float farZ = it->getFarZ();
 
     D3D11_VIEWPORT viewport = {};
     UINT numOfViewPorts = 1;
     p_imm_context->RSGetViewports(&numOfViewPorts, &viewport);
 
-    XMMATRIX proj = XMMatrixPerspectiveFovLH(30.0f * 0.01745f, viewport.Width / viewport.Height, nearZ, farZ);
-    
+    XMMATRIX proj = DirectX::XMMatrixPerspectiveFovLH(30.0f * 0.01745f, viewport.Width / viewport.Height, mNearPlane, mFarPlane);
 
     XMStoreFloat4x4(&mProjection, proj);
+
+    XMMATRIX inv = DirectX::XMMatrixInverse(nullptr, proj);
+    XMStoreFloat4x4(&mInvProj, inv);
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
@@ -174,14 +185,10 @@ DirectX::XMMATRIX CameraController::GetViewMatrix()
 
 DirectX::XMMATRIX CameraController::GetInvViewMatrix()
 {
-    Matrix view = mView;
-
-    //view._41 = 0.0f;
-    //view._42 = 0.0f;
-    //view._43 = 0.0f;
-    //view._44 = 1.0f;
-    XMMATRIX inverse = XMMatrixInverse(nullptr, XMLoadFloat4x4(&view));
-    return inverse;
+    //XMMATRIX view = XMLoadFloat4x4(&mView);
+    //XMMATRIX inverse = XMMatrixInverse(nullptr, view);
+    //return inverse;
+    return XMLoadFloat4x4(&mInvView);
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
@@ -195,17 +202,24 @@ DirectX::XMMATRIX CameraController::GetProjMatrix(D3D::DeviceContextPtr& p_imm_c
 
 DirectX::XMMATRIX CameraController::GetInvProjMatrix(D3D::DeviceContextPtr& p_imm_context)
 {
-    XMMATRIX inverse = XMLoadFloat4x4(&mProjection);
-    return XMMatrixInverse(nullptr, inverse);
+    return XMLoadFloat4x4(&mInvProj);
 }
 
 DirectX::XMMATRIX CameraController::GetInvProjViewMatrix(D3D::DeviceContextPtr& p_imm_context)
 {
-    // (VP)^-1 = P^-1 * V^-1
+    //*** (VP)^-1 = P^-1 * V^-1 ***
 
-    XMMATRIX P = XMLoadFloat4x4(&mProjection); 
-    XMMATRIX V = XMLoadFloat4x4(&mView);
-    return XMMatrixInverse(nullptr, V * P);
+    //XMMATRIX P = XMLoadFloat4x4(&mProjection); 
+    //XMMATRIX V = XMLoadFloat4x4(&mView);
+    //XMMATRIX VP = XMMatrixMultiply(V, P);
+    //XMMATRIX V_P = V * P;
+    //XMMATRIX InvVP = XMMatrixInverse(nullptr, V * P);
+    //XMMATRIX R = VP * InvVP;
+    //XMVECTOR v = XMVectorSet(0, 3, 0, 1);
+    //XMVECTOR v1 = XMVector4Transform(v, InvVP);
+    //XMVECTOR v2 = XMVector4Transform(v, XMMatrixTranspose(InvVP));
+    //return InvVP;
+    return DirectX::XMMatrixMultiply(DirectX::XMLoadFloat4x4(&mInvProj), DirectX::XMLoadFloat4x4(&mInvView));
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
@@ -291,7 +305,7 @@ void CameraController::RenderUI()
         SliderFloat3("Camera Up", up.SetArray(), 0.0f, 1.0f);
 
 
-        MyArrayFromVector oPos = MyArrayFromVector(m_pOrthoView->getPosition());
+        MyArrayFromVector oPos = MyArrayFromVector(m_pOrthoView->GetPosition());
         SliderFloat3("Ortho Camera Pos", oPos.SetArray(), -1000.0f, 1000.0f);
 
         SliderFloat("Ortho Width", &mOrthoWidth, 1.0f, 2000.0f);

@@ -166,7 +166,6 @@
     <ClInclude Include="..\..\Engine\ComputeExecuter.h" />
     <ClInclude Include="..\..\Engine\CustomLight.h" />
     <ClInclude Include="..\..\Engine\DataStructures.h" />
-    <ClInclude Include="..\..\Engine\DirectionalLight.h" />
     <ClInclude Include="..\..\Engine\GameSystem.h" />
     <ClInclude Include="..\..\Engine\Light.h" />
     <ClInclude Include="..\..\Engine\LightController.h" />
@@ -175,11 +174,9 @@
     <ClInclude Include="..\..\Engine\Particle.h" />
     <ClInclude Include="..\..\Engine\ParticleManager.h" />
     <ClInclude Include="..\..\Engine\PhysicsManager.h" />
-    <ClInclude Include="..\..\Engine\PointLight.h" />
     <ClInclude Include="..\..\Engine\QuadTree.h" />
     <ClInclude Include="..\..\Engine\Settings.h" />
     <ClInclude Include="..\..\Engine\Singleton.h" />
-    <ClInclude Include="..\..\Engine\SpotLight.h" />
     <ClInclude Include="..\..\Engine\TraceCamera.h" />
     <ClInclude Include="..\..\Engine\UIClient.h" />
     <ClInclude Include="..\..\Engine\UIRenderer.h" />
@@ -191,16 +188,13 @@
     <ClCompile Include="..\..\Engine\Source\CameraController.cpp" />
     <ClCompile Include="..\..\Engine\Source\ComputeExecuter.cpp" />
     <ClCompile Include="..\..\Engine\Source\CustomLight.cpp" />
-    <ClCompile Include="..\..\Engine\Source\DirectionalLight.cpp" />
     <ClCompile Include="..\..\Engine\Source\GameSystem.cpp" />
     <ClCompile Include="..\..\Engine\Source\LightController.cpp" />
     <ClCompile Include="..\..\Engine\Source\MainCamera.cpp" />
     <ClCompile Include="..\..\Engine\Source\OrthoView.cpp" />
     <ClCompile Include="..\..\Engine\Source\ParticleManager.cpp" />
     <ClCompile Include="..\..\Engine\Source\PhysicsManager.cpp" />
-    <ClCompile Include="..\..\Engine\Source\PointLight.cpp" />
     <ClCompile Include="..\..\Engine\Source\Singleton.cpp" />
-    <ClCompile Include="..\..\Engine\Source\SpotLight.cpp" />
     <ClCompile Include="..\..\Engine\Source\TraceCamera.cpp" />
     <ClCompile Include="..\..\Engine\Source\UIRenderer.cpp" />
   </ItemGroup>

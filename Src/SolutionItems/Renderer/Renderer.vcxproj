@@ -184,7 +184,6 @@
     <ClInclude Include="..\..\Renderer\Texture.h" />
     <ClInclude Include="..\..\Renderer\TextureHolder.h" />
     <ClInclude Include="..\..\Renderer\VertexDecleration.h" />
-    <ClInclude Include="..\..\Renderer\ZPartitioningShadow.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Renderer\ComputedTexture.cpp" />
@@ -209,7 +208,6 @@
     <ClCompile Include="..\..\Renderer\Source\SwapChain.cpp" />
     <ClCompile Include="..\..\Renderer\Source\Texture.cpp" />
     <ClCompile Include="..\..\Renderer\Source\VertexDecleration.cpp" />
-    <ClCompile Include="..\..\Renderer\Source\ZPartitioningShadow.cpp" />
     <ClCompile Include="..\..\Renderer\SubView.cpp" />
     <ClCompile Include="..\..\Renderer\TextureHolder.cpp" />
   </ItemGroup>

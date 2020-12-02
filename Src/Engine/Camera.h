@@ -46,26 +46,26 @@ public:
         mRotation = Quaternion();
     }
 
-    inline Vector3& getPosition()
+    inline Vector3& GetPosition()
     {
         return mPos;
     }
 
-    inline Vector3& getTargetVector()
+    inline Vector3& GetTargetVector()
     {
         return mTarget;
     }
-    inline Vector3& getForwardVector()
+    inline Vector3& GetForwardVector()
     {
         mForward = Vector3::Normalize(mTarget - mPos);
         return mForward;
     }
-    inline Vector3& getUpVector()
+    inline Vector3& GetUpVector()
     {
         return mUp;
     }
-    inline float getNearZ() { return mNear; }
-    inline float getFarZ() { return mFar; }
+    inline float GetNearZ() { return mNear; }
+    inline float GetFarZ() { return mFar; }
 
     virtual ~Camera() {}
 };

@@ -114,6 +114,10 @@ void SceneF::PreCompute(std::unique_ptr<GraphicsEngine>& p_graphics)
 
 void SceneF::Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time)
 {
+}
+
+void SceneF::RenderUI()
+{
 	ENGINE.GetUIRenderer()->SetNextWindowSettings(Vector2(0, SCREEN_HEIGHT - 200), Vector2(300, 200));
 	ENGINE.GetUIRenderer()->BeginRenderingNewWindow("Motion");
 	if (ImGui::Button("Idle")) m_pPlayer->GetComponent<NewMeshComponent>()->Play("Idle");
@@ -121,6 +125,7 @@ void SceneF::Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_t
 	if (ImGui::Button("Running")) m_pPlayer->GetComponent<NewMeshComponent>()->Play("Running");
 
 	ENGINE.GetUIRenderer()->FinishRenderingWindow();
+
 }
 
 //----------------------------------------------------------------------------------------------------------------------------

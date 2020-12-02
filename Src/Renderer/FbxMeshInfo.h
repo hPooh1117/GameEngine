@@ -35,7 +35,7 @@ namespace FbxInfo
 	struct Material
 	{
 		DirectX::XMFLOAT4 color = {1.0f, 1.0f, 1.0f, 1.0f};
-		std::shared_ptr<NewTexture> texture;
+		std::shared_ptr<Texture> texture;
 		std::wstring texture_filename;
 
 		Material() = default;
@@ -45,7 +45,7 @@ namespace FbxInfo
 
 	struct Texture
 	{
-		std::unique_ptr<NewTexture> p_texture;
+		std::unique_ptr<Texture> p_texture;
 		const wchar_t* filename;
 	};
 

@@ -83,8 +83,8 @@ void SceneLoading::Render(std::unique_ptr<GraphicsEngine>& p_graphics, float ela
 	mpSprLoadingString->Render(
 		immContext,
 		m_pBasicQuad.get(),
-		Vector2(SCREEN_WIDTH * 0.58f, SCREEN_HEIGHT * 0.57f),
-		Vector2(1280.0f, 720.0f),
+		Vector2(SCREEN_WIDTH * 0.7f, SCREEN_HEIGHT * 0.73f),
+		Vector2(640.0f, 360.0f),
 		//Vector2(timer % 6 * 1280.0f + 2.0f, timer / 10 * 720),
 		Vector2(0, 0),
 		//Vector2(0, 0),
@@ -93,5 +93,9 @@ void SceneLoading::Render(std::unique_ptr<GraphicsEngine>& p_graphics, float ela
 
 	timer++;
 	if (frame >= 59) timer = 0;
+}
+
+void SceneLoading::RenderUI()
+{
 }
 

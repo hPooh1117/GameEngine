@@ -76,10 +76,10 @@ Swapchain::Swapchain(Microsoft::WRL::ComPtr<ID3D11Device>& device, HWND& hwnd)
     D3D11_TEXTURE2D_DESC txDesc = {};
     txDesc.Width = SCREEN_WIDTH;
     txDesc.Height = SCREEN_HEIGHT;
-    txDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    txDesc.Format = DXGI_FORMAT_D32_FLOAT;
     txDesc.Usage = D3D11_USAGE_DEFAULT;
     txDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-    txDesc.MipLevels = 1;
+    txDesc.MipLevels = 0;
     txDesc.SampleDesc.Count = 1;
     txDesc.SampleDesc.Quality = 0;
     txDesc.MiscFlags = 0;

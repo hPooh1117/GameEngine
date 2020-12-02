@@ -16,7 +16,7 @@
 //{
 //	auto hr = S_OK;
 //
-//	hr = ResourceManager::LoadTexFile(device, filename, m_pSRV.GetAddressOf(), &mTexDesc);
+//	hr = ResourceManager::LoadTexFile(device, filename, mpSRV.GetAddressOf(), &mTexDesc);
 //
 //	//-->Create SamplerState
 //	FLOAT borderColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -47,7 +47,7 @@
 //{
 //	auto hr = S_OK;
 //
-//	hr = ResourceManager::CreateDummyTexture(device, m_pSRV);
+//	hr = ResourceManager::CreateDummyTexture(device, mpSRV);
 //
 //	//-->Create SamplerState
 //	FLOAT borderColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -108,7 +108,7 @@
 //		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 //		srvDesc.Texture2D.MostDetailedMip = 0;
 //		srvDesc.Texture2D.MipLevels = 1;
-//		hr = device->CreateShaderResourceView(texture2D.Get(), &srvDesc, m_pSRV.GetAddressOf());
+//		hr = device->CreateShaderResourceView(texture2D.Get(), &srvDesc, mpSRV.GetAddressOf());
 //		_ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 //
 //	}
@@ -174,12 +174,12 @@
 //		return;
 //	}
 //
-//	//if (m_pSRV == nullptr) return;
+//	//if (mpSRV == nullptr) return;
 //
-//	imm_context->PSSetShaderResources(slot, 1, m_pSRV.GetAddressOf());
+//	imm_context->PSSetShaderResources(slot, 1, mpSRV.GetAddressOf());
 //	imm_context->PSSetSamplers(slot, 1, m_pSamplerState.GetAddressOf());
 //
-//	imm_context->DSSetShaderResources(slot, 1, m_pSRV.GetAddressOf());
+//	imm_context->DSSetShaderResources(slot, 1, mpSRV.GetAddressOf());
 //	imm_context->DSSetSamplers(slot, 1, m_pSamplerState.GetAddressOf());
 //
 //}
@@ -193,31 +193,31 @@
 ////----------------------------------------------------------------------------------------------------------------------------
 #pragma endregion
 
-NewTexture::NewTexture()
+Texture::Texture()
 {
 }
 
-NewTexture::~NewTexture()
+Texture::~Texture()
 {
 }
 
-bool NewTexture::Load(D3D::DevicePtr& device, const wchar_t* filename)
+bool Texture::Load(D3D::DevicePtr& device, const wchar_t* filename)
 {
 	auto hr = S_OK;
 
 	D3D11_TEXTURE2D_DESC tex2D = {};
-	hr = ResourceManager::LoadTexFile(device, filename, m_pSRV.GetAddressOf(), &tex2D);
+	hr = ResourceManager::LoadTexFile(device, filename, mpSRV.GetAddressOf(), &tex2D);
 	mTextureSize.x = static_cast<float>(tex2D.Width);
 	mTextureSize.y = static_cast<float>(tex2D.Height);
 	return true;
 
 }
 
-bool NewTexture::Load(D3D::DevicePtr& device)
+bool Texture::Load(D3D::DevicePtr& device)
 {
 	auto hr = S_OK;
 
-	hr = ResourceManager::CreateDummyTexture(device, m_pSRV);
+	hr = ResourceManager::CreateDummyTexture(device, mpSRV);
 	mTextureSize.x = 1.0f;
 	mTextureSize.y = 1.0f;
 
@@ -227,7 +227,7 @@ bool NewTexture::Load(D3D::DevicePtr& device)
 
 }
 
-bool NewTexture::Create(D3D::DevicePtr& device, UINT width, UINT height, DXGI_FORMAT format)
+bool Texture::Create(D3D::DevicePtr& device, UINT width, UINT height, DXGI_FORMAT format)
 {
 	D3D::Texture2DPtr texture2D = nullptr;
 
@@ -257,7 +257,7 @@ bool NewTexture::Create(D3D::DevicePtr& device, UINT width, UINT height, DXGI_FO
 		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		srvDesc.Texture2D.MostDetailedMip = 0;
 		srvDesc.Texture2D.MipLevels = 1;
-		auto hr = device->CreateShaderResourceView(texture2D.Get(), &srvDesc, m_pSRV.GetAddressOf());
+		auto hr = device->CreateShaderResourceView(texture2D.Get(), &srvDesc, mpSRV.GetAddressOf());
 		_ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
 	
@@ -265,7 +265,7 @@ bool NewTexture::Create(D3D::DevicePtr& device, UINT width, UINT height, DXGI_FO
 
 }
 
-void NewTexture::Set(D3D::DeviceContextPtr& imm_context, int slot, bool flag)
+void Texture::Set(D3D::DeviceContextPtr& imm_context, int slot, bool flag)
 {
 	if (!flag) // 空のテクスチャを送る
 	{
@@ -276,8 +276,8 @@ void NewTexture::Set(D3D::DeviceContextPtr& imm_context, int slot, bool flag)
 		return;
 	}
 
-	//if (m_pSRV == nullptr) return;
+	//if (mpSRV == nullptr) return;
 
-	imm_context->PSSetShaderResources(slot, 1, m_pSRV.GetAddressOf());
-	imm_context->DSSetShaderResources(slot, 1, m_pSRV.GetAddressOf());
+	imm_context->PSSetShaderResources(slot, 1, mpSRV.GetAddressOf());
+	imm_context->DSSetShaderResources(slot, 1, mpSRV.GetAddressOf());
 }

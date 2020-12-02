@@ -40,7 +40,7 @@ LightController::LightController(D3D::DevicePtr& p_device)
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-bool LightController::Init(unsigned int pointLightNum, unsigned int spotLightNum)
+bool LightController::Init(unsigned int pointLightNum, unsigned int spotLightNum, bool directional_enable)
 {
 
 	if (!mPointLights.empty()) mPointLights.clear();
@@ -48,6 +48,13 @@ bool LightController::Init(unsigned int pointLightNum, unsigned int spotLightNum
 
 	mPointLights.resize(pointLightNum < NUM_POINT_LIGHT ? pointLightNum : NUM_POINT_LIGHT);
 	mSpotLights.resize(spotLightNum < NUM_SPOT_LIGHT ? spotLightNum : NUM_SPOT_LIGHT);
+
+
+	// 使用するライトの情報を保持
+	mLightConfig += directional_enable > 0 * EDirectionalLight;
+	mLightConfig += pointLightNum > 0 * EPointLight;
+	mLightConfig += spotLightNum > 0 * ESpotLight;
+
 
 
 	Log::Info("[LIGHT] Initialized.");
@@ -152,6 +159,7 @@ void LightController::UpdateSpotLights(float elapsed_time)
 void LightController::ActivatePointLight(unsigned int index, bool b_activate)
 {
 	mPointLights[index].b_enable = b_activate;
+	if (!(mLightConfig & EPointLight)) mLightConfig += EPointLight;
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
@@ -159,6 +167,7 @@ void LightController::ActivatePointLight(unsigned int index, bool b_activate)
 void LightController::ActivateSpotLight(unsigned int index, bool b_activate)
 {
 	mSpotLights[index].b_enable = b_activate;
+	if (!(mLightConfig & ESpotLight)) mLightConfig += ESpotLight;
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
@@ -195,6 +204,7 @@ void LightController::SetPointData(
 	mPointLights.at(index).pos = pos;
 	mPointLights.at(index).color = color;
 	mPointLights.at(index).range = range;
+	if (!(mLightConfig & EPointLight)) mLightConfig += EPointLight;
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
@@ -226,6 +236,7 @@ void LightController::SetSpotData(
 	mSpotLights.at(index).inner_corn = nearCorn;
 	mSpotLights.at(index).outer_corn = farCorn;
 	mSpotLights.at(index).range = range;
+	if (!(mLightConfig & ESpotLight)) mLightConfig += ESpotLight;
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
@@ -240,6 +251,7 @@ void LightController::SetDataForGPU(D3D::DeviceContextPtr& pImmContext, CameraCo
 	cb.directionalLight.env_alpha = mEnvironmentMapAlpha;
 	cb.directionalLight.tess_factor = mTessFactor;
 	cb.directionalLight.time = mTimer;
+	cb.directionalLight.light_config = mLightConfig;
 
 	for (auto i = 0u; i < NUM_POINT_LIGHT; ++i)
 	{

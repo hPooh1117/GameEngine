@@ -10,7 +10,8 @@
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-UIRenderer::UIRenderer(D3D::DevicePtr& p_device)
+UIRenderer::UIRenderer(D3D::DevicePtr& p_device):
+	mUIConfig(0)
 {
 	mpSpriteFont = std::make_unique<Sprite>(p_device, L"./Data/Fonts/font0.png");
 	mpSprite = std::make_unique<Sprite>(p_device);
@@ -25,6 +26,8 @@ UIRenderer::UIRenderer(D3D::DevicePtr& p_device)
 void UIRenderer::UpdateFrame()
 {
 #ifdef USE_IMGUI
+
+
 	// imgui new frame
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
@@ -40,10 +43,11 @@ void UIRenderer::BeginRenderingNewWindow(const char* window_title, bool isOpen)
 
 #ifdef USE_IMGUI
 
+
 	// code of render
 	//static bool f_open = true;
 	//ImGui::Begin(window_title, &mbFileOpen);
-	ImGuiWindowFlags flags = ImGuiWindowFlags_MenuBar;
+	ImGuiWindowFlags flags = mUIConfig;
 	ImGui::Begin(window_title, &mbFileOpen, flags);
 
 
@@ -55,6 +59,7 @@ void UIRenderer::BeginRenderingNewWindow(const char* window_title, bool isOpen)
 void UIRenderer::RenderUIQueue()
 {
 #ifdef USE_IMGUI
+
 
 	if (mUIClientsTable.empty()) return;
 
@@ -79,7 +84,7 @@ void UIRenderer::FinishRenderingWindow()
 
 	ImGui::End();
 
-
+	mUIConfig = 0;
 
 
 #endif // USE_IMGUI
@@ -151,6 +156,12 @@ void UIRenderer::SetNextWindowSettings(const Vector2 &pos, const Vector2 &size, 
 	ImGui::SetNextWindowPos(ImVec2(pos.x, pos.y), ImGuiCond_Once, ImVec2(pivot.x, pivot.y));
 	ImGui::SetNextWindowSize(ImVec2(size.x, size.y), ImGuiCond_Once);
 
+}
+
+void UIRenderer::SetNextUIConfig(bool b_menubar)
+{
+	mUIConfig = 0;
+	if (b_menubar) mUIConfig |= ImGuiWindowFlags_MenuBar;
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------

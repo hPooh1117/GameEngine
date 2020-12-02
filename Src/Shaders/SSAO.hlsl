@@ -3,7 +3,6 @@
 //#include "H_2DSprite.hlsli"
 #include "H_Functions.hlsli"
 #include "H_DirectionalLight.hlsli"
-#include "H_ShadowMap.hlsli"
 
 // 参考資料
 // First
@@ -15,7 +14,6 @@
 // http://marina.sys.wakayama-u.ac.jp/~tokoi/?date=20101122
 // https://enginetrouble.net/2016/10/reconstructing-world-position-from-depth-2016.html
 
-#pragma warning(disable : 3571)
 //--------------------------------------------
 //	テクスチャ
 //--------------------------------------------
@@ -35,20 +33,21 @@
 //Texture2D depth_texture : register(t7);
 //SamplerState depth_sampler : register(s7);
 
-Texture2D albedo_texture : register(t0);
-SamplerState decal_sampler : register(s0);
-SamplerState border_sampler : register(s1);
-Texture2D normal_texture: register(t1);
-Texture2D position_texture : register(t2);
-Texture2D shadow_texture : register(t3);
-Texture2D depth_texture : register(t4);
-Texture2D prelight_texture : register(t5);
-Texture2D diffuse_texture : register(t6);
-Texture2D specular_texture : register(t7);
-Texture2D skybox_texture : register(t8);
-Texture2D      noise_texture : register(t9);
-SamplerState   noise_sampler : register(s9);
-
+Texture2D albedo_texture        : register(t0);
+SamplerState decal_sampler      : register(s0);
+SamplerState border_sampler     : register(s1);
+Texture2D normal_texture        : register(t1);
+Texture2D position_texture      : register(t2);
+Texture2D shadow_texture        : register(t3);
+Texture2D<float4> depth_texture : register(t4);
+Texture2D diffuse_texture       : register(t5);
+Texture2D specular_texture      : register(t6);
+Texture2D skybox_texture        : register(t7);
+Texture2D prelight_texture      : register(t8);
+							    
+Texture2D      noise_texture    : register(t9);
+SamplerState   noise_sampler    : register(s9);
+Texture2D ambient_texture : register(t10);
 //--------------------------------------------
 //	グローバル変数
 //--------------------------------------------
@@ -57,9 +56,23 @@ cbuffer CBPerMatrix : register(b0)
 	row_major float4x4 matWVP;
 	row_major float4x4 world;
 
+	float4x4 inv_viewproj;
+	float4x4 inv_view_mat;
+	float4x4 inv_proj_mat;
+};
+
+cbuffer CBPerMeshMat : register(b1)
+{
 	float4 mat_color;
 
-};
+	float3 specColor;
+
+	float gMetalness;
+	float gRoughness;
+	float gDiffuse;
+	float gSpecular;
+	int   gTextureConfig;
+}
 
 
 //----------------------------------
@@ -84,6 +97,31 @@ struct PS_Input
 //	グローバル変数
 //--------------------------------------------
 static const float SAMPLING_RATIO = 2.0f;
+static const float BIAS = 0.0;
+static const uint MAX_SAMPLES = 16;
+
+
+cbuffer CBPerAO : register(b5)
+{
+	row_major float4x4 inv_proj;
+	row_major float4x4 inv_view;
+	row_major float4x4 proj;
+	row_major float4x4 view;
+
+	float2   screenSize;
+	float    radius;
+	float    power;
+
+	float    kernelSampleSize;
+	float    cameraNearZ;
+	float    cameraFarZ;
+	float    kernelSampleSize_rcp;
+
+	float2   screenSize_rcp;
+	float2   noise_scale;
+	float4   sample_pos[MAX_SAMPLES];
+}
+
 
 //--------------------------------------------
 //	エントリーポイント
@@ -214,15 +252,15 @@ float UnLinearizeDepth(float depth, float near, float far)
 }
 
 
-PS_Output_SSAO PSmain(PS_Input input)
+PS_Output_SSAO PSmain2(PS_Input input)
 {
 	PS_Output_SSAO output = (PS_Output_SSAO)0;
 
-	float2 depthBufferColor = depth_texture.Sample(border_sampler, input.texcoord).rg;
+	//float2 depthBufferColor = depth_texture.Sample(border_sampler, input.texcoord).rg;
 
-	float depth = depthBufferColor.r;
+	float depth = depth_texture.Sample(border_sampler, input.texcoord).r;
 	float4 projP = float4(input.projPos.xy, depth, 1);
-	float4 viewP = mul(projP, inv_proj);
+	float4 viewP = mul(inv_proj_mat, projP);
 	viewP /= viewP.w;
 
 	//float4 wPos = mul(projP, inv_viewproj);
@@ -240,7 +278,7 @@ PS_Output_SSAO PSmain(PS_Input input)
 	float occlusion = 0.0;
 
 	[unroll]
-	for (unsigned int i = 0; i < (unsigned int)kernelSize; ++i)
+	for (uint i = 0; i < MAX_SAMPLES; ++i)
 	{
 		float3 samplePos = mul(sample_pos[i].xyz, TBN);
 		samplePos = samplePos * radius + viewP.xyz;
@@ -258,10 +296,10 @@ PS_Output_SSAO PSmain(PS_Input input)
 		sampleDepth = sampleViewPos.z / sampleViewPos.w;
 
 		float rangeCheck = smoothstep(0.0, 1.0, radius / abs(viewP.z - sampleDepth));
-		occlusion += rangeCheck * step(sampleDepth, samplePos.z + ambient_bias) * NdotS;
+		occlusion += rangeCheck * step(sampleDepth, samplePos.z + BIAS) * NdotS;
 	}
 
-	occlusion = 1.0 - (occlusion / kernelSize);
+	occlusion = 1.0 - (occlusion / (float)MAX_SAMPLES);
 	float finalOcclusion = pow(abs(occlusion), power);
 
 
@@ -274,6 +312,27 @@ PS_Output_SSAO PSmain(PS_Input input)
 	output.ambient = float4(finalOcclusion, finalOcclusion, finalOcclusion, 1.0);
 
 	output.result = float4((diffuse * output.ambient.xyz * albedo * shadow + specular * output.ambient.xyz * albedo * shadow + skybox)  , 1);
+
+	return output;
+}
+
+PS_Output_SSAO PSmain(PS_Input input)
+{
+	PS_Output_SSAO output = (PS_Output_SSAO)0;
+
+
+
+	float3 diffuse = diffuse_texture.Sample(decal_sampler, input.texcoord).xyz;
+	float3 specular = specular_texture.Sample(decal_sampler, input.texcoord).xyz;
+	float3 albedo = albedo_texture.Sample(decal_sampler, input.texcoord).xyz;
+	float3 shadow = shadow_texture.Sample(decal_sampler, input.texcoord).xyz;
+	float3 skybox = skybox_texture.Sample(decal_sampler, input.texcoord).xyz;
+
+	float3 finalOcclusion = ambient_texture.Sample(decal_sampler, input.texcoord).rgb;
+
+	output.ambient = float4(finalOcclusion, 1.0);
+
+	output.result = float4((diffuse * output.ambient.xyz * albedo * shadow + specular * output.ambient.xyz * albedo * shadow + skybox), 1);
 
 	return output;
 }

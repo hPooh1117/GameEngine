@@ -4,7 +4,7 @@
 class GraphicsEngine;
 class Sprite;
 class AmbientOcclusion;
-
+class BlurExecuter;
 
 class SSAOPass : public RenderPass
 {
@@ -16,7 +16,8 @@ private:
 	std::unique_ptr<AmbientOcclusion> mpAOPreparation;
 	std::unique_ptr<RenderTarget> mpBlurPassTargets;
 
-
+	std::unique_ptr<BlurExecuter> mpBlurPass;
+	bool mbIsUsingCS;
 public:
 	SSAOPass();
 	~SSAOPass() = default;

@@ -197,7 +197,7 @@ UINT NewMeshRenderer::ChooseShaderIdForSkybox(UINT current_pass)
 	{
 	case RenderPassID::EForwardPass:
 		return ShaderID::ESkybox;
-	case RenderPassID::EDefferedPass:
+	case RenderPassID::EDeferredPass:
 		return ShaderID::EDefferedSkybox;
 	case RenderPassID::ECubeMapPass:
 		return ShaderID::EMakeCubeMap;

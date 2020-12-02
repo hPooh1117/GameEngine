@@ -21,7 +21,7 @@ enum RenderPassID
 {
 	EForwardPass,
 	EShadowPass,
-	EDefferedPass,
+	EDeferredPass,
 	ESSAOPass,
 	EPostEffectPass,
 	ECubeMapPass,
@@ -95,7 +95,7 @@ protected:
 public:
 	const std::unique_ptr<Shader>&          GetShaderPtr(UINT shader_id);
 	auto& GetRenderTargetManager() { return mpRenderTargetManager; }
-
+	
 	//const std::unique_ptr<RenderTarget>& GetRenderTargetPtr() { return mpRenderTargets; }
 	//RenderTarget* GetRenderTargetPtr(UINT id) { if (id < 0 || id >= mpRenderTargetTable.size()) return nullptr; return mpRenderTargetTable[id].get(); }
 
@@ -105,5 +105,6 @@ public:
 	void CheckActivatedShaders();
 	void ShowShaderList(std::unique_ptr<GraphicsEngine>& p_graphics, const char* current_pass);
 	void ReloadShaderFile(std::unique_ptr<GraphicsEngine>& p_graphics);
+	static void Clear();
 	//void SetBackBuffer(std::unique_ptr<GraphicsEngine>& p_graphics);
 };

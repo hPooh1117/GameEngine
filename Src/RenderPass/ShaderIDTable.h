@@ -35,7 +35,7 @@ enum ShaderID : unsigned int
 	EReflectSea, // using cubemap
 	ECubeMapEnv,
 
-	// DefferedPass
+	// DeferredPass
 	EDefferedSkybox,
 	EDefferedPhong,
 	EDefferedPhongForSkinned,
@@ -53,11 +53,17 @@ enum ShaderID : unsigned int
 	// ShadowPasses
 	EToShadow,
 	EToShadowForSkinning,
+
 	// SSAOPasses
-	ESSAO,
+	ESSAOCompute,
+	ESSAOPixel,
 	EBlur,
+
 	// PostProcessPasses
 	EPostEffect,
+	ECS_Desaturate,
+	ECS_GaussianHorizontal,
+	ECS_GaussianVertical,
 
 	ENUM_SHADER_MAX,
 

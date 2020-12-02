@@ -30,43 +30,43 @@ SamplerState decal_sampler : register(s0);
 //}
 
 
-static const half KERNEL_WEIGHTS[KERNEL_RANGE] =
-//----------------------------------------------------------------------------------------------------------------------------------
-#if KERNEL_RANGE == 2
-{ 0.369459, 0.31527 };
-#endif
-#if KERNEL_RANGE == 3
-{ 0.265458, 0.226523, 0.140748 };
-#endif
-#if KERNEL_RANGE == 4
-{ 0.235473, 0.200936, 0.12485, 0.056477 };
-#endif
-#if KERNEL_RANGE == 5
-#if USE_LEARNOPENGL_KERNEL
-{ 0.227027, 0.1945946, 0.1216216, 0.054054, 0.016216 };
-#else
-{ 0.22703, 0.193731, 0.120373, 0.054452, 0.017929 };
-#endif
-#endif
-#if KERNEL_RANGE == 6
-{ 0.225096, 0.192081, 0.119348, 0.053988, 0.017776, 0.004259 };
-#endif
-#if KERNEL_RANGE == 7
-{ 0.224762, 0.191796, 0.119171, 0.053908, 0.01775, 0.004253, 0.000741 };
-#endif
-#if KERNEL_RANGE == 8
-{ 0.22472, 0.19176, 0.119148, 0.053898, 0.017747, 0.004252, 0.000741, 0.000094 };
-#endif
-#if KERNEL_RANGE == 9
-{ 0.224716, 0.191757, 0.119146, 0.053897, 0.017746, 0.004252, 0.000741, 0.000094, 0.000009 };
-#endif
-#if KERNEL_RANGE == 10
-{ 0.224716, 0.191756, 0.119146, 0.053897, 0.017746, 0.004252, 0.000741, 0.000094, 0.000009, 0.000001 };
-#endif
-#if KERNEL_RANGE == 11
-{ 0.224716, 0.191756, 0.119146, 0.053897, 0.017746, 0.004252, 0.000741, 0.000094, 0.000009, 0.000001, 0 };
-#endif
-//----------------------------------------------------------------------------------------------------------------------------------
+//static const half KERNEL_WEIGHTS[KERNEL_RANGE] =
+////----------------------------------------------------------------------------------------------------------------------------------
+//#if KERNEL_RANGE == 2
+//{ 0.369459, 0.31527 };
+//#endif
+//#if KERNEL_RANGE == 3
+//{ 0.265458, 0.226523, 0.140748 };
+//#endif
+//#if KERNEL_RANGE == 4
+//{ 0.235473, 0.200936, 0.12485, 0.056477 };
+//#endif
+//#if KERNEL_RANGE == 5
+//#if USE_LEARNOPENGL_KERNEL
+//{ 0.227027, 0.1945946, 0.1216216, 0.054054, 0.016216 };
+//#else
+//{ 0.22703, 0.193731, 0.120373, 0.054452, 0.017929 };
+//#endif
+//#endif
+//#if KERNEL_RANGE == 6
+//{ 0.225096, 0.192081, 0.119348, 0.053988, 0.017776, 0.004259 };
+//#endif
+//#if KERNEL_RANGE == 7
+//{ 0.224762, 0.191796, 0.119171, 0.053908, 0.01775, 0.004253, 0.000741 };
+//#endif
+//#if KERNEL_RANGE == 8
+//{ 0.22472, 0.19176, 0.119148, 0.053898, 0.017747, 0.004252, 0.000741, 0.000094 };
+//#endif
+//#if KERNEL_RANGE == 9
+//{ 0.224716, 0.191757, 0.119146, 0.053897, 0.017746, 0.004252, 0.000741, 0.000094, 0.000009 };
+//#endif
+//#if KERNEL_RANGE == 10
+//{ 0.224716, 0.191756, 0.119146, 0.053897, 0.017746, 0.004252, 0.000741, 0.000094, 0.000009, 0.000001 };
+//#endif
+//#if KERNEL_RANGE == 11
+//{ 0.224716, 0.191756, 0.119146, 0.053897, 0.017746, 0.004252, 0.000741, 0.000094, 0.000009, 0.000001, 0 };
+//#endif
+////----------------------------------------------------------------------------------------------------------------------------------
 
 
 
@@ -76,13 +76,13 @@ static const half KERNEL_WEIGHTS[KERNEL_RANGE] =
 #define PIXEL_CACHE_SIZE SCREEN_X
 #endif
 
-cbuffer CBuferForBlur : register(b1)
-{
-	uint   gKernelRange;
-	uint   gStrength;
-	uint   gbIsHorizontal;
-	float  gWeights[10];
-}
+//cbuffer CBuferForBlur : register(b1)
+//{
+//	uint   gKernelRange;
+//	uint   gStrength;
+//	uint   gbIsHorizontal;
+//	float  gWeights[10];
+//}
 
 //groupshared half3 gColorLine[PIXEL_CACHE_SIZE];
 
@@ -198,6 +198,10 @@ cbuffer CBuferForBlur : register(b1)
 //	outputTexture[dispatchTid.xy] = float4(0, 1, 0, 1);
 //}
 
+
+#if GAUSSIAN_LEVEL == 0
+
+// Sigma : 1.34, KernelSize : 9
 static const int GAUSS_KERNEL = 9;
 static const float gaussianWeightsNormalized[GAUSS_KERNEL] = {
 	0.004112,
@@ -210,7 +214,60 @@ static const float gaussianWeightsNormalized[GAUSS_KERNEL] = {
 	0.026563,
 	0.004112
 };
+static const int gaussianOffsets[GAUSS_KERNEL] = { -4,-3,-2,-1,0,1,2,3,4 };
+
+
+#else
+// Sigma : 6.9, KernelSize : 33
+static const int GAUSS_KERNEL = 33;
+static const float gaussianWeightsNormalized[GAUSS_KERNEL] = {
+	0.004013,
+	0.005554,
+	0.007527,
+	0.00999,
+	0.012984,
+	0.016524,
+	0.020594,
+	0.025133,
+	0.030036,
+	0.035151,
+	0.040283,
+	0.045207,
+	0.049681,
+	0.053463,
+	0.056341,
+	0.058141,
+	0.058754,
+	0.058141,
+	0.056341,
+	0.053463,
+	0.049681,
+	0.045207,
+	0.040283,
+	0.035151,
+	0.030036,
+	0.025133,
+	0.020594,
+	0.016524,
+	0.012984,
+	0.00999,
+	0.007527,
+	0.005554,
+	0.004013
+};
 static const int gaussianOffsets[GAUSS_KERNEL] = {
+	-16,
+	-15,
+	-14,
+	-13,
+	-12,
+	-11,
+	-10,
+	-9,
+	-8,
+	-7,
+	-6,
+	-5,
 	-4,
 	-3,
 	-2,
@@ -219,8 +276,21 @@ static const int gaussianOffsets[GAUSS_KERNEL] = {
 	1,
 	2,
 	3,
-	4
+	4,
+	5,
+	6,
+	7,
+	8,
+	9,
+	10,
+	11,
+	12,
+	13,
+	14,
+	15,
+	16,
 };
+#endif
 
 static const int TILE_BORDER = GAUSS_KERNEL / 2;
 static const int CACHE_SIZE = TILE_BORDER + KERNEL_DIMENSION + TILE_BORDER;

@@ -55,7 +55,6 @@ SceneB::SceneB(SceneManager * manager, Microsoft::WRL::ComPtr<ID3D11Device>& dev
     };
     ENGINE.SetRendererSettings(renderSettings);
 
-    mNumElement = 100;
 // ----------------------------------------------------------------------------------------------
 // アクター・コンポーネント作成
 // ----------------------------------------------------------------------------------------------
@@ -68,15 +67,15 @@ SceneB::SceneB(SceneManager * manager, Microsoft::WRL::ComPtr<ID3D11Device>& dev
     m_pPlayer->GetComponent<NewMeshComponent>()->RegisterMotion("Idle", L"./Data/Models/Female/Idle.fbx");
     m_pPlayer->GetComponent<NewMeshComponent>()->RegisterMotion("Walking", L"./Data/Models/Female/Walking.fbx");
     m_pPlayer->GetComponent<NewMeshComponent>()->RegisterMotion("Running", L"./Data/Models/Female/Running.fbx");
-    m_pPlayer->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Images/PBR/Metal_Panel_Normal.jpg", TextureConfig::ENormalMap);
-    m_pPlayer->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Images/PBR/Metal_Panel_Height.png", TextureConfig::EHeightMap);
+    //m_pPlayer->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Images/PBR/Metal_Panel_Normal.jpg", TextureConfig::ENormalMap);
+    //m_pPlayer->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Images/PBR/Metal_Panel_Height.png", TextureConfig::EHeightMap);
     m_pPlayer->GetComponent<NewMeshComponent>()->RegisterAdditionalShader(ShaderID::EToShadowForSkinning, ShaderUsage::EShader);
     ENGINE.GetActorManagerPtr()->AddActor(m_pPlayer);
 
     m_pPlayer->GetComponent<NewMeshComponent>()->Play("Idle");
 
     m_pField = Actor::Initialize(count++);
-    m_pField->SetPosition(Vector3(0, 0, 0));
+    m_pField->SetPosition(Vector3(0, -0.5f, 0));
     m_pField->SetScale(200, 200, 200);
     m_pField->AddComponent<NewMeshComponent>();
     m_pField->GetComponent<NewMeshComponent>()->RegisterMesh(MeshTypeID::E_StaticMesh, ShaderID::EDefferedSea, L"./Data/Models/OBJ/sea/sea.obj", FbxType::EDefault);
@@ -86,22 +85,6 @@ SceneB::SceneB(SceneManager * manager, Microsoft::WRL::ComPtr<ID3D11Device>& dev
     ENGINE.GetActorManagerPtr()->AddActor(m_pField);
 
 
-
-    //mSimpleBufferVec.resize(mNumElement);
-    //for (auto i = 0; i < mNumElement; ++i)
-    //{
-    //    mSimpleBufferVec[i].i = (i + 1) * 2;
-    //    mSimpleBufferVec[i].f = static_cast<float>(i + 1) * 2.0f;
-    //}
-    
-    //if (ENGINE.GetComputeExecuter()->CreateStructuredBufferOnGPU(device, ComputeExecuter::ESample, sizeof(SimpleBuffer), (UINT)mSimpleBufferVec.size(), mSimpleBufferVec.data()))
-    //    Log::Info("Created StructuredBuffer.(id : %d)", ComputeExecuter::ESample);
-    //if (ENGINE.GetComputeExecuter()->CreateStructuredBufferOnGPU(device, ComputeExecuter::ESample, sizeof(SimpleBuffer), (UINT)mSimpleBufferVec.size(), mSimpleBufferVec.data(), true))
-    //    Log::Info("Created OutputBuffer.(id : %d", ComputeExecuter::ESample);
-    //if (ENGINE.GetComputeExecuter()->CreateBufferSRV(device, ComputeExecuter::ESample))
-    //    Log::Info("Created SRV for CS.");
-    //if (ENGINE.GetComputeExecuter()->CreateBufferUAV(device, ComputeExecuter::ESample))
-    //    Log::Info("Created UAV for CS.");
 }
 
 void SceneB::InitializeScene()
@@ -170,38 +153,20 @@ void SceneB::PreCompute(std::unique_ptr<GraphicsEngine>& p_graphics)
 void SceneB::Render(std::unique_ptr<GraphicsEngine>& p_graphics,
     float elapsed_time)
 {
-    D3D::DevicePtr pDevice = p_graphics->GetDevicePtr();
-    D3D::DeviceContextPtr pImmContext = p_graphics->GetImmContextPtr();
+}
 
-    //static float flag = true;
-    //if (flag)
-    //{
-    //    SimpleBuffer *result = new SimpleBuffer[mNumElement];
-    //    ENGINE.GetComputeExecuter()->Compute(pImmContext, ComputeExecuter::ESample);
-    //    ENGINE.GetComputeExecuter()->FetchDataComputed<SimpleBuffer>(pDevice, pImmContext, ComputeExecuter::ESample, mNumElement, result);
-
-    //    for (int i = 0; i < mNumElement; ++i)
-    //    {
-    //        Log::Info("in : %d %f", mSimpleBufferVec[i].i, mSimpleBufferVec[i].f);
-
-    //        int resultI = mSimpleBufferVec[i].i + mSimpleBufferVec[i].i;
-    //        float resultF = sinf(mSimpleBufferVec[i].f) * cosf(mSimpleBufferVec[i].f);
-
-    //        Log::Info("CPU Result : %d %f", resultI, resultF);
-    //        Log::Info("GPU Result : %d %f\n", result[i].i, result[i].f);
-    //    }
-
-    //    delete[] result;
-    //    flag = false;
-    //}
-
+void SceneB::RenderUI()
+{
     ENGINE.GetUIRenderer()->SetNextWindowSettings(Vector2(0, SCREEN_HEIGHT - 200), Vector2(300, 200));
+    ENGINE.GetUIRenderer()->SetNextUIConfig(false);
     ENGINE.GetUIRenderer()->BeginRenderingNewWindow("Motion");
     if (ImGui::Button("Idle"))    m_pPlayer->GetComponent<NewMeshComponent>()->Play("Idle");
     if (ImGui::Button("Walking")) m_pPlayer->GetComponent<NewMeshComponent>()->Play("Walking");
     if (ImGui::Button("Running")) m_pPlayer->GetComponent<NewMeshComponent>()->Play("Running");
 
     m_pPlayer->GetComponent<NewMeshComponent>()->RenderUI();
+
+
 
     ENGINE.GetUIRenderer()->FinishRenderingWindow();
 

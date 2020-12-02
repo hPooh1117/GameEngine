@@ -8,15 +8,19 @@
 
 class GraphicsEngine;
 class Shader;
-class Light;
-class Camera;
 class Texture;
-class ShadowMap;
 class CameraController;
-
+class ComputedTexture;
 
 class AmbientOcclusion : public UIClient
 {
+public:
+	enum AOType
+	{
+		EOldSSAO,
+		EAlchemyAO,
+	};
+
 private:
 	static constexpr unsigned int MAX_SAMPLES = 16;
 	static constexpr float SAMPLE_RADIUS = 0.675f;
@@ -26,7 +30,8 @@ private:
 	D3D::RTVPtr    m_pRTV;
 	D3D::DSVPtr    m_pDSV;
 	D3D::BufferPtr           m_pCBufferForAO;
-
+	std::unique_ptr<ComputedTexture> mpSSAOTex;
+	std::unique_ptr<ComputedTexture> mpAlchemyAOTex;
 
 	DirectX::XMFLOAT4 mSamplePos[MAX_SAMPLES];
 	
@@ -38,6 +43,11 @@ private:
 	float                    mPower;
 	float                    mBias;
 	float					 mBlurSize;
+	float                    mKernelSize;
+	float                    mKernelSizeRcp;
+	Vector2                  mScreenSize;
+	UINT                     mAOType;
+
 private:
 	struct CBufferForAO
 	{
@@ -45,22 +55,27 @@ private:
 		DirectX::XMFLOAT4X4 invView;
 		DirectX::XMFLOAT4X4 proj;
 		DirectX::XMFLOAT4X4 view;
+
 		DirectX::XMFLOAT2   screenSize;
-		DirectX::XMFLOAT2   noiseScale;
 		float               radius;
 		float               power;
+
 		float               kernelSize;
-		float               ambientBias;
-		DirectX::XMFLOAT4   samplePos[MAX_SAMPLES];
-		float               blurTimes;
-		DirectX::XMFLOAT3   dummy;
+		float				cameraNearZ;
+		float				cameraFarZ;
+		float               kernelSize_rcp;
+		
+		DirectX::XMFLOAT2  screenSize_rcp;
+		DirectX::XMFLOAT2  noiseScale;
+		DirectX::XMFLOAT4  samplePos[MAX_SAMPLES];
 	};
 
 public:
 	AmbientOcclusion();
 	bool Initialize(D3D::DevicePtr& p_device);
 	void Activate(std::unique_ptr<GraphicsEngine>& p_graphics, CameraController* p_camera);
-	void Deactivate(std::unique_ptr<GraphicsEngine>& p_graphics);
+	void ExecuteOcclusion(std::unique_ptr<GraphicsEngine>& p_graphics, D3D::SRVPtr& p_srv);
+	void Deactivate(std::unique_ptr<GraphicsEngine>& p_graphics, UINT slot);
 
 	virtual void RenderUI() override;
 	~AmbientOcclusion();

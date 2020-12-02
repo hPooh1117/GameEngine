@@ -14,7 +14,6 @@
 //--------------------------------------------------------------------------------------------------------------------------------
 
 using namespace fbxsdk;
-using namespace std;
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
@@ -114,16 +113,16 @@ bool FbxLoader::LoadFbxFile(
 		LoadBones(fbxMesh, mesh);
 
 		// マテリアル取り出し(CGFX)
-		FbxLayerElementMaterial* LEM = fbxMesh->GetElementMaterial();
-		if (LEM != nullptr)
-		{
-			int materialIndex = LEM->GetIndexArray().GetAt(0);
-			FbxSurfaceMaterial* material = fbxMesh->GetNode()->GetSrcObject<FbxSurfaceMaterial>(materialIndex);
-			const FbxProperty property = material->FindProperty(FbxSurfaceMaterial::sDiffuse);
+		//FbxLayerElementMaterial* LEM = fbxMesh->GetElementMaterial();
+		//if (LEM != nullptr)
+		//{
+		//	int materialIndex = LEM->GetIndexArray().GetAt(0);
+		//	FbxSurfaceMaterial* material = fbxMesh->GetNode()->GetSrcObject<FbxSurfaceMaterial>(materialIndex);
+		//	const FbxProperty property = material->FindProperty(FbxSurfaceMaterial::sDiffuse);
 
-			Log::Info("[FBX] Loading CGFX file.");
-			LoadCGFX(device, mesh, material, fbxfilename);
-		}
+		//	Log::Info("[FBX] Loading CGFX file.");
+		//	LoadCGFX(device, mesh, material, fbxfilename);
+		//}
 
 		// マテリアル取り出し
 		const int  numberOfMaterials = fbxMesh->GetNode()->GetMaterialCount();
@@ -133,7 +132,7 @@ bool FbxLoader::LoadFbxFile(
 			Log::Info("[FBX] Loading MATERIAL info ( %d / %d )", index, numberOfMaterials);
 			const FbxSurfaceMaterial* surfaceMaterial = fbxMesh->GetNode()->GetMaterial(index);
 
-			const FbxProperty property = surfaceMaterial->FindProperty(FbxSurfaceMaterial::sDiffuse);
+			const fbxsdk::FbxProperty property = surfaceMaterial->FindProperty(FbxSurfaceMaterial::sDiffuse);
 			const FbxProperty factor = surfaceMaterial->FindProperty(FbxSurfaceMaterial::sDiffuseFactor);
 
 
@@ -164,7 +163,7 @@ bool FbxLoader::LoadFbxFile(
 					{
 						const char* texture_filename = fileTexture->GetRelativeFileName();
 						
-						subset.diffuse.texture = std::make_shared<NewTexture>();
+						subset.diffuse.texture = std::make_shared<Texture>();
 
 						if (texture_filename)
 						{
@@ -194,7 +193,7 @@ bool FbxLoader::LoadFbxFile(
 			if (!subset.diffuse.texture)
 			{
 				Log::Info("[FBX] Couldn't create Texture. Start creating DUMMY.");
-				subset.diffuse.texture = std::make_shared<NewTexture>();
+				subset.diffuse.texture = std::make_shared<Texture>();
 				subset.diffuse.texture->Load(device);
 			}
 		}
@@ -636,7 +635,7 @@ void FbxLoader::LoadCGFX(
 
 						subset.diffuse.texture_filename = texture_unicode;
 
-						subset.diffuse.texture = std::make_shared<NewTexture>();
+						subset.diffuse.texture = std::make_shared<Texture>();
 						subset.diffuse.texture->Load(device, subset.diffuse.texture_filename.c_str());
 					}
 
@@ -767,7 +766,7 @@ bool FbxLoader::AddMotion(std::string& name, const char* filename, std::vector<M
 void FbxLoader::SerializeAndSaveMeshes(const std::string filename, std::vector<MyFbxMesh>& mesh_container)
 {
 	auto fout = std::ofstream();
-	auto flag = ios::out | ios::binary | ios::trunc;
+	auto flag = std::ios::out | std::ios::binary | std::ios::trunc;
 
 	// start to write file
 	fout.open(filename, flag);
@@ -939,7 +938,7 @@ void FbxLoader::SerializeAndSaveMeshes(const std::string filename, std::vector<M
 void FbxLoader::SerializeAndSaveMotion(const std::string& filename, const std::string& key, std::vector<MyFbxMesh>& meshes)
 {
 	auto fout = std::ofstream();
-	auto flag = ios::out | ios::binary | ios::trunc;
+	auto flag = std::ios::out | std::ios::binary | std::ios::trunc;
 
 	// start to write file
 	fout.open(filename, flag);
@@ -1000,7 +999,7 @@ void FbxLoader::SerializeAndSaveMotion(const std::string& filename, const std::s
 bool FbxLoader::LoadSerializedMesh(Microsoft::WRL::ComPtr<ID3D11Device>& device, const std::string filename, std::vector<MyFbxMesh>& mesh_container)
 {
 	auto fin = std::ifstream();
-	auto flag = ios::in | ios::binary;
+	auto flag = std::ios::in | std::ios::binary;
 
 	// start to write file
 	fin.open(filename, flag);
@@ -1068,7 +1067,7 @@ bool FbxLoader::LoadSerializedMesh(Microsoft::WRL::ComPtr<ID3D11Device>& device,
 				unsigned int lengthOfName;
 				fin.read((char*)&lengthOfName, sizeof(unsigned int));
 
-				subset.diffuse.texture = std::make_shared<NewTexture>();
+				subset.diffuse.texture = std::make_shared<Texture>();
 				// fetch the texture file name
 				if (lengthOfName)
 				{
@@ -1178,7 +1177,7 @@ bool FbxLoader::LoadSerializedMesh(Microsoft::WRL::ComPtr<ID3D11Device>& device,
 bool FbxLoader::LoadSerializedMotion(std::string& name, const std::string& filename, std::vector<MyFbxMesh>& meshes)
 {
 	auto fin = std::ifstream();
-	auto flag = ios::in | ios::binary;
+	auto flag = std::ios::in | std::ios::binary;
 
 	// start to write file
 	fin.open(filename, flag);

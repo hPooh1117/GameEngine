@@ -40,21 +40,12 @@ struct DirectionalLightGPU
 	float   refract = 0.0f;
 	float   time = 0.0f;
 	float   tess_factor = 0.0f;
+	unsigned int    light_config;
+	float   dummy;
+	float   dummy1;
+	float   dummy2;
 };
 
-struct DirectionalBRDF
-{
-	Vector4 light_color;
-	Vector4 light_direction;
-	Vector4 ambient_color;
-	Vector4 eye_pos;
-	float   env_alpha = 0.0f;
-	float   roughness = 0.0f;
-	float   metalness = 0.0f;
-	float   time = 0.0f;
-	Vector3 specColor;
-	float   brdfSpec;
-};
 
 struct CBufferForLight
 {
@@ -63,12 +54,6 @@ struct CBufferForLight
 	SpotLightGPU        spotLight[NUM_SPOT_LIGHT];
 };
 
-struct CBufferForPBR
-{
-	DirectionalBRDF     directionalBRDF;
-	PointLightGPU       pointLight[NUM_POINT_LIGHT];
-	SpotLightGPU        spotLight[NUM_SPOT_LIGHT];
-};
 
 struct MaterialData
 {

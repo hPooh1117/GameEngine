@@ -30,7 +30,9 @@ private:
 	std::vector<SpriteFontData>                        mFontDataQueue;
 	
 	bool                                               mbFileOpen = false;
+	bool                                               mbIsUIEnable = true;
 	SpriteFontData                                     mCurrentSettings;
+	int                                                mUIConfig;
 
 public:
 	UIRenderer() = default;
@@ -49,6 +51,8 @@ public:
 	void ClearUIClients();
 	void ClearFontQueue();
 
+	bool GetUIEnable() { return mbIsUIEnable; }
+
 	void SetInQueue(std::string ui_name, const std::shared_ptr<UIClient>& p_client)
 	{
 		mUIClientsTable.emplace(ui_name, p_client);
@@ -56,7 +60,9 @@ public:
 	void SetText(std::string text);
 
 	void SetNextWindowSettings(const Vector2& pos, const Vector2& size, const Vector2& pivot = Vector2(0,0));
+	void SetNextUIConfig(bool b_menubar);
 	void SetNextSpriteFontSettings(const Vector2& pos, const Vector2& size, const Vector4& color);
+	void SetUIEnable(bool b_enable) { mbIsUIEnable = b_enable; }
 
 	UIRenderer(const UIRenderer&) = delete;
 	UIRenderer& operator=(const UIRenderer&) = delete;

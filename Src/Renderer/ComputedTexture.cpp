@@ -125,7 +125,7 @@ bool ComputedTexture::CreateTextureCube(D3D::DevicePtr& p_device, UINT width, UI
 	return true;
 }
 
-bool ComputedTexture::CreateTexture(std::unique_ptr<NewTexture>& p_tex, DXGI_FORMAT format, UINT level)
+bool ComputedTexture::CreateTexture(std::unique_ptr<Texture>& p_tex, DXGI_FORMAT format, UINT level)
 {
 	if (mpTexture)
 	{
@@ -242,7 +242,7 @@ void ComputedTexture::SetCBuffer(D3D::DeviceContextPtr& p_imm_context, UINT para
 	p_imm_context->CSSetConstantBuffers(0, 1, mpCBuffer.GetAddressOf());
 }
 
-void ComputedTexture::Compute(D3D::DeviceContextPtr& p_imm_context, D3D::SRVPtr& p_srv, UINT zValue)
+void ComputedTexture::Compute(D3D::DeviceContextPtr& p_imm_context, const D3D::SRVPtr& p_srv, UINT zValue)
 {
 	ID3D11UnorderedAccessView* nullUAV[1] = { nullptr };
 
@@ -267,7 +267,7 @@ void ComputedTexture::Compute(D3D::DeviceContextPtr& p_imm_context, UINT zValue)
 
 }
 
-void ComputedTexture::Compute(D3D::DeviceContextPtr& p_imm_context, D3D::SRVPtr& p_srv, UINT xValue, UINT yValue, UINT zValue)
+void ComputedTexture::Compute(D3D::DeviceContextPtr& p_imm_context, const D3D::SRVPtr& p_srv, UINT xValue, UINT yValue, UINT zValue)
 {
 	ID3D11UnorderedAccessView* nullUAV[1] = { nullptr };
 

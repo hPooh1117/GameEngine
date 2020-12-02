@@ -90,9 +90,6 @@
     <ClInclude Include="..\..\Renderer\AmbientOcclusion.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Renderer\ZPartitioningShadow.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Renderer\SubView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -165,9 +162,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Renderer\Source\AmbientOcclusion.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Renderer\Source\ZPartitioningShadow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Renderer\SubView.cpp">

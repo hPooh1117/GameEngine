@@ -4,11 +4,12 @@
 
 
 #include "./Utilities/misc.h"
+#include "./Utilities/Log.h"
 
 
 const FLOAT RenderTarget::CLEAR_COLOR[4] = { 0.2f, 0.2f, 0.2f, 0.0f };
 const char* RenderTarget::RENDER_TARGET_NAME_TABLE[RENDER_TARGET_ID_MAX] = {
-	"Shodow",
+	"Shadow",
 	"Cubemap",
 	"Forward",
 	"Color",
@@ -16,14 +17,14 @@ const char* RenderTarget::RENDER_TARGET_NAME_TABLE[RENDER_TARGET_ID_MAX] = {
 	"Position",
 	"ShadowMap",
 	"Depth",
-	"Lighting Result",
 	"Diffuse Light",
 	"Specular Light",
 	"Skybox Deffered",
+	"Lighting Result",
 	"AO + Lighting",
 	"SSAO",
 	"BluredAO + Lighting",
-	"BluredAO"
+	"BluredAO",
 	"PostProcess"
 };
 
@@ -44,7 +45,7 @@ void RenderTarget::Create(D3D::DevicePtr& p_device, UINT width, UINT height, DXG
 		D3D11_TEXTURE2D_DESC texDesc = {};
 		texDesc.Width = width;
 		texDesc.Height = height;
-		texDesc.MipLevels = 1;
+		texDesc.MipLevels = 0;
 		texDesc.ArraySize = 1;
 		texDesc.Format = format;
 		texDesc.SampleDesc.Count = 1;
@@ -75,6 +76,7 @@ void RenderTarget::Create(D3D::DevicePtr& p_device, UINT width, UINT height, DXG
 	hr = p_device->CreateShaderResourceView(texture2D.Get(), &srvDesc, mpSRVTable[rt_id].GetAddressOf());
 	_ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
+	Log::Info("Created GBuffer.(%s)", RENDER_TARGET_NAME_TABLE[rt_id]);
 }
 
 void RenderTarget::CreateCube(D3D::DevicePtr& p_device, UINT width, UINT height, DXGI_FORMAT format, int mip_level, UINT rt_id)
@@ -192,5 +194,19 @@ void RenderTarget::Deactivate(D3D::DeviceContextPtr& p_imm_context, UINT start_i
 {
 	p_imm_context->PSSetShaderResources(slot, num_activate, mpSRVTable[start_id].GetAddressOf());
 	p_imm_context->DSSetShaderResources(slot, num_activate, mpSRVTable[start_id].GetAddressOf());
+	p_imm_context->CSSetShaderResources(slot, num_activate, mpSRVTable[start_id].GetAddressOf());
+}
+
+void RenderTarget::ClearAll()
+{
+	for (auto i = 0; i < RENDER_TARGET_ID_MAX; ++i)
+	{
+		if (mpRTVTable[i] != nullptr)
+		{
+			mpRTVTable[i].Reset();
+		}
+		if (mpSRVTable[i] != nullptr) mpSRVTable[i].Reset();
+	}
+	Log::Info("Render Targets are empty.");
 }
 

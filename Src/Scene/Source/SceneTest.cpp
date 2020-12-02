@@ -124,13 +124,21 @@ SceneTest::SceneTest(SceneManager* p_manager, Microsoft::WRL::ComPtr<ID3D11Devic
 	mpPBR->GetComponent<NewMeshComponent>()->SetMaterialColor(Vector4(0.8f, 0.5f, 0.1f, 1.0f));
 	ENGINE.GetActorManagerPtr()->AddActor(mpPBR);
 
-	//std::shared_ptr<Actor> pPlane = Actor::Create(count++);
-	//pPlane->SetScale(10.0f, 1.0f, 10.0f);
-	//pPlane->SetPosition(Vector3(0.0f, 10.0f, -3.0f));
-	//pPlane->AddComponent<NewMeshComponent>();
-	//pPlane->GetComponent<NewMeshComponent>()->RegisterMesh(MeshTypeID::E_Plane, ShaderID::ECubemapConvolution, nullptr);
-	//pPlane->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Images/Environment/Footprint_Court/Footprint_Court_8k_TMap.jpg", TextureConfig::EColorMap);
-	//ENGINE.GetActorManagerPtr()->AddActor(pPlane);
+	mpModel = Actor::Initialize(count++);
+	mpModel->SetScale(0.5f, 0.5f, 0.5f);
+	mpModel->SetPosition(Vector3(-7.0f, -2.0f, -5.0f));
+	mpModel->SetRotationQuaternion(0.0f, -90.0f * 0.01745f, 0.0f);
+	mpModel->AddComponent<NewMeshComponent>();
+	mpModel->GetComponent<NewMeshComponent>()->RegisterMesh(MeshTypeID::E_SkinnedMesh, ShaderID::EForwardPBR, L"./Data/Models/ShaderBall.fbx", FbxType::EMaya);
+	mpModel->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Images/PBR/cgbookcase/metal-tiles-03/Metal_tiles_03_1K_Base_Color.png", TextureConfig::EColorMap);
+	mpModel->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Images/PBR/cgbookcase/metal-tiles-03/Metal_tiles_03_1K_Normal.png", TextureConfig::ENormalMap);
+	mpModel->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Images/PBR/cgbookcase/metal-tiles-03/Metal_tiles_03_1K_Height.png", TextureConfig::EHeightMap);
+	mpModel->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Images/PBR/cgbookcase/metal-tiles-03/Metal_tiles_03_1K_Metallic.png", TextureConfig::EMetallicMap);
+	mpModel->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Images/PBR/cgbookcase/metal-tiles-03/Metal_tiles_03_1K_Roughness.png", TextureConfig::ERoughnessMap);
+	mpModel->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Images/PBR/cgbookcase/metal-tiles-03/Metal_tiles_03_1K_AO.png", TextureConfig::EAOMap);
+
+	ENGINE.GetActorManagerPtr()->AddActor(mpModel);
+
 
 
 	ENGINE.GetLightPtr()->Init(0, 0);
@@ -162,7 +170,7 @@ SceneTest::SceneTest(SceneManager* p_manager, Microsoft::WRL::ComPtr<ID3D11Devic
 	mpSpecularMapTex->CreateTextureCube(p_device, 1024, 1024, DXGI_FORMAT_R16G16B16A16_FLOAT);
 	mpSpecularMapTex->CreateShader(p_device, L"Src/Shaders/CS_PreFilteringForSpecular.hlsl", "CSmain");
 
-	mpSkyTex = std::make_unique<NewTexture>();
+	mpSkyTex = std::make_unique<Texture>();
 	mpSkyTex->Load(p_device, L"./Data/Images/Environment/Footprint_Court/Footprint_Court_2k.hdr");
 
 	mpEnvironmentTex = std::make_unique<ComputedTexture>();
@@ -177,12 +185,12 @@ SceneTest::SceneTest(SceneManager* p_manager, Microsoft::WRL::ComPtr<ID3D11Devic
 	mpSpecularBRDF_LUT->CreateTextureUAV(p_device, 0);
 	mpSpecularBRDF_LUT->CreateShader(p_device, L"./Src/Shaders/CS_SpecularBRDF.hlsl", "CSmain");
 
-	std::shared_ptr<Actor> temp = Actor::Initialize(count++);
-	temp->AddComponent<NewMeshComponent>();
-	temp->GetComponent<NewMeshComponent>()->RegisterMesh(MeshTypeID::E_BasicCube, ShaderID::ECubeMapEnv, nullptr, FbxType::EDefault);
-	temp->SetPosition(Vector3(0.0, -3.0f, -10.0f));
-	temp->SetScale(4.0f, 4.0f, 4.0f);
-	ENGINE.GetActorManagerPtr()->AddActor(temp);
+	//std::shared_ptr<Actor> temp = Actor::Initialize(count++);
+	//temp->AddComponent<NewMeshComponent>();
+	//temp->GetComponent<NewMeshComponent>()->RegisterMesh(MeshTypeID::E_BasicCube, ShaderID::ECubeMapEnv, nullptr, FbxType::EDefault);
+	//temp->SetPosition(Vector3(0.0, -3.0f, -10.0f));
+	//temp->SetScale(4.0f, 4.0f, 4.0f);
+	//ENGINE.GetActorManagerPtr()->AddActor(temp);
 
 
 }
@@ -293,10 +301,6 @@ void SceneTest::Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapse
 		Log::Info("Pre-Computed Diffuse Irardiance. (state : %d)", state);
 		break;
 	case 3:
-	//	mpIrradianceTex->Compute(pImmContext, 6);
-	//	Log::Info("Pre-Computed Diffuse Irardiance(2nd). (state : %d)", state);
-	//	break;
-	//case 4:
 		mpSpecularBRDF_LUT->Compute(pImmContext, 1);
 		Log::Info("Pre-Computed Specular Look-Up Texture. (state : %d)", state);
 		break;
@@ -309,12 +313,19 @@ void SceneTest::Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapse
 	mpSpecularBRDF_LUT->Set(pImmContext, 12);
 	mpEnvironmentTex->Set(pImmContext, 13);
 
+}
+
+void SceneTest::RenderUI()
+{
 	ENGINE.GetUIRenderer()->SetNextWindowSettings(Vector2(0, SCREEN_HEIGHT - 200), Vector2(300, 200));
+	ENGINE.GetUIRenderer()->SetNextUIConfig(false);
+
 	ENGINE.GetUIRenderer()->BeginRenderingNewWindow("PBR");
 	ImGui::Checkbox("Auto Mode", &mbAutoSetParameter);
 	mpPBR->GetComponent<NewMeshComponent>()->RenderUI();
 	ImGui::Image((void*)mpSpecularBRDF_LUT->GetSRV().Get(), ImVec2(320, 320));
 	ENGINE.GetUIRenderer()->FinishRenderingWindow();
+
 }
 
 //----------------------------------------------------------------------------------------------------------------------------

@@ -24,24 +24,25 @@ public:
 	};
 
 	static constexpr UINT COMPUTE_KERNEL_DIMENSION = 1024;
+	static constexpr UINT BLUR_STRENGTH_MAX = 4;
 
 private:
-	struct CBForBlurSettings
-	{
-		UINT kernelRange;
-		UINT strength;
-		UINT bHorizontal;
-		float weight[10];
-		float param[3];
-	};
+	//struct CBForBlurSettings
+	//{
+	//	UINT kernelSize;
+	//	UINT strength;
+	//	UINT bHorizontal;
+	//	float weight[10];
+	//	float param[3];
+	//};
 
-	UINT mKernelRange;
-	UINT mBlurStrength;
+	UINT mKernelSize;
+	int mBlurStrength;
 	float mKernelWeights[10] = {0};
 
-	D3D::BufferPtr mpCBuffer;
+	//D3D::BufferPtr mpCBuffer;
 	std::unique_ptr<ComputedTexture> mpBlurTex[BLUR_PASS_MAX];
-
+	std::unique_ptr<ComputedTexture> mpBlurWideTex[BLUR_PASS_MAX];
 public:
 	BlurExecuter();
 	~BlurExecuter() = default;
@@ -50,10 +51,14 @@ public:
 	void CreateShader(D3D::DevicePtr& p_device);
 	void ChangeSetting(UINT strength, UINT kernel_range);
 	void ActivateBlur(D3D::DeviceContextPtr& p_imm_context, bool b_horizontal);
-	void ExecuteBlur(D3D::DeviceContextPtr& p_imm_context);
+	void ExecuteBlur(D3D::DeviceContextPtr& p_imm_context, const D3D::SRVPtr& srv, UINT slot = 0);
 	void Deactivate(D3D::DeviceContextPtr& p_imm_context);
 
 	void RenderUI();
+
+	int GetBlurStrength() { return mBlurStrength; }
+	void SetBlurStrength(int param) { mBlurStrength = param; }
+
 private:
 	void CalculateKernelRange();
 };

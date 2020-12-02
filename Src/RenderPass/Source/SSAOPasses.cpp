@@ -5,6 +5,8 @@
 #include "./Engine/MeshRenderer.h"
 #include "./Engine/UIRenderer.h"
 
+#include "./Renderer/Blur.h"
+#include "./Renderer/ComputedTexture.h"
 #include "./Renderer/DepthStencilView.h"
 #include "./Renderer/GraphicsEngine.h"
 #include "./Renderer/NewMeshRenderer.h"
@@ -14,7 +16,7 @@
 #include "./Renderer/Sprite.h"
 #include "./Renderer/VertexDecleration.h"
 
-#include "DefferedPasses.h"
+#include "DeferredPasses.h"
 
 #include "./Utilities/ImGuiSelf.h"
 #include "./Utilities/Log.h"
@@ -24,52 +26,75 @@
 
 SSAOPass::SSAOPass()
 	:mpAOPreparation(std::make_unique<AmbientOcclusion>()),
-	mpBlurPassTargets(std::make_unique<RenderTarget>())
+	mpBlurPassTargets(std::make_unique<RenderTarget>()),
+	mpBlurPass(std::make_unique<BlurExecuter>()),
+	mbIsUsingCS(false)
 {
 }
 
 void SSAOPass::Initialize(D3D::DevicePtr& p_device)
 {
+	GetRenderTargetManager()->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::ESecondResult);
+	GetRenderTargetManager()->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::ESSAO);
+	GetRenderTargetManager()->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::EThirdResult);
+	GetRenderTargetManager()->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::EBlurredAO);
+
+
+	if (mbIsInitialized) return;
+
+
+
+	AddVertexAndPixelShader(p_device, ShaderID::ESSAOCompute, L"SSAO.hlsl", L"SSAO.hlsl", "VSmain", "PSmain", VEDType::VED_SPRITE);
+	AddVertexAndPixelShader(p_device, ShaderID::ESSAOPixel, L"SSAO.hlsl", L"SSAO.hlsl", "VSmain", "PSmain2", VEDType::VED_SPRITE);
+
+	AddVertexAndPixelShader(p_device, ShaderID::EBlur, L"Screen.hlsl", L"Screen.hlsl", "VSmain", "PSmain", VEDType::VED_SPRITE);
+
+
 	mpScreen = std::make_unique<Sprite>(p_device);
+
+	mpDSV->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+
+	mpBlurPass->Initialize(p_device);
+	mpBlurPass->CreateShader(p_device);
+	//mpBlurPass->ChangeSetting(1, 4);
 
 	if (mpAOPreparation->Initialize(p_device))
 	{
 		Log::Info("Initialized Ambient Occlusion.");
 	}
 
-	AddVertexAndPixelShader(p_device, ShaderID::ESSAO, L"SSAO.hlsl", L"SSAO.hlsl", "VSmain", "PSmain", VEDType::VED_SPRITE);
-	AddVertexAndPixelShader(p_device, ShaderID::EBlur, L"Screen.hlsl", L"Screen.hlsl", "VSmain", "PSmain", VEDType::VED_SPRITE);
-
-	for (auto i = 0u; i < GBUFFER_FOR_AO_MAX; ++i)
-	{
-		GetRenderTargetManager()->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::ESecondResult + i);
-	}
-	for (auto i = 0u; i < GBUFFER_FOR_BLUR_MAX; ++i)
-	{
-		GetRenderTargetManager()->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::EThirdResult + i);
-	}
-
-	mpDSV->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT);
-
 	mbIsInitialized = true;
-
 }
 
 void SSAOPass::ExecuteSSAO(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time)
 {
 	D3D::DeviceContextPtr& pImmContext = p_graphics->GetImmContextPtr();
 
-	mpAOPreparation->Activate(p_graphics, ENGINE.GetCameraPtr().get());
-
 	GetRenderTargetManager()->Activate(pImmContext, mpDSV, RenderTarget::ESecondResult, GBUFFER_FOR_AO_MAX);
 
-	mpScreen->RenderScreen(pImmContext, mpShaderTable.at(ShaderID::ESSAO).get(), Vector2(0.5f * SCREEN_WIDTH, 0.5f * SCREEN_HEIGHT), Vector2(SCREEN_WIDTH, SCREEN_HEIGHT));
+	mpAOPreparation->Activate(p_graphics, ENGINE.GetCameraPtr().get());
+	if (mbIsUsingCS)
+	{
+		mpAOPreparation->ExecuteOcclusion(p_graphics, GetRenderTargetManager()->GetShaderResource(RenderTarget::EDepth));
+		mpAOPreparation->Deactivate(p_graphics, 10);
+	}
 
-	mpAOPreparation->Deactivate(p_graphics);
+	mpScreen->RenderScreen(
+		pImmContext,
+		mpShaderTable.at(mbIsUsingCS ? ShaderID::ESSAOCompute : ShaderID::ESSAOPixel).get(),
+		Vector2(0.5f * SCREEN_WIDTH, 0.5f * SCREEN_HEIGHT),
+		Vector2(SCREEN_WIDTH, SCREEN_HEIGHT));
+
 
 	GetRenderTargetManager()->Activate(pImmContext, mpDSV, RenderTarget::EThirdResult, GBUFFER_FOR_BLUR_MAX);
 
-	GetRenderTargetManager()->Deactivate(pImmContext, RenderTarget::ESecondResult, GBUFFER_FOR_AO_MAX, GBufferID::EResult);
+
+
+	mpBlurPass->ActivateBlur(pImmContext, true);
+	mpBlurPass->ExecuteBlur(pImmContext, GetRenderTargetManager()->GetShaderResource(RenderTarget::ESSAO), 15);
+	mpBlurPass->Deactivate(pImmContext);
+	GetRenderTargetManager()->Deactivate(pImmContext, RenderTarget::EColor, DeferredPass::GEOMETRY_BUFFER_SIZE);
 
 	mpScreen->RenderScreen(pImmContext, mpShaderTable.at(ShaderID::EBlur).get(), Vector2(0.5f * SCREEN_WIDTH, 0.5f * SCREEN_HEIGHT), Vector2(SCREEN_WIDTH, SCREEN_HEIGHT));
 
@@ -99,7 +124,7 @@ void SSAOPass::RenderUI(bool b_open)
 	}
 	//for (auto i = 0u; i < mpBlurPassTargets->GetSize(); ++i)
 	//{
-	//	if (ImGui::TreeNode(DefferedPass::GBUFFER_NAME[i + GBufferID::ESecondaryResult]))
+	//	if (ImGui::TreeNode(DeferredPass::GBUFFER_NAME[i + GBufferID::ESecondaryResult]))
 	//	{
 	//		if (ImGui::ImageButton((void*)mpBlurPassTargets->GetShaderResource(i).Get(), ImVec2(320, 180)))
 	//		{
@@ -113,7 +138,7 @@ void SSAOPass::RenderUI(bool b_open)
 	//auto it = GetRenderTargetTable().find(RenderTarget::ESecondResult);
 	//while (it != GetRenderTargetTable().end())
 	//{
-	//	if (ImGui::TreeNode(DefferedPass::GBUFFER_NAME[i + GBufferID::EResult]))
+	//	if (ImGui::TreeNode(DeferredPass::GBUFFER_NAME[i + GBufferID::EResult]))
 	//	{
 	//		if (ImGui::ImageButton((void*)it->second->GetShaderResource().Get(), ImVec2(320, 180)))
 	//		{
@@ -129,6 +154,7 @@ void SSAOPass::RenderUI(bool b_open)
 void SSAOPass::RenderUIForSettings()
 {
 	mpAOPreparation->RenderUI();
+	ImGui::Checkbox("Enable Compute Shader", &mbIsUsingCS);
 }
 
 void SSAOPass::RenderUIForAnotherScreen()
@@ -148,4 +174,18 @@ void SSAOPass::RenderUIForAnotherScreen()
 
 	//	ENGINE.GetUIRenderer()->FinishRenderingWindow();
 	//}
+
+
+	if (mbIsOpen2ndScreen)
+	{
+		if (mCurrentScreenNum != RenderTarget::ESSAO) return;
+
+		D3D::SRVPtr srv = GetRenderTargetManager()->GetShaderResource(mCurrentScreenNum);
+		ENGINE.GetUIRenderer()->SetNextWindowSettings(Vector2(0, SCREEN_HEIGHT - 630), Vector2(1120, 630));
+		ImGui::Begin("Screen 2", &mbIsOpen2ndScreen);
+		ImGui::Image((void*)srv.Get(), ImVec2(960, 540));
+
+		ENGINE.GetUIRenderer()->FinishRenderingWindow();
+	}
+
 }

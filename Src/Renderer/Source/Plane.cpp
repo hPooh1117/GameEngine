@@ -197,14 +197,13 @@ void Plane::Render(
 
 	if (shader != nullptr)shader->ActivateShaders(imm_context);
 
-	XMFLOAT4X4 W, WVP;
-	XMStoreFloat4x4(&W, world);
-	XMStoreFloat4x4(&WVP, world * camera->GetViewMatrix() * camera->GetProjMatrix(imm_context));
 
 	CBufferForMesh meshData = {};
-	meshData.WVP = WVP;
-	meshData.world = W;
-	XMStoreFloat4x4(&meshData.invProj, camera->GetInvProjViewMatrix(imm_context));
+	XMStoreFloat4x4(&meshData.world, world);
+	XMStoreFloat4x4(&meshData.WVP, world * camera->GetViewMatrix() * camera->GetProjMatrix(imm_context));
+	XMStoreFloat4x4(&meshData.invViewProj, camera->GetInvProjViewMatrix(imm_context));
+	DirectX::XMStoreFloat4x4(&meshData.invView, camera->GetInvViewMatrix());
+	DirectX::XMStoreFloat4x4(&meshData.invProj, camera->GetInvProjMatrix(imm_context));
 
 	imm_context->UpdateSubresource(m_pConstantBufferMesh.Get(), 0, nullptr, &meshData, 0, 0);
 	imm_context->VSSetConstantBuffers(0, 1, m_pConstantBufferMesh.GetAddressOf());
@@ -299,7 +298,7 @@ PlaneBatch::PlaneBatch(
 	hr = device->CreateRasterizerState(&rrDesc, m_pRasterizerSolid.GetAddressOf());
 	if (FAILED(hr)) return;
 
-	mpTexture = std::make_unique<NewTexture>();
+	mpTexture = std::make_unique<Texture>();
 	if (filename != L"\0")
 	{
 		mpTexture->Load(device, filename);

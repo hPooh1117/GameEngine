@@ -43,6 +43,10 @@ cbuffer CBPerLight : register(b2)
     float  env_alpha;
     float  reflact;
     float  time;
+    float  tess_factor;
+    uint   light_config;
+    float  dummy;
+    float  dummy1;
     float  dummy2;
     POINTLIGHT point_lights[POINTMAX];
     SPOTLIGHT spot_lights[SPOTMAX];

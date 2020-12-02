@@ -22,57 +22,63 @@
 
 void ShadowPass::Initialize(D3D::DevicePtr& device)
 {
+	GetRenderTargetManager()->Create(device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::EShadow);
+	
+	if (mbIsInitialized) return;
+
 	AddVertexAndPixelShader(device, ShaderID::EToShadow,
-        L"ShadowMap.hlsl",
-        L"ShadowMap.hlsl",
-        "VSshadow", "PSshadow", VEDType::VED_DEFAULT);
-    AddVertexAndPixelShader(device, ShaderID::EToShadowForSkinning,
-        L"ShadowMap.hlsl",
-        L"ShadowMap.hlsl",
-        "VSshadowSkinning", "PSshadow", VEDType::VED_SKINNED_MESH);
+		L"ShadowMap.hlsl",
+		L"ShadowMap.hlsl",
+		"VSshadow", "PSshadow", VEDType::VED_DEFAULT);
+	AddVertexAndPixelShader(device, ShaderID::EToShadowForSkinning,
+		L"ShadowMap.hlsl",
+		L"ShadowMap.hlsl",
+		"VSshadowSkinning", "PSshadow", VEDType::VED_SKINNED_MESH);
 
-    mpShadowMap = std::make_unique<ShadowMap>(device);
+	mpShadowMap = std::make_unique<ShadowMap>(device);
 
-    GetRenderTargetManager()->Create(device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::EShadow);
+	mpDSV->Create(device, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-    mpDSV->Create(device, SCREEN_WIDTH, SCREEN_HEIGHT);
+	mbIsInitialized = true;
 }
 
 
 void ShadowPass::RenderShadow(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time)
 {
-    D3D::DeviceContextPtr pImmContext = p_graphics->GetImmContextPtr();
+	D3D::DeviceContextPtr pImmContext = p_graphics->GetImmContextPtr();
 
-    mpShadowMap->Activate(p_graphics, ENGINE.GetLightPtr().get(), ENGINE.GetCameraPtr().get());
+	//p_graphics->SetDepthStencil(GraphicsEngine::DS_TRUE);
 
-    GetRenderTargetManager()->Activate(pImmContext, mpDSV, RenderTarget::EShadow);
+	mpShadowMap->Activate(p_graphics, ENGINE.GetLightPtr().get(), ENGINE.GetCameraPtr().get());
 
-    ENGINE.GetMeshRenderer()->RenderMesh(pImmContext, elapsed_time, RenderPassID::EShadowPass);
+	GetRenderTargetManager()->Activate(pImmContext, mpDSV, RenderTarget::EShadow);
 
-    p_graphics->ActivateBackBuffer();
+	ENGINE.GetMeshRenderer()->RenderMesh(pImmContext, elapsed_time, RenderPassID::EShadowPass);
 
-    GetRenderTargetManager()->Deactivate(pImmContext, RenderTarget::EShadow, 1, 5);
+	p_graphics->ActivateBackBuffer();
 
-    mpShadowMap->Deactivate(p_graphics);
+	GetRenderTargetManager()->Deactivate(pImmContext, RenderTarget::EShadow, 1, 5);
 
-    //ENGINE.GetUIRenderer()->FinishRenderingWindow();
+	mpShadowMap->Deactivate(p_graphics);
+
+	//ENGINE.GetUIRenderer()->FinishRenderingWindow();
 
 
 }
 
 void ShadowPass::RenderUI(bool b_open)
 {
-    if (!b_open) ImGui::SetNextItemOpen(b_open);
+	if (!b_open) ImGui::SetNextItemOpen(b_open);
 
-    if (ImGui::TreeNode(RenderTarget::RENDER_TARGET_NAME_TABLE[RenderTarget::EShadow]))
-    {
-        mpShadowMap->RenderUI();
+	if (ImGui::TreeNode(RenderTarget::RENDER_TARGET_NAME_TABLE[RenderTarget::EShadow]))
+	{
+		mpShadowMap->RenderUI();
 
-        if (ImGui::ImageButton((void*)GetRenderTargetManager()->GetShaderResource(RenderTarget::EShadow).Get(), ImVec2(320, 180)))
-        {
-            mCurrentScreenNum = RenderTarget::EShadow;
-            mbIsOpen2ndScreen = true;
-        }
-        ImGui::TreePop();
-    }
+		if (ImGui::ImageButton((void*)GetRenderTargetManager()->GetShaderResource(RenderTarget::EShadow).Get(), ImVec2(320, 180)))
+		{
+			mCurrentScreenNum = RenderTarget::EShadow;
+			mbIsOpen2ndScreen = true;
+		}
+		ImGui::TreePop();
+	}
 }

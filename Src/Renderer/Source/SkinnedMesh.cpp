@@ -243,14 +243,17 @@ void SkinnedMesh::Render(
 		shader->ActivateShaders(imm_context);
 	}
 
-	XMFLOAT4X4 W, WVP;
-	XMStoreFloat4x4(&W, world);
-	XMStoreFloat4x4(&WVP, world * (isShadow ? camera->GetOrthoView() * camera->GetOrthoProj(imm_context) : camera->GetViewMatrix() * camera->GetProjMatrix(imm_context)));
+	DirectX::XMFLOAT4X4 W, WVP;
+	CBufferForMesh meshData = {};
+	DirectX::XMStoreFloat4x4(&W, world);
+	DirectX::XMStoreFloat4x4(&WVP, world * (isShadow ? camera->GetOrthoView() * camera->GetOrthoProj(imm_context) : camera->GetViewMatrix() * camera->GetProjMatrix(imm_context)));
+	DirectX::XMStoreFloat4x4(&meshData.invViewProj, camera->GetInvProjMatrix(imm_context));
+	DirectX::XMStoreFloat4x4(&meshData.invView, camera->GetInvViewMatrix());
+	DirectX::XMStoreFloat4x4(&meshData.invProj, camera->GetInvProjMatrix(imm_context));
 
 
 	for (auto& mesh : m_meshes)
 	{
-		CBufferForMesh meshData = {};
 		CBufferForBone boneData = {};
 
 		UINT stride = sizeof(FbxInfo::Vertex);
@@ -343,7 +346,6 @@ void SkinnedMesh::Render(
 			DirectX::XMLoadFloat4x4(&mesh.mGlobalTransform) *
 			DirectX::XMLoadFloat4x4(&COORD_CONVERSION[mCoordSystem]) *
 			DirectX::XMLoadFloat4x4(&W));
-		XMStoreFloat4x4(&meshData.invProj, camera->GetInvProjViewMatrix(imm_context));
 
 		imm_context->UpdateSubresource(m_pConstantBufferMesh.Get(), 0, nullptr, &meshData, 0, 0);
 		imm_context->VSSetConstantBuffers(0, 1, m_pConstantBufferMesh.GetAddressOf());

@@ -15,6 +15,7 @@ public:
     virtual void Update(float elapsed_time) override;
     virtual void PreCompute(std::unique_ptr<GraphicsEngine>& p_graphics) override;
     virtual void Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time) override;
+    virtual void RenderUI() override;
 
     ~SceneA();
 

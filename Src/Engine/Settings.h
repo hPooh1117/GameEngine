@@ -18,9 +18,9 @@ namespace Settings
 
 	struct Renderer
 	{
-		bool bIsDeffered;
-		bool bEnableAO;
 		bool bCastShadow;
+		bool bEnableAO;
+		bool bIsDeffered;
 		bool bCubeMap;
 	};
 

@@ -8,11 +8,13 @@
 Texture2D albedo_texture : register(t0);
 SamplerState decal_sampler : register(s0);
 SamplerState border_sampler : register(s1);
+SamplerState clamp_sampler : register(s2);
 
 Texture2D normal_texture : register(t1);
 Texture2D position_texture : register(t2);
 Texture2D shadow_texture : register(t3);
-Texture2D depth_texture : register(t4);
+Texture2D<float4> depth_texture : register(t4);
+
 
 struct PS_InputD
 {
@@ -38,12 +40,16 @@ PS_InputD VSmain(VS_Input input)
 	output.position = P;
 	output.color = mat_color;
 	output.texcoord = input.texcoord;
-	output.projPos = output.texcoord * float2(2.0f, -2.0f) + float2(-1.0f, 1.0f);
-
+	output.projPos.x = output.texcoord.x * 2.0 - 1.0;
+	output.projPos.y = (1.0 - output.texcoord.y) * 2.0 - 1.0;
 	return output;
 }
 
 
+float LinearizeDepth(float depth, float near, float far)
+{
+	return (2.0 * near) / (far + near - depth * (far - near));
+}
 
 
 //
@@ -53,18 +59,27 @@ PS_Output_Light PSmain(PS_InputD input)
 {
 	PS_Output_Light output = (PS_Output_Light)0;
 
-	float2 depthBufferColor = depth_texture.Sample(border_sampler, input.texcoord).rg;
+	float depth = depth_texture.Sample(decal_sampler, input.texcoord).r;
+	float2 uv = float2(input.texcoord.x * 2.0 - 1.0, (1.0 - input.texcoord.y) * 2.0 - 1.0);
+	//float4 projP = float4(input.projPos.xy, depth, 1);
+	float4 projP = float4(uv, depth, 1);
 
-	float depth = depthBufferColor.r;
-	float4 projP = float4(input.projPos.xy, depth, 1);
 	//float4 viewP = mul(projP, inv_proj);
 	//viewP /= viewP.w;
 
-	float4 wPos = mul(projP, inv_viewproj);
-	//float4 wPos = mul(viewP, inv_view);
+	float4 wPos = projP;
+	//wPos = mul(inv_viewproj, wPos);
+	//wPos.xyz /= wPos.w;
+	//wPos = mul(wPos, inv_proj_mat);
+	//wPos = mul(wPos, inv_view_mat);
+	//wPos.xyz /= wPos.w;
+	wPos = mul(inv_proj_mat, wPos);
+	//wPos.xyz /= wPos.w;
+	wPos = mul(inv_view_mat, wPos);
+
 	wPos.xyz /= wPos.w;
 
-	float3 P = /*position_texture.Sample(decal_sampler, input.texcoord).xyz;*/wPos.xyz;
+	float3 P = position_texture.Sample(decal_sampler, input.texcoord).xyz;/*wPos.xyz;*/
 	float3 N = normal_texture.Sample(decal_sampler, input.texcoord).xyz;
 	float3 E = normalize(eye_pos.xyz - P);
 	float3 L = normalize(light_dir.xyz);
@@ -88,9 +103,9 @@ PS_Output_Light PSmain(PS_InputD input)
 	float distance = 0.0;
 	float range = 0.0;
 
-	[unroll]
 	for (i = 0; i < POINTMAX; ++i)
 	{
+		if ((light_config & 2) == 0) break;
 		if (point_lights[i].type == 0) continue;
 		PL = P - point_lights[i].pos.xyz;
 		distance = length(PL);
@@ -111,9 +126,10 @@ PS_Output_Light PSmain(PS_InputD input)
 	float3 SpotDiffuse = (float3)0;
 	float3 SpotSpecular = (float3)0;
 
-	[unroll]
 	for (i = 0; i < SPOTMAX; ++i)
 	{
+		if ((light_config & 4) == 0) break;
+
 		if (spot_lights[i].type == 0.0f) continue;
 
 		SpotLight = P - spot_lights[i].pos.xyz;
@@ -137,11 +153,11 @@ PS_Output_Light PSmain(PS_InputD input)
 	}
 
 
-	float4 shadow = shadow_texture.Sample(decal_sampler, input.texcoord);
+	//float4 shadow = shadow_texture.Sample(decal_sampler, input.texcoord);
 	float4 albedo = albedo_texture.Sample(decal_sampler, input.texcoord);
 
 	float Length = length(eye_pos.xyz - P.xyz);
-	float4 skyboxAlbedo = step(450.0, Length)* albedo;
+	float4 skyboxAlbedo = step(450.0, Length) * albedo;
 	skyboxAlbedo.a = 1;
 
 	//float angle = 1.0 - dot(E, N);
@@ -152,6 +168,19 @@ PS_Output_Light PSmain(PS_InputD input)
 	output.diffuse = float4(D + PD + SpotDiffuse, 1) * reflect;
 	output.specular = float4(S + PS + SpotSpecular, 1) * reflect;
 	output.prelighting = float4(output.diffuse.rgb + output.specular.rgb + A * reflect.rgb, 1) * albedo/* + skyboxAlbedo * light_color*/;
+	//if (P.x < 5.0 && P.x > -5.0)
+	//{
+	//	P.x = 0.0f;
+	//	P.y = 0.0f;
+	//}
+	//if (P.z < 5.0 && P.z > -5.0)
+	//{
+	//	P.z = 0.0f;
+	//	P.y = 0.0f;
+	//}
+	
+
+	//output.prelighting = float4(P, 1);
 	output.skybox = skyboxAlbedo;
 	return output;
 }

@@ -28,7 +28,7 @@
 #include "./RenderPass/ForwardPasses.h"
 #include "./RenderPass/ShadowPasses.h"
 #include "./RenderPass/PostProcessPasses.h"
-#include "./RenderPass/DefferedPasses.h"
+#include "./RenderPass/DeferredPasses.h"
 #include "./RenderPass/SSAOPasses.h"
 #include "./RenderPass/MakeCubeMapPasses.h"
 
@@ -56,7 +56,7 @@ GameSystem::GameSystem()
 	mpForwardPass(std::make_unique<ForwardPass>()),
 	mpShadowPass(std::make_unique<ShadowPass>()),
 	mpPostProcessPass(std::make_unique<PostProcessPass>()),
-	mpDefferedPass(std::make_unique<DefferedPass>()),
+	mpDefferedPass(std::make_unique<DeferredPass>()),
 	mpSSAOPass(std::make_unique<SSAOPass>()),
 	mpCubeMapPass(std::make_unique<MakeCubeMapPass>()),
 	mpMeshRenderer(std::make_unique<NewMeshRenderer>()),
@@ -94,51 +94,14 @@ void GameSystem::Initialize(std::unique_ptr<GraphicsEngine>& p_graphics)
 
 	m_pSceneManager->InitializeLoadingScene();
 
-	mbIsLoadingRenderPasses = true;
-	auto AsyncLoadRenderPasses = [&]()
-	{
-		Log::Info("[ENGINE] Start Loading RenderPasses(Async)");
-
-		PerfTimer timer;
-		timer.Start();
-		{
-			std::unique_lock<std::mutex> lck(mLoadingMutex);
-			mpShadowPass->Initialize(p_device);
-		}
-		{
-			std::unique_lock<std::mutex> lck(mLoadingMutex);
-			mpForwardPass->Initialize(p_device);
-		}
-		{
-			std::unique_lock<std::mutex> lck(mLoadingMutex);
-			mpPostProcessPass->Initialize(p_device);
-		}
-		{
-			std::unique_lock<std::mutex> lck(mLoadingMutex);
-			mpDefferedPass->Initialize(p_device);
-		}
-		{
-			std::unique_lock<std::mutex> lck(mLoadingMutex);
-			mpSSAOPass->Initialize(p_device);
-		}
-		{
-			std::unique_lock<std::mutex> lck(mLoadingMutex);
-			mpCubeMapPass->Initialize(p_device);
-		}
-		//{
-		//    std::unique_lock<std::mutex> lck(mLoadingMutex);
-		//    mpFinalPass->Create(p_device);
-		//}
-
-		mbIsLoadingRenderPasses = false;
-
-
-		timer.Stop();
-		Log::Info("[ENGINE] Loaded RenderPasses(Async) in %.2f(s)---------------", timer.GetDeltaTime());
-		return true;
-	};
+	Settings::Renderer currentSettings = m_pSceneManager->GetNextSceneSettings();
+	mbIsCastingShadow = currentSettings.bCastShadow;
+	mbIsDeffered = currentSettings.bIsDeffered;
+	mbIsSSAO = currentSettings.bEnableAO;
+	mbIsCubeMap = currentSettings.bCubeMap;
 
 	mbIsLoadingScene = true;
+
 	auto AsyncLoadScene = [&]()
 	{
 		Log::Info("[ENGINE] Start Loading Scene(Async)");
@@ -170,11 +133,11 @@ void GameSystem::Initialize(std::unique_ptr<GraphicsEngine>& p_graphics)
 		mbIsLoadingScene = false;
 		timer.Stop();
 		Log::Info("[ENGINE] Loaded Scene(Async) in %.2f(s)---------------", timer.GetDeltaTime());
+
 		return true;
 	};
 
-
-	mpThreadPool->Enqueue(AsyncLoadRenderPasses);
+	LoadRenderPasses(p_graphics);
 	mpThreadPool->Enqueue(AsyncLoadScene);
 
 	mpTimer->Stop();
@@ -188,54 +151,14 @@ void GameSystem::Initialize(std::unique_ptr<GraphicsEngine>& p_graphics)
 
 void GameSystem::Update(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time)
 {
-	if (m_pSceneManager->IsLoading() == true && !mbIsLoadingRenderPasses && !mbIsLoadingScene)
+	if (m_pSceneManager->IsLoading())
 	{
-		D3D::DevicePtr& p_device = p_graphics->GetDevicePtr();
-
-		mbIsLoadingScene = true;
-
-		auto asyncLoadNextScene = [&]()
-		{
-			Log::Info("[ENGINE] Start Loading(Async)");
-
-			PerfTimer timer;
-			timer.Start();
-			{
-				std::unique_lock<std::mutex> lck(mLoadingMutex);
-				mpActorManager->ClearAll();
-			}
-			{
-				std::unique_lock<std::mutex> lck(mLoadingMutex);
-				mpUIRenderer->ClearUIClients();
-			}
-			{
-				std::unique_lock<std::mutex> lck(mLoadingMutex);
-				m_pSceneManager->LoadNextScene();
-			}
-			{
-				std::unique_lock<std::mutex> lck(mLoadingMutex);
-				mpMeshRenderer->ClearAll();
-				mpMeshRenderer->RegistMeshDataFromActors(p_device, mpActorManager);
-			}
-			{
-				std::unique_lock<std::mutex> lck(mLoadingMutex);
-				mpTextureHolder->ClearTextureTable();
-				mpTextureHolder->RegisterTextureFromActors(p_device, mpActorManager);
-			}
-
-			mbIsLoadingScene = false;
-
-			timer.Stop();
-			Log::Info("[ENGINE] Loaded(Async) in %.2f(s)---------------", timer.GetDeltaTime());
-		};
-		mpThreadPool->Enqueue(asyncLoadNextScene);
+		if (!mbIsLoadingScene)		  LoadNextScene(p_graphics);
+		if (!mbIsLoadingRenderPasses) LoadRenderPasses(p_graphics);
 	}
-
-
 	if (mbIsLoadingRenderPasses || mbIsLoadingScene)
 	{
 		m_pSceneManager->ExecuteLoadingScene(elapsed_time);
-
 		return;
 	}
 
@@ -278,8 +201,6 @@ void GameSystem::Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elaps
 
 	mpLight->SetDataForGPU(pImmContext, mpCamera.get());
 
-	mpUIRenderer->SetNextWindowSettings(Vector2(SCREEN_WIDTH - 350, 23), Vector2(350, 500));
-	mpUIRenderer->BeginRenderingNewWindow("RenderTatgets");
 
 	if (mbIsCastingShadow) mpShadowPass->RenderShadow(p_graphics, elapsed_time);
 	if (mbIsCubeMap)       mpCubeMapPass->MakeCubeMap(p_graphics, elapsed_time);
@@ -291,14 +212,36 @@ void GameSystem::Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elaps
 	mpPostProcessPass->RenderPostProcess(p_graphics, elapsed_time);
 
 	//mpFinalPass->RenderResult(p_graphics, elapsed_time);
+	m_pSceneManager->RenderCurrentScene(p_graphics, elapsed_time);
+
+	RenderUI(p_graphics, elapsed_time);
+}
+
+void GameSystem::RenderUIForSettings(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time)
+{
+	mpUIRenderer->SetNextWindowSettings(Vector2(SCREEN_WIDTH - 350, 23), Vector2(350, 337));
+	mpUIRenderer->SetNextUIConfig(true);
+	mpUIRenderer->BeginRenderingNewWindow("RenderTatgets");
 
 	RenderUIByRenderPasses(p_graphics);
 	mpUIRenderer->FinishRenderingWindow();
 
-	m_pSceneManager->RenderCurrentScene(p_graphics, elapsed_time);
-	m_pSceneManager->RenderUI();
 
-	RenderUI(p_graphics);
+
+	mpUIRenderer->SetNextWindowSettings(Vector2(SCREEN_WIDTH - 350, 360), Vector2(350, SCREEN_HEIGHT - 360));
+	mpUIRenderer->BeginRenderingNewWindow("Settings");
+
+	if (mbIsSSAO) mpSSAOPass->RenderUIForSettings();
+	mpCamera->RenderUI();
+	mpLight->RenderUI();
+	mpMeshRenderer->RenderUI();
+	mpPostProcessPass->RenderUIForSettings();
+
+	ImGui::Text("Elapsed Time on Update : %.5f ms", mFrameTimer);
+
+
+	mpUIRenderer->FinishRenderingWindow();
+
 }
 
 void GameSystem::RenderUIByRenderPasses(std::unique_ptr<GraphicsEngine>& p_graphics)
@@ -326,18 +269,8 @@ void GameSystem::RenderUIByRenderPasses(std::unique_ptr<GraphicsEngine>& p_graph
 	mpPostProcessPass->RenderUI();
 }
 
-
-//--------------------------------------------------------------------------------------------------------------------------------
-
-void GameSystem::RenderUI(std::unique_ptr<GraphicsEngine>& p_graphics)
+void GameSystem::RenderUIForMainMenuBar(std::unique_ptr<GraphicsEngine>& p_graphics)
 {
-	mpUIRenderer->SetNextWindowSettings(Vector2(SCREEN_WIDTH - 350, 523), Vector2(350, SCREEN_HEIGHT - 523));
-	mpUIRenderer->BeginRenderingNewWindow("Settings");
-
-	if (mbIsSSAO) mpSSAOPass->RenderUIForSettings();
-	mpCamera->RenderUI();
-	mpLight->RenderUI();
-	mpMeshRenderer->RenderUI();
 #ifdef _DEBUG
 	if (ImGui::BeginMainMenuBar())
 	{
@@ -352,6 +285,18 @@ void GameSystem::RenderUI(std::unique_ptr<GraphicsEngine>& p_graphics)
 
 			ImGui::EndMenu();
 		}
+		if (ImGui::BeginMenu("View"))
+		{
+			if (ImGui::MenuItem("Enable UI"))
+			{
+				mpUIRenderer->SetUIEnable(true);
+			}
+			if (ImGui::MenuItem("Disable UI"))
+			{
+				mpUIRenderer->SetUIEnable(false);
+			}
+			ImGui::EndMenu();
+		}
 		ImGui::EndMainMenuBar();
 	}
 
@@ -362,14 +307,41 @@ void GameSystem::RenderUI(std::unique_ptr<GraphicsEngine>& p_graphics)
 	mpSSAOPass->ReloadShaderFile(p_graphics);
 	mpPostProcessPass->ReloadShaderFile(p_graphics);
 #endif
-	mpPostProcessPass->RenderUIForSettings();
 
-	ImGui::Text("Elapsed Time on Update : %.5f ms", mFrameTimer);
+}
 
-	mpUIRenderer->FinishRenderingWindow();
+void GameSystem::RenderUIForScene(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time)
+{
+	ENGINE.GetUIRenderer()->SetNextWindowSettings(Vector2(0, 23), Vector2(150, 400));
+	mpUIRenderer->SetNextUIConfig(true);
+	ENGINE.GetUIRenderer()->BeginRenderingNewWindow("Scene", false);
 
-	if (mbIsDeffered) mpDefferedPass->RenderUIForAnotherScreen();
-	if (mbIsSSAO)     mpSSAOPass->RenderUIForAnotherScreen();
+	m_pSceneManager->RenderUI();
+
+
+	ENGINE.GetUIRenderer()->FinishRenderingWindow();
+
+	m_pSceneManager->RenderUIForCurrentScene();
+}
+
+
+//--------------------------------------------------------------------------------------------------------------------------------
+
+void GameSystem::RenderUI(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time)
+{
+	if (mpUIRenderer->GetUIEnable())
+	{
+		RenderUIForSettings(p_graphics, elapsed_time);
+
+		if (mbIsDeffered) mpDefferedPass->RenderUIForAnotherScreen();
+		if (mbIsSSAO)     mpSSAOPass->RenderUIForAnotherScreen();
+
+		RenderUIForScene(p_graphics, elapsed_time);
+
+	}
+
+	RenderUIForMainMenuBar(p_graphics);
+
 
 	mpUIRenderer->Execute();
 
@@ -385,6 +357,108 @@ void GameSystem::RenderUI(std::unique_ptr<GraphicsEngine>& p_graphics)
 
 void GameSystem::LoadScene()
 {
+}
+
+void GameSystem::LoadNextScene(std::unique_ptr<GraphicsEngine>& p_graphics)
+{
+	D3D::DevicePtr& p_device = p_graphics->GetDevicePtr();
+
+	mbIsLoadingScene = true;
+
+	Settings::Renderer currentSettings = m_pSceneManager->GetNextSceneSettings();
+	mbIsCastingShadow = currentSettings.bCastShadow;
+	mbIsDeffered = currentSettings.bIsDeffered;
+	mbIsSSAO = currentSettings.bEnableAO;
+	mbIsCubeMap = currentSettings.bCubeMap;
+
+
+	auto asyncLoadNextScene = [&]()
+	{
+		Log::Info("[ENGINE] Start Loading(Async)");
+
+		PerfTimer timer;
+		timer.Start();
+		{
+			std::unique_lock<std::mutex> lck(mLoadingMutex);
+			mpActorManager->ClearAll();
+		}
+		{
+			std::unique_lock<std::mutex> lck(mLoadingMutex);
+			mpUIRenderer->ClearUIClients();
+		}
+		{
+			std::unique_lock<std::mutex> lck(mLoadingMutex);
+			m_pSceneManager->LoadNextScene();
+		}
+		{
+			std::unique_lock<std::mutex> lck(mLoadingMutex);
+			mpMeshRenderer->ClearAll();
+			mpMeshRenderer->RegistMeshDataFromActors(p_device, mpActorManager);
+		}
+		{
+			std::unique_lock<std::mutex> lck(mLoadingMutex);
+			mpTextureHolder->ClearTextureTable();
+			mpTextureHolder->RegisterTextureFromActors(p_device, mpActorManager);
+		}
+
+		mbIsLoadingScene = false;
+
+		timer.Stop();
+		Log::Info("[ENGINE] Loaded(Async) in %.2f(s)---------------", timer.GetDeltaTime());
+	};
+	mpThreadPool->Enqueue(asyncLoadNextScene);
+}
+
+
+
+void GameSystem::LoadRenderPasses(std::unique_ptr<GraphicsEngine>& p_graphics)
+{
+	D3D::DevicePtr& pDevice = p_graphics->GetDevicePtr();
+
+	mbIsLoadingRenderPasses = true;
+
+	auto AsyncLoadRenderPasses = [&]()
+	{
+		Log::Info("[ENGINE] Start Loading RenderPasses(Async)");
+
+		PerfTimer timer;
+		timer.Start();
+		RenderPass::Clear();
+		{
+			std::unique_lock<std::mutex> lck(mLoadingMutex);
+			mpPostProcessPass->Initialize(pDevice);
+		}
+		{
+			std::unique_lock<std::mutex> lck(mLoadingMutex);
+			if (mbIsCastingShadow) mpShadowPass->Initialize(pDevice);
+		}
+		{
+			std::unique_lock<std::mutex> lck(mLoadingMutex);
+			if (!mbIsDeffered) mpForwardPass->Initialize(pDevice);
+			else               mpDefferedPass->Initialize(pDevice);
+		}
+		{
+			std::unique_lock<std::mutex> lck(mLoadingMutex);
+			if (mbIsSSAO) mpSSAOPass->Initialize(pDevice);
+		}
+		{
+			std::unique_lock<std::mutex> lck(mLoadingMutex);
+			if (mbIsCubeMap) mpCubeMapPass->Initialize(pDevice);
+		}
+		//{
+		//    std::unique_lock<std::mutex> lck(mLoadingMutex);
+		//    mpFinalPass->Create(p_device);
+		//}
+
+		mbIsLoadingRenderPasses = false;
+
+		timer.Stop();
+		Log::Info("[ENGINE] Loaded RenderPasses(Async) in %.2f(s)---------------", timer.GetDeltaTime());
+		return true;
+	};
+
+	mpThreadPool->Enqueue(AsyncLoadRenderPasses);
+
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
@@ -425,7 +499,7 @@ RenderPass* GameSystem::GetRenderPass(unsigned int render_pass_id)
 		return mpForwardPass.get();
 	case RenderPassID::EShadowPass:
 		return mpShadowPass.get();
-	case RenderPassID::EDefferedPass:
+	case RenderPassID::EDeferredPass:
 		return mpDefferedPass.get();
 	case RenderPassID::EPostEffectPass:
 		return mpPostProcessPass.get();

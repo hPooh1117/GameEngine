@@ -21,23 +21,19 @@
 
 
 
-MakeCubeMapPass::MakeCubeMapPass():
+MakeCubeMapPass::MakeCubeMapPass() :
 	mpSubView(std::make_unique<SubView>()),
-	mPos({0,0,0}),
+	mPos({ 0,0,0 }),
 	mInterval(0.0f)
 {
 }
 
 void MakeCubeMapPass::Initialize(D3D::DevicePtr& device)
 {
-	InitializeCommonShader(device);
-	AddVertexAndPixelShader(device, ShaderID::EMakeCubeMap, L"MakeCubeMap.hlsl", L"MakeCubeMap.hlsl", "VSmain", "PSmain", VEDType::VED_DEFAULT);
-	AddGeometryShader(device, ShaderID::EMakeCubeMap, L"MakeCubeMap.hlsl", "GSmain");
-	AddVertexAndPixelShader(device, ShaderID::EMakeCubeMapForSkinning, L"MakeCubeMap.hlsl", L"MakeCubeMap.hlsl", "VSmainSkinning", "PSmain", VEDType::VED_SKINNED_MESH);
-	AddGeometryShader(device, ShaderID::EMakeCubeMapForSkinning, L"MakeCubeMap.hlsl", "GSmain");
-
 	GetRenderTargetManager()->CreateCube(device, CUBE_MAP_WIDTH, CUBE_MAP_HEIGHT, DXGI_FORMAT_R8G8B8A8_UNORM, 1, RenderTarget::ECubemap);
 	//CreateCubeRenderTarget(device, CUBE_MAP_WIDTH, CUBE_MAP_HEIGHT, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, 1, RenderTarget::ECubemap);
+
+	if (mbIsInitialized) return;
 
 	mpDSV->CreateCubeDepthStencil(device, CUBE_MAP_WIDTH, CUBE_MAP_HEIGHT);
 
@@ -49,6 +45,14 @@ void MakeCubeMapPass::Initialize(D3D::DevicePtr& device)
 	cbDesc.CPUAccessFlags = 0;
 
 	device->CreateBuffer(&cbDesc, nullptr, mpCBufferForView.GetAddressOf());
+
+
+	InitializeCommonShader(device);
+	AddVertexAndPixelShader(device, ShaderID::EMakeCubeMap, L"MakeCubeMap.hlsl", L"MakeCubeMap.hlsl", "VSmain", "PSmain", VEDType::VED_DEFAULT);
+	AddGeometryShader(device, ShaderID::EMakeCubeMap, L"MakeCubeMap.hlsl", "GSmain");
+	AddVertexAndPixelShader(device, ShaderID::EMakeCubeMapForSkinning, L"MakeCubeMap.hlsl", L"MakeCubeMap.hlsl", "VSmainSkinning", "PSmain", VEDType::VED_SKINNED_MESH);
+	AddGeometryShader(device, ShaderID::EMakeCubeMapForSkinning, L"MakeCubeMap.hlsl", "GSmain");
+
 
 	mbIsInitialized = true;
 }

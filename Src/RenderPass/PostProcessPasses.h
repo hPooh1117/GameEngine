@@ -20,7 +20,9 @@ private:
 	float mSaturationLevel;
 	float mVignetteLevel;
 
+	bool mbIsBlurred;
 	bool mbIsDrawing;
+	UINT mCurrentRenderTarget;
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer> mpConstantBuffer;
 	struct CBufferForPostProcess

@@ -116,6 +116,7 @@ bool GraphicsEngine::Initialize(HWND hwnd)
     }
 
     dsDesc.DepthEnable = TRUE;
+    //dsDesc.StencilEnable = TRUE;
     dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
     dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
     result = m_pD3dDevice->CreateDepthStencilState(&dsDesc, m_pDepthStencilState[DS_TRUE].GetAddressOf());

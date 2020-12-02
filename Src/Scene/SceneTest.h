@@ -3,7 +3,7 @@
 
 class GraphicsEngine;
 class ComputedTexture;
-class NewTexture;
+class Texture;
 
 class SceneTest :
     public Scene
@@ -16,6 +16,7 @@ public:
     virtual void PreCompute(std::unique_ptr<GraphicsEngine>& p_graphics) override;
 
     virtual void Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time) override;
+    virtual void RenderUI() override;
 
     ~SceneTest();
 
@@ -28,12 +29,13 @@ private:
     std::shared_ptr<Actor> mpActors[25];
 
     std::shared_ptr<Actor> mpPBR;
+    std::shared_ptr<Actor> mpModel;
 
     std::unique_ptr<ComputedTexture> mpIrradianceTex;
     std::unique_ptr<ComputedTexture> mpSpecularMapTex;
     std::unique_ptr<ComputedTexture> mpEnvironmentTex;
     std::unique_ptr<ComputedTexture> mpSpecularBRDF_LUT;
-    std::unique_ptr<NewTexture>      mpSkyTex;
+    std::unique_ptr<Texture>      mpSkyTex;
 
     bool mbAutoSetParameter;
 };

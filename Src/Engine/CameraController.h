@@ -59,7 +59,8 @@ private:
 	Vector3 mCameraUp;       // カメラの上方向
 	Matrix mView;        // 現在カメラのビュー行列
 	Matrix mProjection;  // 現在カメラの射影行列
-
+	Matrix mInvView;
+	Matrix mInvProj;
 
 public:
 	CameraController();
@@ -79,6 +80,8 @@ public:
 	//--< GETTER >----------------------------------------------------------------------
 	inline const Vector3& GetCameraPosition() { return mCameraPos; }
 	inline const Vector3& GetCameraTarget() { return mCameraTarget; }
+	inline const float GetNearZ() { return mNearPlane; }
+	inline const float GetFarZ() { return mFarPlane; }
 	DirectX::XMMATRIX GetViewMatrix();
 	DirectX::XMMATRIX GetInvViewMatrix();
 	DirectX::XMMATRIX GetProjMatrix(D3D::DeviceContextPtr& p_imm_context);

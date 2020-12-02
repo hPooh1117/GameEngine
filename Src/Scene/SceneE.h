@@ -20,6 +20,8 @@ public:
 
 	void         RegistUIClients();
 	virtual void Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time) override;
+	virtual void RenderUI() override;
+
 	~SceneE();
 
 private:

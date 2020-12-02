@@ -38,6 +38,15 @@ class  CameraController;
 
 class LightController : public UIClient
 {
+public:
+	enum LightConfig
+	{
+		ENone = 0,
+		EDirectionalLight = 1,
+		EPointLight = 2,
+		ESpotLight = 4,
+	};
+
 private:
 	D3D::BufferPtr m_pConstantBuffer;
 
@@ -52,6 +61,7 @@ private:
 	float   mEnvironmentMapAlpha;
 	float   mTimer;
 
+	UINT    mLightConfig;
 
 	// Point Light Settings
 	std::vector<PointLightData> mPointLights;
@@ -67,7 +77,7 @@ public:
 	LightController(D3D::DevicePtr& p_device);
 	~LightController() = default;
 
-	bool Init(unsigned int pointLightNum, unsigned int spotLightNum);
+	bool Init(unsigned int pointLightNum, unsigned int spotLightNum, bool directional_enable = true);
 	void Update(float elapsed_time);
 
 private:

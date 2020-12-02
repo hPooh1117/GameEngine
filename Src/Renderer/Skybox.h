@@ -5,7 +5,7 @@
 #include <algorithm>
 
 class Texture;
-class NewTexture;
+class Texture;
 
 enum SkyboxTextureID
 {
@@ -26,8 +26,8 @@ private:
     static const std::wstring TEXTURE_PATH;
 
     unsigned int mCurrentID;
-    std::array<std::unique_ptr<NewTexture>, ENUM_SKYBOXID_MAX> mpTextures;
-    std::unique_ptr<NewTexture> mpTexture;
+    std::array<std::unique_ptr<Texture>, ENUM_SKYBOXID_MAX> mpTextures;
+    std::unique_ptr<Texture> mpTexture;
 
     Microsoft::WRL::ComPtr<ID3D11Buffer>            mpVertexBuffer;
     Microsoft::WRL::ComPtr<ID3D11Buffer>            mpIndexBuffer;

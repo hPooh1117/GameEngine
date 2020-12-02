@@ -67,9 +67,9 @@ SceneD::SceneD(SceneManager* manager, Microsoft::WRL::ComPtr<ID3D11Device>& devi
 	//	L"./Data/Images/check.jpg");
 	mpPlayer->AddComponent<NewMeshComponent>();
 	mpPlayer->GetComponent<NewMeshComponent>()->RegisterMesh(MeshTypeID::E_BasicSphere, ShaderID::ELambert, nullptr, FbxType::EDefault);
-	mpPlayer->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Images/check.jpg", TextureConfig::EColorMap);
 	mpPlayer->AddComponent<SphereColliderComponent>();
 	mpPlayer->SetPosition(Vector3(1.5f, 4, -3));
+	mpPlayer->GetComponent<NewMeshComponent>()->SetMaterialColor(Vector3(0.8f, 0.2f, 0.1f));
 	ENGINE.GetActorManagerPtr()->AddActor(mpPlayer);
 
 	int actorCounter = 1;
@@ -159,46 +159,10 @@ void SceneD::PreCompute(std::unique_ptr<GraphicsEngine>& p_graphics)
 void SceneD::Render(std::unique_ptr<GraphicsEngine>& p_graphics,
 	float elapsed_time)
 {
-	//Microsoft::WRL::ComPtr<ID3D11DeviceContext> immContext = p_graphics->GetImmContextPtr();
+}
 
-	//m_pCameraController->SetMatrix(immContext);
-
-	//m_pLightController->SetDataForGPU(immContext, m_pCameraController.get());
-
-	//m_pBlender->SetBlendState(immContext, Blender::BLEND_ALPHA);
-
-	//m_pRenderer->RenderQueue(immContext, elapsed_time);
-
-	//m_pBlender->SetBlendState(immContext, Blender::BLEND_ADD);
-
-	//mFont->Begin(immContext);
-
-	//mFont->RenderText(
-	//	immContext,
-	//	"player position :" +
-	//	std::to_string(mpPlayer->GetPosition().x) + ". " +
-	//	std::to_string(mpPlayer->GetPosition().y) + ". " +
-	//	std::to_string(mpPlayer->GetPosition().z)
-	//	, XMFLOAT2(16, 24), XMFLOAT2(16, 16), XMFLOAT4(1, 1, 1, 1));
-	//mFont->RenderText(
-	//	immContext,
-	//	"player velocity :" +
-	//	std::to_string(mpPlayer->GetComponent<MoveComponent>()->GetVelocity().x) + ". " +
-	//	std::to_string(mpPlayer->GetComponent<MoveComponent>()->GetVelocity().y) + ". " +
-	//	std::to_string(mpPlayer->GetComponent<MoveComponent>()->GetVelocity().z)
-	//	, XMFLOAT2(16, 40), XMFLOAT2(16, 16), XMFLOAT4(1, 1, 1, 1));
-
-	//mFont->RenderText(
-	//	immContext,
-	//	"collision counter :" +
-	//	std::to_string(mpPhysics->GetCollisionCounter() / 2)
-	//	, XMFLOAT2(16, 56), XMFLOAT2(16, 16), XMFLOAT4(1, 1, 1, 1));
-	//mFont->RenderText(
-	//	immContext,
-	//	"GamePad Connection : " +
-	//	std::to_string(InputPtr->IsConnected(0)),
-	//	XMFLOAT2(16, 72), XMFLOAT2(16, 16), XMFLOAT4(1, 1, 1, 1));
-
+void SceneD::RenderUI()
+{
 	ENGINE.GetUIRenderer()->SetText("player position :" +
 		std::to_string(mpPlayer->GetPosition().x) + ". " +
 		std::to_string(mpPlayer->GetPosition().y) + ". " +
@@ -212,13 +176,6 @@ void SceneD::Render(std::unique_ptr<GraphicsEngine>& p_graphics,
 	ENGINE.GetUIRenderer()->SetText("GamePad Connection : " +
 		std::to_string(InputPtr.IsConnected(0)));
 
-
-	//ENGINE.GetUIRenderer()->SetNextWindowSettings(Vector2(SCREEN_WIDTH - 300, 0), Vector2(300, 600));
-	//ENGINE.GetUIRenderer()->BeginRenderingNewWindow("Debugging");
-	//ENGINE.GetUIRenderer()->RenderUIQueue();
-	//ENGINE.GetUIRenderer()->FinishRenderingWindow();
-
-	//mFont->End(immContext);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------

@@ -7,7 +7,6 @@
 
 #include "./Engine/MainCamera.h"
 #include "./Engine/CameraController.h"
-#include "./Engine/DirectionalLight.h"
 #include "./Engine/GameSystem.h"
 #include "./Engine/LightController.h"
 #include "./Engine/Actor.h"
@@ -28,7 +27,6 @@
 
 using namespace DirectX;
 
-#pragma region OLDIMPL
 
 SceneA::SceneA(SceneManager* manager, Microsoft::WRL::ComPtr<ID3D11Device>& device) :Scene(manager, device)
 {
@@ -45,7 +43,7 @@ SceneA::SceneA(SceneManager* manager, Microsoft::WRL::ComPtr<ID3D11Device>& devi
 	mpSphere->AddComponent<NewMeshComponent>();
 	mpSphere->GetComponent<NewMeshComponent>()->RegisterMesh(MeshTypeID::E_BasicSphere, ShaderID::EEnvironmentMap, nullptr, FbxType::EDefault);
 	mpSphere->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Images/check.jpg", TextureConfig::EColorMap);
-	mpSphere->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Images/Environment/Footprint_Court/Footprint_Court_8k_TMap.jpg", TextureConfig::EEnvironmentMap);
+	mpSphere->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Images/Environment/Walk_Of_Fame/Mans_Outside_2k.hdr", TextureConfig::EEnvironmentMap);
 	ENGINE.GetActorManagerPtr()->AddActor(mpSphere);
 
 	mpEarth = Actor::Initialize(ActorID::kNonPlayer);
@@ -123,10 +121,10 @@ void SceneA::Render(
 	std::unique_ptr<GraphicsEngine>& p_graphics,
 	float elapsed_time)
 {
-	//ENGINE.GetUIRenderer()->SetNextWindowSettings(Vector2(0, SCREEN_HEIGHT - 200), Vector2(300, 200));
-	//ENGINE.GetUIRenderer()->BeginRenderingNewWindow("PBR");
-	//mpFlat->GetComponent<NewMeshComponent>()->RenderUI();
-	//ENGINE.GetUIRenderer()->FinishRenderingWindow();
+}
+
+void SceneA::RenderUI()
+{
 }
 
 
@@ -134,4 +132,3 @@ SceneA::~SceneA()
 {
 }
 
-#pragma endregion

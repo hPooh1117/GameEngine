@@ -24,6 +24,7 @@ PostProcessPass::PostProcessPass()
 	mSaturationLevel(1.0f),
 	mVignetteLevel(0.0f),
 	mbIsDrawing(true),
+	mbIsBlurred(true),
 	mpPostProcessTex(std::make_unique<ComputedTexture>()),
 	mpBlurPass(std::make_unique<BlurExecuter>())
 {
@@ -31,11 +32,11 @@ PostProcessPass::PostProcessPass()
 
 void PostProcessPass::Initialize(D3D::DevicePtr& device)
 {
-	InitializeCommonShader(device);
 
-	mpScreen = std::make_unique<Sprite>(device);
+	GetRenderTargetManager()->Create(device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::EPostProcess);
 
-	AddVertexAndPixelShader(device, ShaderID::EPostEffect, L"PostEffect.hlsl", L"PostEffect.hlsl", "VSmain", "PSmain", VEDType::VED_SPRITE);
+
+	if (mbIsInitialized) return;
 
 	D3D11_BUFFER_DESC cbDesc = {};
 	ZeroMemory(&cbDesc, sizeof(D3D11_BUFFER_DESC));
@@ -46,10 +47,6 @@ void PostProcessPass::Initialize(D3D::DevicePtr& device)
 
 	device->CreateBuffer(&cbDesc, nullptr, mpConstantBuffer.GetAddressOf());
 
-	GetRenderTargetManager()->Create(device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::EPostProcess);
-	mpDSV->Create(device, SCREEN_WIDTH, SCREEN_HEIGHT);
-
-
 	mpPostProcessTex->CreateShader(device, L"./Src/Shaders/CS_Desaturate.hlsl", "CSmain");
 	mpPostProcessTex->CreateTexture(device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT);
 	mpPostProcessTex->CreateTextureUAV(device, 0);
@@ -57,7 +54,20 @@ void PostProcessPass::Initialize(D3D::DevicePtr& device)
 
 	mpBlurPass->Initialize(device);
 	mpBlurPass->CreateShader(device);
-	mpBlurPass->ChangeSetting(1, 4);
+	//mpBlurPass->ChangeSetting(1, 4);
+
+
+
+	InitializeCommonShader(device);
+
+	mpScreen = std::make_unique<Sprite>(device);
+
+	AddVertexAndPixelShader(device, ShaderID::EPostEffect, L"PostEffect.hlsl", L"PostEffect.hlsl", "VSmain", "PSmain", VEDType::VED_SPRITE);
+
+
+	mpDSV->Create(device, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+
 
 	mbIsInitialized = true;
 }
@@ -68,15 +78,32 @@ void PostProcessPass::RenderPostProcess(std::unique_ptr<GraphicsEngine>& p_graph
 
 	D3D::DeviceContextPtr& pImmContext = p_graphics->GetImmContextPtr();
 
+	if (!ENGINE.IsDefferedRendering()) mCurrentRenderTarget = RenderTarget::EForward;
+	else
+	{
+		if (ENGINE.IsSSAOActivated()) mCurrentRenderTarget = RenderTarget::EThirdResult;
+		else						  mCurrentRenderTarget = RenderTarget::EFirstResult;
+	}
 
-	// Compute Shader処理の実行
-	mpPostProcessTex->SetCBuffer(pImmContext, static_cast<float>(SCREEN_WIDTH), static_cast<float>(SCREEN_HEIGHT));
-	mpPostProcessTex->Compute(pImmContext, GetRenderTargetManager()->GetShaderResource(RenderTarget::EForward), 1);
-	mpPostProcessTex->Set(pImmContext, 0);
+	GetRenderTargetManager()->Deactivate(pImmContext, mCurrentRenderTarget);
 
-	mpBlurPass->ActivateBlur(pImmContext, true);
-	mpBlurPass->ExecuteBlur(pImmContext);
-	mpBlurPass->Deactivate(pImmContext);
+	if (mbIsPostProcessed)
+	{
+
+		//const D3D::SRVPtr& pSRV = 
+
+		// Compute Shader処理の実行
+		mpPostProcessTex->SetCBuffer(pImmContext, static_cast<float>(SCREEN_WIDTH), static_cast<float>(SCREEN_HEIGHT));
+		mpPostProcessTex->Compute(pImmContext, GetRenderTargetManager()->GetShaderResource(mCurrentRenderTarget), SCREEN_WIDTH / 32, SCREEN_HEIGHT / 16, 1);
+		mpPostProcessTex->Set(pImmContext, 0);
+
+		if (mbIsBlurred)
+		{
+			mpBlurPass->ActivateBlur(pImmContext, true);
+			mpBlurPass->ExecuteBlur(pImmContext, mpPostProcessTex->GetSRV(), 0);
+			mpBlurPass->Deactivate(pImmContext);
+		}
+	}
 
 
 	// 最終的なスクリーンを実行
@@ -95,6 +122,8 @@ void PostProcessPass::RenderPostProcess(std::unique_ptr<GraphicsEngine>& p_graph
 
 void PostProcessPass::RenderUI()
 {
+	if (mbIsPostProcessed == false) return;
+
 	if (ImGui::TreeNode("Post Process"))
 	{
 		if (ImGui::ImageButton((void*)mpPostProcessTex->GetSRV().Get(), ImVec2(320, 180)))
@@ -118,6 +147,10 @@ void PostProcessPass::RenderUIForSettings()
 
 		ImGui::Checkbox("Drawing", &mbIsDrawing);
 		ImGui::Checkbox("PostProcess", &mbIsPostProcessed);
+		ImGui::Checkbox("Blur", &mbIsBlurred);
+		int blurStrength = mpBlurPass->GetBlurStrength();
+		ImGui::SliderInt("Blur Level", &blurStrength, 0, 1);
+		mpBlurPass->SetBlurStrength(blurStrength);
 
 		MyArrayFromVector correction = MyArrayFromVector(mCorrectColor);
 		ImGui::SliderFloat3("Color Correction", correction.SetArray(), 0.0f, 2.0f);

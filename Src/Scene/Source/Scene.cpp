@@ -6,6 +6,7 @@
 #include "./Engine/UIRenderer.h"
 #include "./Engine/LightController.h"
 #include "./Engine/MeshRenderer.h"
+#include "./Engine/Settings.h"
 
 #include "./Renderer/Blender.h"
 #include "./Renderer/Shader.h"
@@ -14,6 +15,18 @@
 #include "./Renderer/Skybox.h"
 
 #include "./Utilities/Log.h"
+
+
+const Settings::Renderer Scene::mSettings[7] = {
+    //shadow     ssao     deffered     cubemap
+    { false,     false,    false,     false },
+    { true,      false,    true,      false },
+    { false,     false,    false,     false },
+    { false,     false,    false,     false },
+    { true,      true,     true,      false },
+    { false,     false,    false,     true  },
+    { false,     false,    false,     false },
+};
 
 Scene::Scene(SceneManager* manager,
     Microsoft::WRL::ComPtr<ID3D11Device>& device)
@@ -32,7 +45,7 @@ Scene::Scene(SceneManager* manager,
     mSceneNameTable[static_cast<unsigned int>(SceneID::SCENE_C)] = "SporLight Sea  ";
     mSceneNameTable[static_cast<unsigned int>(SceneID::SCENE_D)] = "Physics Test   ";
     mSceneNameTable[static_cast<unsigned int>(SceneID::SCENE_E)] = "SSAO Test      ";
-    mSceneNameTable[static_cast<unsigned int>(SceneID::SCENE_F)] = "Motion Test    ";
+    mSceneNameTable[static_cast<unsigned int>(SceneID::SCENE_F)] = "Cubemap Test   ";
     mSceneNameTable[static_cast<unsigned int>(SceneID::SCENE_TEST)] = "PBR Test       ";
 
 }

@@ -183,7 +183,7 @@ PS_Output_AO PSmain(PS_InputBumpShadow input)
 	tex.y -= invE.y * H * viewOffset;
 
 	// 法線マップから法線取得
-	float3 N = HasNormalMap(gTextureConfig) > 0 ? ApplyNormalMap(vMat, normal_texture, decal_sampler, tex) :vz;
+	float3 N = HasNormalMap(gTextureConfig) > 0 ? ApplyNormalMap(vMat, normal_texture, decal_sampler, tex) : vz;
 	//N = N * 2.0 - 1.0;
 
 	// 接空間からワールドへ変換
@@ -193,7 +193,7 @@ PS_Output_AO PSmain(PS_InputBumpShadow input)
 	output.color = diffuse_texture.Sample(decal_sampler, tex) * input.color;
 	output.normal = float4(N, 1);
 	output.position = P;
-	output.shadow = HasShadowMap(gTextureConfig) > 0 ? float4(GetShadow(shadow_texture, decal_sampler, input.v_shadow, shadow_color, bias), 1) : float4(1,1,1,1);
+	output.shadow = HasShadowMap(gTextureConfig) > 0 ? float4(GetShadow(shadow_texture, height_sampler, input.v_shadow, shadow_color, bias), 1) : float4(1, 1, 1, 1);
 	output.depth = float4(input.depth.x / input.depth.y, 0, 0, 1);
 	//output.depth.r = LinearizeDepth(output.depth.r, 0.1, 1000.0);
 

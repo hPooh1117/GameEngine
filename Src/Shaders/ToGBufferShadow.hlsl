@@ -109,7 +109,7 @@ PS_Output_AO PSmain(PS_Input_Last input)
 	output.color = diffuse_texture.Sample(decal_sampler, input.texcoord) * input.color;
 	output.normal = float4(N, 1);
 	output.position = P;
-	output.shadow = float4(GetShadow(shadow_texture, shadow_sampler, input.v_shadow, shadow_color, bias), 1);
+	output.shadow = float4(GetShadow(shadow_texture, decal_sampler, input.v_shadow, shadow_color, bias), 1);
 	output.depth = float4(input.depth.x / input.depth.y, 0, 0, 1);
 	//output.depth.r = LinearizeDepth(output.depth.r, 0.1, 1000.0);
 	return output;

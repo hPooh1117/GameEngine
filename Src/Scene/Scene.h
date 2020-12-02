@@ -8,12 +8,13 @@
 
 #include "./Utilities/Vector.h"
 
+namespace Settings { struct Renderer; }
 class GraphicsEngine;
 
 class Scene
 {
 public:
-
+    static const Settings::Renderer mSettings[7];
 protected:
     SceneManager*                                 m_pManager;
     int                                           mTimer;
@@ -43,6 +44,7 @@ public:
     virtual void Update(float elapsed_time) = 0;
     virtual void PreCompute(std::unique_ptr<GraphicsEngine>& p_graphics) = 0;
     virtual void Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time) = 0;
+    virtual void RenderUI() = 0;
     
     const std::string& GetCurrentSceneName();
     const std::string& GetSceneName(unsigned int num);

@@ -9,6 +9,7 @@
 #include "./Engine/Singleton.h"
 
 #include "./Utilities/ImguiSelf.h"
+#include <iostream>
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
@@ -44,8 +45,8 @@ bool Window::Init()
 		L"GameEngine",
 		L"",
 		WS_OVERLAPPEDWINDOW/* ^ WS_MAXIMIZEBOX ^ WS_THICKFRAME | WS_VISIBLE*/,
-		1900 - SCREEN_WIDTH,
-		1000 - SCREEN_HEIGHT,
+		CW_USEDEFAULT,
+		CW_USEDEFAULT,
 		rc.right - rc.left,
 		rc.bottom - rc.top,
 		NULL, NULL, nullptr, this);
@@ -181,8 +182,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 		break;
 	case WM_SIZE:
 	{
-		Window* window = (Window*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-		if (window) window->OnSize();
+		//Window* window = (Window*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		//if (window) window->OnSize();
 		break;
 	}
 	case WM_SETFOCUS:

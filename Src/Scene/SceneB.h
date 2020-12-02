@@ -25,6 +25,7 @@ public:
     virtual void PreCompute(std::unique_ptr<GraphicsEngine>& p_graphics) override;
 
     virtual void Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time) override;
+    virtual void RenderUI() override;
 
     ~SceneB();
 private:
@@ -37,7 +38,5 @@ private:
 
     std::shared_ptr<Actor> m_pField;
 
-    int mNumElement;
-    std::vector<SimpleBuffer> mSimpleBufferVec;
 
 };

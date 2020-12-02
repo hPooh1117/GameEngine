@@ -46,8 +46,12 @@ PS_InputBumpShadow VSmain(VS_Input input)
 	vy = normalize(vy);
 
 
+	//output.position = mul(P, matWVP);
+	//output.w_pos = wPos.xyz;
+
 	output.position = mul(P, matWVP);
 	output.w_pos = wPos.xyz;
+
 	output.w_normal = N;
 	output.color = mat_color;
 	output.texcoord = input.texcoord;
@@ -125,6 +129,7 @@ PS_InputBumpShadow VSmainSkinning(VS_InputS input)
 	vy = normalize(vy);
 
 
+
 	output.position = mul(p, matWVP);
 	output.w_pos = wPos.xyz;
 	output.w_normal = N;
@@ -151,7 +156,15 @@ float LinearizeDepth(float depth, float near, float far)
 PS_Output_AO PSmain(PS_InputBumpShadow input)
 {
 	PS_Output_AO output = (PS_Output_AO)0;
+
 	float4 P = float4(input.w_pos, 1);
+	//float4 P = input.position;
+	//P.xyz /= P.w;
+	//P.w = 1.0;
+	//P = mul(inv_proj_mat, P);
+	//P = mul(inv_view_mat, P);
+	//P.xyz /= P.w;
+	//P.w = 1;
 
 	float3 vx = normalize(input.v_tan);
 	float3 vy = normalize(input.v_bin);
@@ -186,9 +199,9 @@ PS_Output_AO PSmain(PS_InputBumpShadow input)
 	output.color = diffuse_texture.Sample(decal_sampler, tex) * input.color;
 	output.normal = float4(N, 1);
 	output.position = P;
-	output.shadow = float4(GetShadow(shadow_texture, decal_sampler, input.v_shadow, shadow_color, bias), 1);
+	output.shadow = float4(GetShadow(shadow_texture, decal_sampler, input.v_shadow, shadow_color, bias), 1)/*P*/;
 	output.depth = float4(input.depth.x / input.depth.y, 0, 0, 1);
-	//output.depth.r = LinearizeDepth(output.depth.r, 0.1, 1000.0);
+	//output.depth.r = LinearizeDepth(output.depth.r, 1.0, 1000.0);
 
 	return output;
 }

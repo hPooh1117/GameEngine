@@ -34,16 +34,16 @@ struct PS_Output_AO
 	float4 normal : SV_TARGET1;
 	float4 position : SV_TARGET2;
 	float4 shadow : SV_TARGET3;
-	float4 depth : SV_TARGET4;
+	float4  depth : SV_TARGET4;
 };
 
 
 struct PS_Output_Light
 {
-	float4 prelighting : SV_TARGET0;
-	float4 diffuse : SV_TARGET1;
-	float4 specular : SV_TARGET2;
-	float4 skybox : SV_TARGET3;
+	float4 diffuse : SV_TARGET0;
+	float4 specular : SV_TARGET1;
+	float4 skybox : SV_TARGET2;
+	float4 prelighting : SV_TARGET3;
 };
 
 struct PS_Output_SSAO

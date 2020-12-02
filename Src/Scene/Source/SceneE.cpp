@@ -151,6 +151,10 @@ void SceneE::Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_t
 {
 }
 
+void SceneE::RenderUI()
+{
+}
+
 //----------------------------------------------------------------------------------------------------------------------------
 
 SceneE::~SceneE()

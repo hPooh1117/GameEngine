@@ -23,13 +23,13 @@ enum SamplerID
 };
 
 
-class NewTexture;
+class Texture;
 class ActorManager;
 
 class TextureHolder
 {
 private:
-	std::unordered_map<std::wstring, std::unique_ptr<NewTexture>> mTextureTable;
+	std::unordered_map<std::wstring, std::unique_ptr<Texture>> mTextureTable;
 	std::array < D3D::SamplerStatePtr, SamplerID::ENUM_SAMPLER_MAX> mpSamplerTable;
 public:
 	TextureHolder() = default;

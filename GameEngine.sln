@@ -27,9 +27,15 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Application", "Src\Solution
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shaders", "Shaders", "{CA61941D-3514-446A-8D0D-FEF951E05B42}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Component", "Src\SolutionItems\Component\Component.vcxproj", "{A399E72D-047C-4547-B455-43AB1E235BF9}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenderPass", "Src\SolutionItems\RenderPasses\RenderPasses.vcxproj", "{EBD2A057-C1DE-4A2C-8B81-9497E7E0E964}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "VS", "VS", "{7A66177F-ED37-4F74-93F4-67078970131C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CS", "CS", "{52F121F6-C65E-4295-B3AB-DAB4B5C12D31}"
 	ProjectSection(SolutionItems) = preProject
-		Src\Shaders\BasicShader.hlsl = Src\Shaders\BasicShader.hlsl
-		Src\Shaders\BasicTesselation1.hlsl = Src\Shaders\BasicTesselation1.hlsl
 		Src\Shaders\ComputeSample.hlsl = Src\Shaders\ComputeSample.hlsl
 		Src\Shaders\CS_ConvertToHSV.hlsl = Src\Shaders\CS_ConvertToHSV.hlsl
 		Src\Shaders\CS_Desaturate.hlsl = Src\Shaders\CS_Desaturate.hlsl
@@ -40,7 +46,29 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shaders", "Shaders", "{CA61
 		Src\Shaders\CS_PreFilteringForSpecular.hlsl = Src\Shaders\CS_PreFilteringForSpecular.hlsl
 		Src\Shaders\CS_SpecularBRDF.hlsl = Src\Shaders\CS_SpecularBRDF.hlsl
 		Src\Shaders\CS_SSAO.hlsl = Src\Shaders\CS_SSAO.hlsl
+		Src\Shaders\CS_SSAO_Optimized.hlsl = Src\Shaders\CS_SSAO_Optimized.hlsl
 		Src\Shaders\CS_TBDR.hlsl = Src\Shaders\CS_TBDR.hlsl
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Header", "Header", "{9505C8ED-E571-47E0-97D3-C8659010B951}"
+	ProjectSection(SolutionItems) = preProject
+		Src\Shaders\H_2DSprite.hlsli = Src\Shaders\H_2DSprite.hlsli
+		Src\Shaders\H_BumpMapping.hlsli = Src\Shaders\H_BumpMapping.hlsli
+		Src\Shaders\H_CS_Global.hlsli = Src\Shaders\H_CS_Global.hlsli
+		Src\Shaders\H_DataFormat.hlsli = Src\Shaders\H_DataFormat.hlsli
+		Src\Shaders\H_DirectionalLight.hlsli = Src\Shaders\H_DirectionalLight.hlsli
+		Src\Shaders\H_Functions.hlsli = Src\Shaders\H_Functions.hlsli
+		Src\Shaders\H_Light.hlsli = Src\Shaders\H_Light.hlsli
+		Src\Shaders\H_PointLight.hlsli = Src\Shaders\H_PointLight.hlsli
+		Src\Shaders\H_ShadowMap.hlsli = Src\Shaders\H_ShadowMap.hlsli
+		Src\Shaders\H_SpotLight.hlsli = Src\Shaders\H_SpotLight.hlsli
+		Src\Shaders\H_ToGBuffer.hlsli = Src\Shaders\H_ToGBuffer.hlsli
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PS", "PS", "{F19D5CD0-2835-49DF-BA32-73C7764CC093}"
+	ProjectSection(SolutionItems) = preProject
+		Src\Shaders\BasicShader.hlsl = Src\Shaders\BasicShader.hlsl
+		Src\Shaders\BasicTesselation1.hlsl = Src\Shaders\BasicTesselation1.hlsl
 		Src\Shaders\CubemapConvolution.hlsl = Src\Shaders\CubemapConvolution.hlsl
 		Src\Shaders\CustomLight.hlsl = Src\Shaders\CustomLight.hlsl
 		Src\Shaders\DefferedDirectionalLight.hlsl = Src\Shaders\DefferedDirectionalLight.hlsl
@@ -66,16 +94,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shaders", "Shaders", "{CA61
 		Src\Shaders\geometric_ps.hlsl = Src\Shaders\geometric_ps.hlsl
 		Src\Shaders\geometric_vs.hlsl = Src\Shaders\geometric_vs.hlsl
 		Src\Shaders\GPUSkinning_cs.hlsl = Src\Shaders\GPUSkinning_cs.hlsl
-		Src\Shaders\H_2DSprite.hlsli = Src\Shaders\H_2DSprite.hlsli
-		Src\Shaders\H_BumpMapping.hlsli = Src\Shaders\H_BumpMapping.hlsli
-		Src\Shaders\H_DataFormat.hlsli = Src\Shaders\H_DataFormat.hlsli
-		Src\Shaders\H_DirectionalLight.hlsli = Src\Shaders\H_DirectionalLight.hlsli
-		Src\Shaders\H_Functions.hlsli = Src\Shaders\H_Functions.hlsli
-		Src\Shaders\H_Light.hlsli = Src\Shaders\H_Light.hlsli
-		Src\Shaders\H_PointLight.hlsli = Src\Shaders\H_PointLight.hlsli
-		Src\Shaders\H_ShadowMap.hlsli = Src\Shaders\H_ShadowMap.hlsli
-		Src\Shaders\H_SpotLight.hlsli = Src\Shaders\H_SpotLight.hlsli
-		Src\Shaders\H_ToGBuffer.hlsli = Src\Shaders\H_ToGBuffer.hlsli
 		Src\Shaders\hemi_skinned_ps.hlsl = Src\Shaders\hemi_skinned_ps.hlsl
 		Src\Shaders\hemi_skinned_vs.hlsl = Src\Shaders\hemi_skinned_vs.hlsl
 		Src\Shaders\HemiSphere.hlsl = Src\Shaders\HemiSphere.hlsl
@@ -83,7 +101,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shaders", "Shaders", "{CA61
 		Src\Shaders\Line.hlsl = Src\Shaders\Line.hlsl
 		Src\Shaders\MakeCubeMap.hlsl = Src\Shaders\MakeCubeMap.hlsl
 		Src\Shaders\NormalMap.hlsl = Src\Shaders\NormalMap.hlsl
-		Src\Shaders\PBR_MEMO.txt = Src\Shaders\PBR_MEMO.txt
 		Src\Shaders\Phong.hlsl = Src\Shaders\Phong.hlsl
 		Src\Shaders\phong.hlsli = Src\Shaders\phong.hlsli
 		Src\Shaders\phong_obj.hlsli = Src\Shaders\phong_obj.hlsli
@@ -131,9 +148,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shaders", "Shaders", "{CA61
 		Src\Shaders\UseCubeMap.hlsl = Src\Shaders\UseCubeMap.hlsl
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Component", "Src\SolutionItems\Component\Component.vcxproj", "{A399E72D-047C-4547-B455-43AB1E235BF9}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenderPass", "Src\SolutionItems\RenderPasses\RenderPasses.vcxproj", "{EBD2A057-C1DE-4A2C-8B81-9497E7E0E964}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NewFolder1", "NewFolder1", "{B7541265-11F8-493C-8A9D-F4F83316196E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -244,6 +259,13 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{7A66177F-ED37-4F74-93F4-67078970131C} = {CA61941D-3514-446A-8D0D-FEF951E05B42}
+		{52F121F6-C65E-4295-B3AB-DAB4B5C12D31} = {CA61941D-3514-446A-8D0D-FEF951E05B42}
+		{9505C8ED-E571-47E0-97D3-C8659010B951} = {CA61941D-3514-446A-8D0D-FEF951E05B42}
+		{F19D5CD0-2835-49DF-BA32-73C7764CC093} = {CA61941D-3514-446A-8D0D-FEF951E05B42}
+		{B7541265-11F8-493C-8A9D-F4F83316196E} = {CA61941D-3514-446A-8D0D-FEF951E05B42}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CB1B5F58-C95A-4C89-865C-148DAA225E6B}

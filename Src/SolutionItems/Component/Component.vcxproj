@@ -159,15 +159,8 @@
   <ItemGroup>
     <ClInclude Include="..\..\Component\CapsuleColliderComponent.h" />
     <ClInclude Include="..\..\Component\CCCapsuleCollider.h" />
-    <ClInclude Include="..\..\Component\CCEnemyMove.h" />
     <ClInclude Include="..\..\Component\CCPhysicalMove.h" />
-    <ClInclude Include="..\..\Component\CCPlanetResident.h" />
-    <ClInclude Include="..\..\Component\CCPlayerCollector.h" />
-    <ClInclude Include="..\..\Component\CCPlayerLightController.h" />
     <ClInclude Include="..\..\Component\CCPlayerMove.h" />
-    <ClInclude Include="..\..\Component\CCPlayerMoveForPlanet.h" />
-    <ClInclude Include="..\..\Component\CCSphereCollider.h" />
-    <ClInclude Include="..\..\Component\CCTargetPulledUp.h" />
     <ClInclude Include="..\..\Component\ColliderComponent.h" />
     <ClInclude Include="..\..\Component\Component.h" />
     <ClInclude Include="..\..\Component\ComponentHelper.h" />
@@ -182,15 +175,8 @@
   <ItemGroup>
     <ClCompile Include="..\..\Component\Source\CapsuleColliderComponent.cpp" />
     <ClCompile Include="..\..\Component\Source\CCCapsuleCollider.cpp" />
-    <ClCompile Include="..\..\Component\Source\CCEnemyMove.cpp" />
     <ClCompile Include="..\..\Component\Source\CCPhysicalMove.cpp" />
-    <ClCompile Include="..\..\Component\Source\CCPlanetResident.cpp" />
-    <ClCompile Include="..\..\Component\Source\CCPlayerCollector.cpp" />
-    <ClCompile Include="..\..\Component\Source\CCPlayerLightController.cpp" />
     <ClCompile Include="..\..\Component\Source\CCPlayerMove.cpp" />
-    <ClCompile Include="..\..\Component\Source\CCPlayerMoveForPlanet.cpp" />
-    <ClCompile Include="..\..\Component\Source\CCSphereCollider.cpp" />
-    <ClCompile Include="..\..\Component\Source\CCTargetPulledUp.cpp" />
     <ClCompile Include="..\..\Component\Source\ColliderComponent.cpp" />
     <ClCompile Include="..\..\Component\Source\MeshComponent.cpp" />
     <ClCompile Include="..\..\Component\Source\MoveForwardComponent.cpp" />

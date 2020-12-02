@@ -28,7 +28,7 @@ class RenderPass;
 class ForwardPass;
 class ShadowPass;
 class PostProcessPass;
-class DefferedPass;
+class DeferredPass;
 class SSAOPass;
 class MakeCubeMapPass;
 
@@ -78,7 +78,7 @@ private:
     std::unique_ptr<ForwardPass>      mpForwardPass;
     std::unique_ptr<ShadowPass>       mpShadowPass;
     std::unique_ptr<PostProcessPass>  mpPostProcessPass;
-    std::unique_ptr<DefferedPass>     mpDefferedPass;
+    std::unique_ptr<DeferredPass>     mpDefferedPass;
     std::unique_ptr<SSAOPass>         mpSSAOPass;
     std::unique_ptr<MakeCubeMapPass>  mpCubeMapPass;
 
@@ -99,13 +99,18 @@ public:
     void Initialize(std::unique_ptr<GraphicsEngine>& p_graphics);
     void Update(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time);
     void Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time);
-    void RenderUI(std::unique_ptr<GraphicsEngine>& p_graphics);
+    void RenderUI(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time);
 
 private:
+    void RenderUIForSettings(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time);
     void RenderUIByRenderPasses(std::unique_ptr<GraphicsEngine>& p_graphics);
+    void RenderUIForMainMenuBar(std::unique_ptr<GraphicsEngine>& p_graphics);
+    void RenderUIForScene(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time);
 
 public:
     void LoadScene();
+    void LoadNextScene(std::unique_ptr<GraphicsEngine>& p_graphics);
+    void LoadRenderPasses(std::unique_ptr<GraphicsEngine>& p_graphics);
     void CheckShaderActivated();
 
 
@@ -120,7 +125,8 @@ public:
     std::unique_ptr<UIRenderer>&        GetUIRenderer()     { return mpUIRenderer; }
     std::unique_ptr<TextureHolder>&     GetTextureHolderPtr() { return mpTextureHolder; }
     std::unique_ptr<ComputeExecuter>& GetComputeExecuter() { return mpComputeExecuter; }
-    bool GetSSAOActivate() { return mbIsSSAO; }
+    bool IsSSAOActivated() { return mbIsSSAO; }
+    bool IsDefferedRendering() { return mbIsDeffered; }
 };
 
 #define  ENGINE Singleton<GameSystem>::Get()

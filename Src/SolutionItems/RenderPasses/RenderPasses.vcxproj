@@ -150,7 +150,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\RenderPass\DefferedPasses.h" />
+    <ClInclude Include="..\..\RenderPass\DeferredPasses.h" />
     <ClInclude Include="..\..\RenderPass\ForwardPasses.h" />
     <ClInclude Include="..\..\RenderPass\MakeCubeMapPasses.h" />
     <ClInclude Include="..\..\RenderPass\PostProcessPasses.h" />
@@ -160,7 +160,7 @@
     <ClInclude Include="..\..\RenderPass\SSAOPasses.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\RenderPass\Source\DefferedPasses.cpp" />
+    <ClCompile Include="..\..\RenderPass\Source\DeferredPasses.cpp" />
     <ClCompile Include="..\..\RenderPass\Source\ForwardPasses.cpp" />
     <ClCompile Include="..\..\RenderPass\Source\MakeCubeMapPasses.cpp" />
     <ClCompile Include="..\..\RenderPass\Source\PostProcessPasses.cpp" />

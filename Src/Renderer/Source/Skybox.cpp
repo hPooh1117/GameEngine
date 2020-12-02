@@ -111,140 +111,13 @@ mCurrentID(SkyboxTextureID::EFootprintCourt)
 
     for (auto i = 0; i < SkyboxTextureID::ENUM_SKYBOXID_MAX; ++i)
     {
-        mpTextures[i] = std::make_unique<NewTexture>();
+        mpTextures[i] = std::make_unique<Texture>();
         mpTextures[i]->Load(device, (TEXTURE_PATH + std::wstring(SKYBOX_TEXTURE[i])).c_str());
     }
 
-    mpTexture = std::make_unique<NewTexture>();
+    mpTexture = std::make_unique<Texture>();
     mpTexture->Load(device);
 
-#pragma region OLDIMPL
-    //
-    // Compute the vertices stating at the top pole and moving down the stacks.
-    //
-
-    // Poles: note that there will be texture coordinate distortion as there is
-    // not a unique point on the texture map to assign to the pole when mapping
-    // a rectangular texture onto a sphere.
-    //auto GetUV = [&](Vertex& v)
-    //{
-    //    float phi = atan2f(v.normal.z, v.normal.x);
-    //    float theta = asinf(-v.normal.y);
-    //    v.texcoord.x = 1.0f - (phi + XM_PI) / XM_2PI;
-    //    v.texcoord.y = (theta + XM_PIDIV2) / XM_PI;
-    //};
-
-    //Vertex top_vertex;
-    //top_vertex.position = DirectX::XMFLOAT3(0.0f, +radius, 0.0f);
-    //top_vertex.normal = DirectX::XMFLOAT3(0.0f, +1.0f, 0.0f);
-    //top_vertex.texcoord = DirectX::XMFLOAT2(0, 0);
-    //top_vertex.color = DirectX::XMFLOAT4(1, 1, 1, 1);
-    //GetUV(top_vertex);
-
-    //Vertex bottom_vertex;
-    //bottom_vertex.position = DirectX::XMFLOAT3(0.0f, -radius, 0.0f);
-    //bottom_vertex.normal = DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f);
-    //bottom_vertex.texcoord = DirectX::XMFLOAT2(0, 0);
-    //bottom_vertex.color = DirectX::XMFLOAT4(1, 1, 1, 1);
-    //GetUV(bottom_vertex);
-
-
-
-    //mVertices.emplace_back(top_vertex);
-
-    //float phi_step = DirectX::XM_PI / stacks;
-    //float theta_step = 2.0f * DirectX::XM_PI / slices;
-
-    //// Compute vertices for each stack ring (do not count the poles as rings).
-    //for (u_int i = 1; i <= stacks - 1; ++i)
-    //{
-    //    float phi = i * phi_step;
-
-    //    // Vertices of ring.
-    //    for (u_int j = 0; j <= slices; ++j)
-    //    {
-    //        float theta = j * theta_step;
-
-    //        Vertex v;
-
-    //        // spherical to cartesian
-    //        v.position.x = radius * sinf(phi) * cosf(theta);
-    //        v.position.y = radius * cosf(phi);
-    //        v.position.z = radius * sinf(phi) * sinf(theta);
-
-    //        Vector3 p = v.position;
-    //        p.normalize();
-    //        //DirectX::XMStoreFloat3(&v.normal, DirectX::XMVector3Normalize(p));
-    //        v.normal = p;
-    //        GetUV(v);
-    //        v.color = DirectX::XMFLOAT4(1, 1, 1, 1);
-    //        if (j == slices / 2)
-    //        {
-    //            v.texcoord.x = 0.0f;
-
-    //            mVertices.emplace_back(v);
-    //            v.texcoord.x = 1.0f;
-    //        }
-
-    //        mVertices.emplace_back(v);
-
-
-    //    }
-    //}
-
-    //mVertices.emplace_back(bottom_vertex);
-
-    ////
-    //// Compute indices for top stack.  The top stack was written first to the vertex buffer
-    //// and connects the top pole to the first ring.
-    ////
-    //for (u_int i = 1; i <= slices + 1; ++i)
-    //{
-    //    mIndices.emplace_back(0);
-    //    mIndices.emplace_back(i + 1);
-    //    mIndices.emplace_back(i);
-    //}
-
-    ////
-    //// Compute indices for inner stacks (not connected to poles).
-    ////
-
-    //// Offset the indices to the index of the first vertex in the first ring.
-    //// This is just skipping the top pole vertex.
-    //u_int base_index = 1;
-    //u_int ring_vertex_count = slices + 2;
-    //for (u_int i = 0; i < stacks - 2; ++i)
-    //{
-    //    for (u_int j = 0; j < slices + 1; ++j)
-    //    {
-    //        mIndices.emplace_back(base_index + i * ring_vertex_count + j);
-    //        mIndices.emplace_back(base_index + i * ring_vertex_count + j + 1);
-    //        mIndices.emplace_back(base_index + (i + 1) * ring_vertex_count + j);
-
-    //        mIndices.emplace_back(base_index + (i + 1) * ring_vertex_count + j);
-    //        mIndices.emplace_back(base_index + i * ring_vertex_count + j + 1);
-    //        mIndices.emplace_back(base_index + (i + 1) * ring_vertex_count + j + 1);
-    //    }
-    //}
-
-    ////
-    //// Compute indices for bottom stack.  The bottom stack was written last to the vertex buffer
-    //// and connects the bottom pole to the bottom ring.
-    ////
-
-    //// South pole vertex was added last.
-    //u_int south_pole_index = (u_int)mVertices.size() - 1;
-
-    //// Offset the indices to the index of the first vertex in the last ring.
-    //base_index = south_pole_index - ring_vertex_count;
-
-    //for (u_int i = 0; i < slices + 1; ++i)
-    //{
-    //    mIndices.emplace_back(south_pole_index);
-    //    mIndices.emplace_back(base_index + i);
-    //    mIndices.emplace_back(base_index + i + 1);
-    //}
-#pragma endregion
 
     Vertex vertices[] = {
     { XMFLOAT3(-0.5, +0.5, +0.5), XMFLOAT3(+0.0f, +1.0f, +0.0f), XMFLOAT2(0, 1), XMFLOAT4(1, 1, 1, 1) },
@@ -395,7 +268,9 @@ void Skybox::Render(
     meshData.WVP = WVP;
     meshData.world = W;
     
-    XMStoreFloat4x4(&meshData.invProj, camera->GetInvProjViewMatrix(imm_context));
+    XMStoreFloat4x4(&meshData.invViewProj, camera->GetInvProjViewMatrix(imm_context));
+    DirectX::XMStoreFloat4x4(&meshData.invView, camera->GetInvViewMatrix());
+    DirectX::XMStoreFloat4x4(&meshData.invProj, camera->GetInvProjMatrix(imm_context));
 
     imm_context->UpdateSubresource(m_pConstantBufferMesh.Get(), 0, nullptr, &meshData, 0, 0);
     imm_context->VSSetConstantBuffers(0, 1, m_pConstantBufferMesh.GetAddressOf());

@@ -26,6 +26,8 @@ public:
     {
         DirectX::XMFLOAT4X4 WVP;   // world * view * projection matrix
         DirectX::XMFLOAT4X4 world;           // world transformation matrix
+        DirectX::XMFLOAT4X4 invViewProj;
+        DirectX::XMFLOAT4X4 invView;
         DirectX::XMFLOAT4X4 invProj;
     };
     struct CBufferForMaterial

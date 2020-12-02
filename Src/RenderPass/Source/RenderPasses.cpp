@@ -213,6 +213,13 @@ void RenderPass::ReloadShaderFile(std::unique_ptr<GraphicsEngine>& p_graphics)
 	}
 }
 
+void RenderPass::Clear()
+{
+	mpRenderTargetManager->ClearAll();
+	mCurrentScreenNum = 0;
+	mbIsOpen2ndScreen = false;
+}
+
 
 //--------------------------------------------------------------------------------------------------------------------------------
 

@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 #include "Mesh.h"
-class NewTexture;
+class Texture;
 
 class StaticMesh : public Mesh
 {
@@ -27,7 +27,7 @@ public:
         DirectX::XMFLOAT3 Ks = { 1.0f, 1.0f, 1.0f };
         u_int illum = 1;
         std::wstring map_Kd;
-        std::unique_ptr<NewTexture> texture;
+        std::unique_ptr<Texture> texture;
     };
 
 private:

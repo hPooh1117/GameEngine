@@ -2,10 +2,11 @@
 
 #include "GraphicsEngine.h"
 #include "Texture.h"
+#include "ComputedTexture.h"
+#include "Shader.h"
 
 #include "./Application/Helper.h"
 
-#include "./Engine/DirectionalLight.h"
 #include "./Engine/MainCamera.h"
 #include "./Engine/CameraController.h"
 
@@ -19,10 +20,16 @@ AmbientOcclusion::AmbientOcclusion()
 		Vector2(
 			static_cast<float>(SCREEN_WIDTH) / NOISE_TEX_RESOLUTION.x, 
 			static_cast<float>(SCREEN_HEIGHT) / NOISE_TEX_RESOLUTION.y)),
+	mScreenSize(Vector2(static_cast<float>(SCREEN_WIDTH), static_cast<float>(SCREEN_HEIGHT))),
 	mSampleRadius(SAMPLE_RADIUS),
 	mPower(2.2f),
 	mBias(0.0f),
-	mBlurSize(5.0f)
+	mBlurSize(5.0f),
+	mKernelSize(static_cast<float>(MAX_SAMPLES)),
+	mpSSAOTex(std::make_unique<ComputedTexture>()),
+	mpAlchemyAOTex(std::make_unique<ComputedTexture>()),
+	mKernelSizeRcp(1.0f / mKernelSize),
+	mAOType(EOldSSAO)
 {
 }
 
@@ -126,6 +133,16 @@ bool AmbientOcclusion::Initialize(D3D::DevicePtr& p_device)
 	);
 	_ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
+	mpSSAOTex->CreateShader(p_device, L"./Src/Shaders/CS_SSAO.hlsl", "CSmain");
+	mpSSAOTex->CreateTexture(p_device, mScreenSize.x, mScreenSize.y, DXGI_FORMAT_R16G16B16A16_FLOAT);
+	mpSSAOTex->CreateTextureUAV(p_device, 0);
+	mpSSAOTex->CreateSampler(p_device, D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_CLAMP);
+
+	mpAlchemyAOTex->CreateShader(p_device, L"./Src/Shaders/CS_SSAO_Optimized.hlsl", "CSmain");
+	mpAlchemyAOTex->CreateTexture(p_device, mScreenSize.x, mScreenSize.y, DXGI_FORMAT_R16G16B16A16_FLOAT);
+	mpAlchemyAOTex->CreateTextureUAV(p_device, 0);
+	mpAlchemyAOTex->CreateSampler(p_device, D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_CLAMP);
+
 	return true;
 }
 
@@ -143,38 +160,80 @@ void AmbientOcclusion::Activate(std::unique_ptr<GraphicsEngine>& p_graphics, Cam
 	DirectX::XMStoreFloat4x4(&cb.invProj, p_camera->GetInvProjMatrix(immContext));
 	DirectX::XMStoreFloat4x4(&cb.invView, p_camera->GetInvViewMatrix());
 	DirectX::XMStoreFloat4x4(&cb.proj, p_camera->GetProjMatrix(immContext));
-	DirectX::XMStoreFloat4x4(&cb.view, p_camera->GetInvProjViewMatrix(immContext));
-	cb.screenSize = DirectX::XMFLOAT2(static_cast<float>(SCREEN_WIDTH), static_cast<float>(SCREEN_HEIGHT));
-	cb.noiseScale = DirectX::XMFLOAT2(mNoiseScale.x, mNoiseScale.y);
-	cb.kernelSize = static_cast<float>(MAX_SAMPLES);
-	cb.ambientBias = mBias;
+	DirectX::XMStoreFloat4x4(&cb.view, p_camera->GetViewMatrix());
+	cb.screenSize = mScreenSize;
 	cb.radius = mSampleRadius;
 	cb.power = mPower;
-	cb.blurTimes = mBlurSize;
+	cb.kernelSize = mKernelSize;
+	cb.cameraFarZ = p_camera->GetFarZ();
+	cb.cameraNearZ = p_camera->GetNearZ();
+	cb.kernelSize_rcp = mKernelSizeRcp;
+	cb.screenSize_rcp.x = 1.0f / cb.screenSize.x;
+	cb.screenSize_rcp.y = 1.0f / cb.screenSize.y;
+	cb.noiseScale.x = mNoiseScale.x;
+	cb.noiseScale.y = mNoiseScale.y;
+		// TODO cbをシェーダに合わせる
 	memcpy( cb.samplePos, mSamplePos, sizeof(DirectX::XMFLOAT4) * MAX_SAMPLES );
 
 	immContext->UpdateSubresource(m_pCBufferForAO.Get(), 0, nullptr, &cb, 0, 0);
 	immContext->VSSetConstantBuffers(5, 1, m_pCBufferForAO.GetAddressOf());
 	immContext->PSSetConstantBuffers(5, 1, m_pCBufferForAO.GetAddressOf());
+	immContext->CSSetConstantBuffers(5, 1, m_pCBufferForAO.GetAddressOf());
 
 	immContext->PSSetShaderResources(9, 1, m_pNoiseResourceView.GetAddressOf());
 	immContext->PSSetSamplers(9, 1, m_pWrapSampler.GetAddressOf());
 }
 
-void AmbientOcclusion::Deactivate(std::unique_ptr<GraphicsEngine>& p_graphics)
+void AmbientOcclusion::ExecuteOcclusion(std::unique_ptr<GraphicsEngine>& p_graphics, D3D::SRVPtr& p_srv)
 {
+	D3D::DeviceContextPtr& pImmContext = p_graphics->GetImmContextPtr();
+	switch (mAOType)
+	{
+	case EOldSSAO:
+		mpSSAOTex->Compute(pImmContext, p_srv, SCREEN_WIDTH / 32, SCREEN_HEIGHT / 16, 1);
+		break;
+	case EAlchemyAO:
+		mpAlchemyAOTex->Compute(pImmContext, p_srv, SCREEN_WIDTH / 16, SCREEN_HEIGHT / 16, 1);
+		break;
+	}
+}
+
+void AmbientOcclusion::Deactivate(std::unique_ptr<GraphicsEngine>& p_graphics, UINT slot)
+{
+	D3D::DeviceContextPtr& pImmContext = p_graphics->GetImmContextPtr();
+
+	switch (mAOType)
+	{
+	case EOldSSAO:
+		mpSSAOTex->Set(pImmContext, slot);
+		break;
+	case EAlchemyAO:
+		mpAlchemyAOTex->Set(pImmContext, slot);
+		break;
+	}
+
 }
 
 void AmbientOcclusion::RenderUI()
 {
 	using namespace ImGui;
 	Text("SSAO Settings");
+
+	static int aoTypeFlag = EOldSSAO;
+	ImGui::RadioButton("SSAO", &aoTypeFlag, EOldSSAO);
+	ImGui::SameLine();
+	ImGui::RadioButton("AlchemyAO", &aoTypeFlag, EAlchemyAO);
+	mAOType = aoTypeFlag;
+
+
 	SliderFloat("Intensity", &mPower, 0.0f, 5.0f);
 
 	SliderFloat("Sample Radius", &mSampleRadius, 0.1f, 5.0f);
 
 	SliderFloat("Ambient Bias", &mBias, 0.0f, 5.0f);
 
+	SliderFloat("KernelSize", &mKernelSize, 16.0f, 128.0f);
+	mKernelSizeRcp = 1.0f / mKernelSize;
 	//int blursize = mBlurSize;
 	//SliderInt("BlurExecuter Size", &blursize, 0.0f, 10.0f);
 	//mBlurSize = static_cast<float>(blursize);

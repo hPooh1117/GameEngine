@@ -24,10 +24,10 @@ public:
 		EShadowMap,
 		EDepth,
 
-		EFirstResult,
 		EDiffuseLight,
 		ESpecularLight,
 		ESkybox,
+		EFirstResult,
 
 		ESecondResult,
 		ESSAO,
@@ -60,6 +60,8 @@ public:
 	//void Resize(D3D::DevicePtr& p_device, UINT width, UINT height, DXGI_FORMAT format);
 	void Activate(D3D::DeviceContextPtr& p_imm_context, std::unique_ptr<DepthStencilView>& p_dsv, UINT rt_id, UINT num_activate = 1);
 	void Deactivate(D3D::DeviceContextPtr& p_imm_context, UINT rt_id, UINT num_activate = 1, UINT slot = 0);
+	
+	void ClearAll();
 
 	//D3D::SRVPtr& GetShaderResource(unsigned int slot) { return mpSRVTable.at(slot); }
 	D3D::SRVPtr& GetShaderResource(UINT id) { return mpSRVTable[id]; }

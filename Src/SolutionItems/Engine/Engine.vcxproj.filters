@@ -33,9 +33,6 @@
     <ClInclude Include="..\..\Engine\CustomLight.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Engine\DirectionalLight.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Engine\GameSystem.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -57,16 +54,10 @@
     <ClInclude Include="..\..\Engine\PhysicsManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Engine\PointLight.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Engine\QuadTree.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Engine\Singleton.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Engine\SpotLight.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Engine\TraceCamera.h">
@@ -107,9 +98,6 @@
     <ClCompile Include="..\..\Engine\Source\CustomLight.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Engine\Source\DirectionalLight.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Engine\Source\GameSystem.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -125,13 +113,7 @@
     <ClCompile Include="..\..\Engine\Source\PhysicsManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Engine\Source\PointLight.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Engine\Source\Singleton.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Engine\Source\SpotLight.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Engine\Source\TraceCamera.cpp">
