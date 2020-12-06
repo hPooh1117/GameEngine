@@ -45,7 +45,7 @@ cbuffer CBPerLight : register(b2)
     float  time;
     float  tess_factor;
     uint   light_config;
-    float  dummy;
+    float  shininess;
     float  dummy1;
     float  dummy2;
     POINTLIGHT point_lights[POINTMAX];

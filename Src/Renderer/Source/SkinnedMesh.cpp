@@ -74,7 +74,7 @@ SkinnedMesh::SkinnedMesh(Microsoft::WRL::ComPtr<ID3D11Device>& device, const cha
 			0
 		),
 		nullptr,
-		m_pConstantBufferMesh.GetAddressOf()
+		mpConstantBufferMesh.GetAddressOf()
 	);
 	_ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
@@ -347,12 +347,12 @@ void SkinnedMesh::Render(
 			DirectX::XMLoadFloat4x4(&COORD_CONVERSION[mCoordSystem]) *
 			DirectX::XMLoadFloat4x4(&W));
 
-		imm_context->UpdateSubresource(m_pConstantBufferMesh.Get(), 0, nullptr, &meshData, 0, 0);
-		imm_context->VSSetConstantBuffers(0, 1, m_pConstantBufferMesh.GetAddressOf());
-		imm_context->HSSetConstantBuffers(0, 1, m_pConstantBufferMesh.GetAddressOf());
-		imm_context->DSSetConstantBuffers(0, 1, m_pConstantBufferMesh.GetAddressOf());
-		imm_context->GSSetConstantBuffers(0, 1, m_pConstantBufferMesh.GetAddressOf());
-		imm_context->PSSetConstantBuffers(0, 1, m_pConstantBufferMesh.GetAddressOf());
+		imm_context->UpdateSubresource(mpConstantBufferMesh.Get(), 0, nullptr, &meshData, 0, 0);
+		imm_context->VSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
+		imm_context->HSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
+		imm_context->DSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
+		imm_context->GSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
+		imm_context->PSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
 
 		imm_context->UpdateSubresource(m_constant_buffer_bone.Get(), 0, nullptr, &boneData, 0, 0);
 		imm_context->VSSetConstantBuffers(4, 1, m_constant_buffer_bone.GetAddressOf());

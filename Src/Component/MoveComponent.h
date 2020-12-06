@@ -15,11 +15,11 @@ protected:
     Vector3 mAcceleration = {};
     Vector3 mResultant = {};
     float   mMass = 50000.0f;
-    bool    m_bOnGround = false;
-protected:
-    MoveComponent(const std::shared_ptr<Actor>& owner) :Component(owner) {}
+    bool    mbOnGround = false;
+
 public:
-    virtual ~MoveComponent() {}
+    MoveComponent(Actor* owner) :Component(owner) {}
+    virtual ~MoveComponent() = default;
 
 
     virtual bool Create() = 0;
@@ -35,17 +35,6 @@ public:
     inline void SetMass(float mass) { mMass = mass; }
     inline float GetMass() { return mMass; }
 
-    void BeOnGround();
-    void BeOffGround();
-
+    void IsOnGround(bool flag) { mbOnGround = flag; }
 };
 
-inline void MoveComponent::BeOnGround()
-{
-    m_bOnGround = true;
-}
-
-inline void MoveComponent::BeOffGround()
-{
-    m_bOnGround = false;
-}

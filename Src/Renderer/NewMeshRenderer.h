@@ -10,13 +10,15 @@
 
 class ActorManager;
 class Mesh;
-class NewMeshComponent;
+class MeshComponent;
 class TextureHolder;
+class ComputedTexture;
+class GraphicsEngine;
 
 class NewMeshRenderer
 {
 private:
-	std::unordered_map<unsigned int, std::shared_ptr<NewMeshComponent>> mMeshDataTable;
+	std::unordered_map<unsigned int, MeshComponent*> mMeshDataTable;
 	std::unordered_map<unsigned int, std::unique_ptr<Mesh>>             mMeshTable;
 	std::unique_ptr<Skybox>                                             mpSkybox;
 	std::wstring                                                        mSkyboxFilename;
@@ -26,13 +28,19 @@ public:
 
 	bool Initialize(D3D::DevicePtr& p_device);
 	bool InitializeMeshes(D3D::DevicePtr& p_device);
-	void RegistMeshDataFromActors(D3D::DevicePtr& p_device, const std::unique_ptr<ActorManager>& p_actors);
-	void RenderSkybox(D3D::DeviceContextPtr& p_imm_context, float elapsed_time, unsigned int current_pass_id);
+	void RegistMeshDataFromActors(D3D::DevicePtr& p_device, ActorManager* p_actors);
+
+	void Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time, unsigned int current_pass_id);
 	void RenderMesh(D3D::DeviceContextPtr& p_imm_context, float elapsed_time, unsigned int current_pass_id);
+
+private:
+	void RenderSkybox(D3D::DeviceContextPtr& p_imm_context, float elapsed_time, unsigned int current_pass_id);
 	UINT ChooseShaderUsageForMesh(UINT current_pass); // 現在の描画パスによって、idを選択
 	UINT ChooseShaderIdForSkybox(UINT current_pass);
+public:
 	void RenderUI();
 	void ClearAll();
-
+	
+	ComputedTexture* GetCurrentSkyTex();
 	void SetSkybox(int id);
 };

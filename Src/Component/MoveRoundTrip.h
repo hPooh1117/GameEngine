@@ -4,15 +4,13 @@
 class MoveRoundTrip final : public MoveComponent
 {
 private:
-	float m_speed = 1.0f;
+	float mSpeed = 1.0f;
 
-private:
-	MoveRoundTrip(const std::shared_ptr<Actor>& owner);
-	
+
 public:
-	virtual ~MoveRoundTrip();
+	MoveRoundTrip(Actor* owner);
+	virtual ~MoveRoundTrip() = default;
 
-	static std::shared_ptr<MoveRoundTrip> Initialize(const std::shared_ptr<Actor>& owner);
 	virtual bool Create() override;
 	virtual void Destroy() override;
 

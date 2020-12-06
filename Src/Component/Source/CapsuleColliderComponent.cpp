@@ -6,15 +6,8 @@
 
 //----------------------------------------------------------------------------------------------------------------------------
 
-CapsuleColliderComponent::CapsuleColliderComponent(const std::shared_ptr<Actor>& owner):ColliderComponent(owner)
+CapsuleColliderComponent::CapsuleColliderComponent(Actor* owner):ColliderComponent(owner)
 {
-}
-
-//----------------------------------------------------------------------------------------------------------------------------
-
-std::shared_ptr<CapsuleColliderComponent> CapsuleColliderComponent::Initialize(const std::shared_ptr<Actor>& owner)
-{
-	return std::shared_ptr<CapsuleColliderComponent>(new CapsuleColliderComponent(owner));
 }
 
 //----------------------------------------------------------------------------------------------------------------------------
@@ -23,9 +16,9 @@ bool CapsuleColliderComponent::Create()
 {
 
 	mType = ColliderType::kC_Capsule;
-	m_pMover = m_pOwner.lock()->GetComponent<MoveComponent>();
-	mScale = m_pOwner.lock()->GetScale();
-	if (m_pMover != nullptr) return true;
+	mpMover = mpOwner->GetComponent<MoveComponent>();
+	mScale = mpOwner->GetScale();
+	if (mpMover != nullptr) return true;
 	return false;
 }
 
@@ -42,9 +35,9 @@ void CapsuleColliderComponent::Update(float elapsed_time)
 
 	float scaleY = mScale.y;
 
-	mPosition = m_pOwner.lock()->GetPosition() + mOffset;
+	mPosition = mpOwner->GetPosition() + mOffset;
 
-	Matrix rotation = Matrix::CreateFromQuaternion(m_pOwner.lock()->GetQuaternion());
+	Matrix rotation = Matrix::CreateFromQuaternion(mpOwner->GetQuaternion());
 	DirectX::XMMATRIX rot = DirectX::XMLoadFloat4x4(&rotation);
 
 	Vector3 dirStart(0, -1 * scaleY * 0.5f, 0);
@@ -67,8 +60,8 @@ void CapsuleColliderComponent::Update(float elapsed_time)
 
 void CapsuleColliderComponent::ResponceToEnvironment(const Vector3& normal, float restitution, float penetration)
 {
-	Vector3& position = m_pOwner.lock()->GetPosition();
-	Vector3& velocity = m_pMover->GetVelocity();
+	Vector3& position = mpOwner->GetPosition();
+	Vector3& velocity = mpMover->GetVelocity();
 	float dot = velocity.dot(normal);
 	if (dot < 0)
 	{
@@ -79,37 +72,37 @@ void CapsuleColliderComponent::ResponceToEnvironment(const Vector3& normal, floa
 
 //----------------------------------------------------------------------------------------------------------------------------
 
-void CapsuleColliderComponent::ResponceToCapsule(std::shared_ptr<CapsuleColliderComponent> other, float restitution, float penetration)
+void CapsuleColliderComponent::ResponceToCapsule(CapsuleColliderComponent* other, float restitution, float penetration)
 {
 	Vector3 pos1 = mPosition;
 	Vector3 pos2 = other->mPosition;
 	Vector3 n = pos2 - pos1;
 	n.normalize();
 
-	float m1 = m_pMover->GetMass();
-	float m2 = other->m_pMover->GetMass();
+	float m1 = mpMover->GetMass();
+	float m2 = other->mpMover->GetMass();
 
-	float v1 = m_pMover->GetVelocity().dot(n);
-	float v2 = other->m_pMover->GetVelocity().dot(n);
+	float v1 = mpMover->GetVelocity().dot(n);
+	float v2 = other->mpMover->GetVelocity().dot(n);
 
 	if (v1 - v2 > 0)
 	{
 		float _v1 = (m1 * v1 + m2 * v2 + restitution * m2 * (v2 - v1)) / (m1 + m2);
 		float _v2 = (m1 * v1 + m2 * v2 + restitution * m1 * (v1 - v2)) / (m1 + m2);
 
-		m_pMover->SetVelocity(m_pMover->GetVelocity() + (_v1 - v1) * n);
-		other->m_pMover->SetVelocity(other->m_pMover->GetVelocity() + (_v2 - v2) * n);
+		mpMover->SetVelocity(mpMover->GetVelocity() + (_v1 - v1) * n);
+		other->mpMover->SetVelocity(other->mpMover->GetVelocity() + (_v2 - v2) * n);
 	}
 
-	m_pOwner.lock()->SetPosition(pos1 - (m2 / (m1 + m2) * penetration * n));
-	other->m_pOwner.lock()->SetPosition(pos2 + (m1 / (m1 + m2) * penetration * n));
+	mpOwner->SetPosition(pos1 - (m2 / (m1 + m2) * penetration * n));
+	other->mpOwner->SetPosition(pos2 + (m1 / (m1 + m2) * penetration * n));
 
 }
 
 //----------------------------------------------------------------------------------------------------------------------------
 
 void CapsuleColliderComponent::ResponceToSphere(
-	std::shared_ptr<SphereColliderComponent> other, 
+	SphereColliderComponent* other, 
 	float restitution,
 	float penetration)
 {
@@ -118,22 +111,22 @@ void CapsuleColliderComponent::ResponceToSphere(
 	//Vector3 n = pos2 - pos1;
 	//n.normalize();
 
-	//float m1 = m_pMover->GetMass();
-	//float m2 = other->m_pMover->GetMass();
+	//float m1 = mpMover->GetMass();
+	//float m2 = other->mpMover->GetMass();
 
-	//float v1 = m_pMover->GetVelocity().dot(n);
-	//float v2 = other->m_pMover->GetVelocity().dot(n);
+	//float v1 = mpMover->GetVelocity().dot(n);
+	//float v2 = other->mpMover->GetVelocity().dot(n);
 
 	//if (v1 - v2 > 0)
 	//{
 	//	float _v1 = (m1 * v1 + m2 * v2 + restitution * m2 * (v2 - v1)) / (m1 + m2);
 	//	float _v2 = (m1 * v1 + m2 * v2 + restitution * m1 * (v1 - v2)) / (m1 + m2);
 
-	//	m_pMover->SetVelocity(m_pMover->GetVelocity() + (_v1 - v1) * n);
-	//	other->m_pMover->SetVelocity(other->m_pMover->GetVelocity() + (_v2 - v2) * n);
+	//	mpMover->SetVelocity(mpMover->GetVelocity() + (_v1 - v1) * n);
+	//	other->mpMover->SetVelocity(other->mpMover->GetVelocity() + (_v2 - v2) * n);
 	//}
 
-	//m_pOwner.lock()->SetPosition(pos1 - (m2 / (m1 + m2) * penetration * n));
+	//mpOwner.lock()->SetPosition(pos1 - (m2 / (m1 + m2) * penetration * n));
 	//other->SetCenterPosition(pos2 + (m1 / (m1 + m2) * penetration * n));
 
 	
@@ -141,18 +134,18 @@ void CapsuleColliderComponent::ResponceToSphere(
 
 //----------------------------------------------------------------------------------------------------------------------------
 
-void CapsuleColliderComponent::Intersect(const std::shared_ptr<ColliderComponent>& other)
+void CapsuleColliderComponent::Intersect(ColliderComponent* other)
 {
 	int type = other->GetType();
 
 	switch (type)
 	{
 	case kC_Sphere:
-		IntersectToSphere(other);
+		IntersectToSphere(static_cast<SphereColliderComponent*>(other));
 		break;
 
 	case kC_Capsule:
-		IntersectToCapsule(other);
+		IntersectToCapsule(static_cast<CapsuleColliderComponent*>(other));
 		break;
 	default:
 		break;
@@ -161,7 +154,7 @@ void CapsuleColliderComponent::Intersect(const std::shared_ptr<ColliderComponent
 
 //----------------------------------------------------------------------------------------------------------------------------
 
-void CapsuleColliderComponent::IntersectToSphere(const std::shared_ptr<ColliderComponent>& other)
+void CapsuleColliderComponent::IntersectToSphere(SphereColliderComponent* other)
 {
 	Vector3 sphereCenter = other->GetCenterPosition();
 	Vector3 h;
@@ -174,7 +167,7 @@ void CapsuleColliderComponent::IntersectToSphere(const std::shared_ptr<ColliderC
 	if (d <= 1.0f)
 	{
 		ResponceToSphere(
-			std::static_pointer_cast<SphereColliderComponent>(other),
+			other,
 			0.9f,
 			1.0f - d
 		);
@@ -184,11 +177,11 @@ void CapsuleColliderComponent::IntersectToSphere(const std::shared_ptr<ColliderC
 
 //----------------------------------------------------------------------------------------------------------------------------
 
-void CapsuleColliderComponent::IntersectToCapsule(const std::shared_ptr<ColliderComponent>& other)
+void CapsuleColliderComponent::IntersectToCapsule(CapsuleColliderComponent* other)
 {
-	std::shared_ptr<CapsuleColliderComponent> capsule = std::static_pointer_cast<CapsuleColliderComponent>(other);
+	
 	Segment s1 = mCenterSegment;
-	Segment s2 = capsule->GetCenterSegment();
+	Segment s2 = other->GetCenterSegment();
 	Vector3 h1, h2;
 	float t1 = 0.0f, t2 = 0.0f;
 	float d = CalculateBetweenSegments(s1, s2, h1, h2, t1, t2);
@@ -198,7 +191,7 @@ void CapsuleColliderComponent::IntersectToCapsule(const std::shared_ptr<Collider
 	if (d <= mRadius + mRadius)
 	{
 		ResponceToCapsule(
-			capsule,
+			other,
 			0.9f,
 			1.0f - d
 		);

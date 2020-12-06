@@ -155,6 +155,7 @@ float4 PSmain(PS_InputEnv input) : SV_TARGET
 	ref.y = acos(ref.y) / 3.1416;
 
 	ref.x *= 0.5;
+	ref.x += 0.5;
 	//ref.x = ref.z < 0.0 ? 1.0 - ref.x : ref.x;
 
 

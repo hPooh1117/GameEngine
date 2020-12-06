@@ -58,6 +58,7 @@ void SSAOPass::Initialize(D3D::DevicePtr& p_device)
 	mpBlurPass->Initialize(p_device);
 	mpBlurPass->CreateShader(p_device);
 	//mpBlurPass->ChangeSetting(1, 4);
+	mpBlurPass->SetBlurStrength(1);
 
 	if (mpAOPreparation->Initialize(p_device))
 	{
@@ -69,6 +70,7 @@ void SSAOPass::Initialize(D3D::DevicePtr& p_device)
 
 void SSAOPass::ExecuteSSAO(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time)
 {
+
 	D3D::DeviceContextPtr& pImmContext = p_graphics->GetImmContextPtr();
 
 	GetRenderTargetManager()->Activate(pImmContext, mpDSV, RenderTarget::ESecondResult, GBUFFER_FOR_AO_MAX);
@@ -108,6 +110,7 @@ void SSAOPass::ExecuteSSAO(std::unique_ptr<GraphicsEngine>& p_graphics, float el
 
 void SSAOPass::RenderUI(bool b_open)
 {
+
 	for (UINT i = 0; i < GBUFFER_FOR_AO_MAX + GBUFFER_FOR_BLUR_MAX; ++i)
 	{
 		if (!b_open) ImGui::SetNextItemOpen(b_open);
@@ -116,8 +119,12 @@ void SSAOPass::RenderUI(bool b_open)
 		{
 			if (ImGui::ImageButton((void*)GetRenderTargetManager()->GetShaderResource(i + RenderTarget::ESecondResult).Get(), ImVec2(320, 180)))
 			{
-				mCurrentScreenNum = i + RenderTarget::ESecondResult;
-				mbIsOpen2ndScreen = true;
+				//mCurrentScreenNum = i + RenderTarget::ESecondResult;
+				//mbIsOpen2ndScreen = true;
+
+				mChosenRenderTarget = RenderTarget::ESecondResult + i;
+				mbShowsResult = false;
+
 			}
 			ImGui::TreePop();
 		}
@@ -153,39 +160,29 @@ void SSAOPass::RenderUI(bool b_open)
 
 void SSAOPass::RenderUIForSettings()
 {
+
 	mpAOPreparation->RenderUI();
+	int blurStrength = mpBlurPass->GetBlurStrength();
+	ImGui::SliderInt("Blur Level", &blurStrength, 0, 1);
+	mpBlurPass->SetBlurStrength(blurStrength);
 	ImGui::Checkbox("Enable Compute Shader", &mbIsUsingCS);
+	
 }
 
 void SSAOPass::RenderUIForAnotherScreen()
 {
-	//if (mCurrentScreenNum < GBufferID::EResult) return;
 
-
-	//D3D::SRVPtr srv = nullptr;
-	//if (mCurrentScreenNum < GBufferID::ESecondaryResult) srv = GetRenderTargetPtr()->GetShaderResource(mCurrentScreenNum - GBufferID::EResult);
-	//if (mCurrentScreenNum >= GBufferID::ESecondaryResult) srv = GetBlurPassTargetPtr()->GetShaderResource(mCurrentScreenNum - GBufferID::ESecondaryResult);
 
 	//if (mbIsOpen2ndScreen)
 	//{
-	//	ENGINE.GetUIRenderer()->SetNextWindowSettings(Vector2(0, SCREEN_HEIGHT - 540), Vector2(960, 540));
+	//	if (mCurrentScreenNum != RenderTarget::ESSAO) return;
+
+	//	D3D::SRVPtr srv = GetRenderTargetManager()->GetShaderResource(mCurrentScreenNum);
+	//	ENGINE.GetUIRenderer()->SetNextWindowSettings(Vector2(0, SCREEN_HEIGHT - 630), Vector2(1120, 630));
 	//	ImGui::Begin("Screen 2", &mbIsOpen2ndScreen);
 	//	ImGui::Image((void*)srv.Get(), ImVec2(960, 540));
 
 	//	ENGINE.GetUIRenderer()->FinishRenderingWindow();
 	//}
-
-
-	if (mbIsOpen2ndScreen)
-	{
-		if (mCurrentScreenNum != RenderTarget::ESSAO) return;
-
-		D3D::SRVPtr srv = GetRenderTargetManager()->GetShaderResource(mCurrentScreenNum);
-		ENGINE.GetUIRenderer()->SetNextWindowSettings(Vector2(0, SCREEN_HEIGHT - 630), Vector2(1120, 630));
-		ImGui::Begin("Screen 2", &mbIsOpen2ndScreen);
-		ImGui::Image((void*)srv.Get(), ImVec2(960, 540));
-
-		ENGINE.GetUIRenderer()->FinishRenderingWindow();
-	}
 
 }

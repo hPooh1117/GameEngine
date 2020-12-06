@@ -56,6 +56,7 @@ void DeferredPass::Initialize(D3D::DevicePtr& p_device)
 
 	InitializeCommonShader(p_device);
 	AddVertexAndPixelShader(p_device, ShaderID::EDefferedSkybox, L"EquirectangularToCube.hlsl", L"EquirectangularToCube.hlsl", "VSmainDeffered", "PSmainDeffered", VEDType::VED_DEFAULT);
+	AddVertexAndPixelShader(p_device, ShaderID::EDefferedSkyboxRevised, L"DefferedSkybox.hlsl", L"DefferedSkybox.hlsl", "VSmain", "PSmain", VEDType::VED_DEFAULT);
 
 	//AddVertexAndPixelShader(p_device, ShaderID::EDefferedPhong, L"ToGBufferSimple.hlsl", L"ToGBufferSimple.hlsl", "VSmain", "PSmain", VEDType::VED_DEFAULT);
 	//AddVertexAndPixelShader(p_device, ShaderID::EDefferedPhongForSkinned, L"ToGBufferSimple.hlsl", L"ToGBufferSimple.hlsl", "VSmainS", "PSmain", VEDType::VED_SKINNED_MESH);
@@ -105,10 +106,7 @@ void DeferredPass::RenderDefferedLighting(std::unique_ptr<GraphicsEngine>& p_gra
 
 	GetRenderTargetManager()->Activate(pImmContext, mpDSV, RenderTarget::EColor, GEOMETRY_BUFFER_SIZE);
 
-	ENGINE.GetMeshRenderer()->RenderMesh(pImmContext, elapsed_time, RenderPassID::EDeferredPass);
-
-	ENGINE.GetMeshRenderer()->RenderSkybox(pImmContext, elapsed_time, RenderPassID::EDeferredPass);
-
+	ENGINE.GetMeshRenderer()->Render(p_graphics, elapsed_time, RenderPassID::EDeferredPass);
 
 
 	GetRenderTargetManager()->Activate(pImmContext, mpDSV, RenderTarget::EDiffuseLight, LIGHT_BUFFER_SIZE);
@@ -135,8 +133,12 @@ void DeferredPass::RenderUI(bool b_open)
 		{
 			if (ImGui::ImageButton((void*)GetRenderTargetManager()->GetShaderResource(i + RenderTarget::EColor).Get(), ImVec2(320, 180)))
 			{
-				mCurrentScreenNum = i + RenderTarget::EColor;
-				mbIsOpen2ndScreen = true;
+				//mCurrentScreenNum = i + RenderTarget::EColor;
+				//mbIsOpen2ndScreen = true;
+
+				mChosenRenderTarget = RenderTarget::EColor + i;
+				mbShowsResult = false;
+
 			}
 			ImGui::TreePop();
 		}

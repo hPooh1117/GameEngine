@@ -19,12 +19,5 @@ public:
 
     ~SceneA();
 
-private:
-    std::shared_ptr<Actor> mpSphere;
-    std::shared_ptr<Actor> mpEarth;
-    std::shared_ptr<Actor> mpToon;
-    std::shared_ptr<Actor> mpFlat;
-    std::shared_ptr<Actor> m_field;
-    std::shared_ptr<Actor> mpGrid;
 
 };

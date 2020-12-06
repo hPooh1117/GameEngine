@@ -8,15 +8,8 @@ using namespace DirectX;
 
 //----------------------------------------------------------------------------------------------------------------------------
 
-CCPlayerMove::CCPlayerMove(const std::shared_ptr<Actor>& owner):MoveComponent(owner)
+CCPlayerMove::CCPlayerMove(Actor* owner):MoveComponent(owner)
 {
-}
-
-//----------------------------------------------------------------------------------------------------------------------------
-
-std::shared_ptr<CCPlayerMove> CCPlayerMove::Initialize(const std::shared_ptr<Actor>& owner)
-{
-	return std::shared_ptr<CCPlayerMove>(new CCPlayerMove(owner));
 }
 
 //----------------------------------------------------------------------------------------------------------------------------
@@ -53,7 +46,7 @@ void CCPlayerMove::Update(float elapsed_time)
 
 void CCPlayerMove::MovePlayer()
 {
-	Matrix R = Matrix::CreateFromQuaternion(m_pOwner.lock()->GetQuaternion());
+	Matrix R = Matrix::CreateFromQuaternion(mpOwner->GetQuaternion());
 	Vector3 forward = R.GetZAxis();
 	Vector3 up = R.GetYAxis();
 	Vector3 right = R.GetXAxis();
@@ -81,7 +74,7 @@ void CCPlayerMove::MovePlayer()
 		//AddForce(mMass * right * mSpeed);
 	}
 	if (mDisplacement != Vector3(0, 0, 0)) mDisplacement = Vector3::Normalize(mDisplacement) * mSpeed;
-	m_pOwner.lock()->SetPosition(m_pOwner.lock()->GetPosition() + mDisplacement);
+	mpOwner->SetPosition(mpOwner->GetPosition() + mDisplacement);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------
@@ -93,7 +86,7 @@ void CCPlayerMove::Integrate(float elapsed_time)
 	mAcceleration = mResultant / mMass;
 	mVelocity += mAcceleration * elapsed_time;
 
-	m_pOwner.lock()->SetPosition(m_pOwner.lock()->GetPosition() + mVelocity * elapsed_time);
+	mpOwner->SetPosition(mpOwner->GetPosition() + mVelocity * elapsed_time);
 
 	mResultant = {};
 }
@@ -103,12 +96,6 @@ void CCPlayerMove::Integrate(float elapsed_time)
 void CCPlayerMove::AddForce(const Vector3& force)
 {
 	mResultant += force;
-}
-
-//----------------------------------------------------------------------------------------------------------------------------
-
-CCPlayerMove::~CCPlayerMove()
-{
 }
 
 //----------------------------------------------------------------------------------------------------------------------------

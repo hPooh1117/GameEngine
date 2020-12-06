@@ -4,20 +4,14 @@
 
 #include "./Engine/Actor.h"
 
-//----------------------------------------------------------------------------------------------------------------------------
-
-std::shared_ptr<SphereColliderComponent> SphereColliderComponent::Initialize(const std::shared_ptr<Actor> owner)
-{
-	return std::shared_ptr<SphereColliderComponent>(new SphereColliderComponent(owner));
-}
 
 //----------------------------------------------------------------------------------------------------------------------------
 
 bool SphereColliderComponent::Create()
 {
 	mType = ColliderType::kC_Sphere;
-	m_pMover = m_pOwner.lock()->GetComponent<MoveComponent>();
-	mRadius = mRadius * m_pOwner.lock()->GetScaleValue();
+	m_pMover = mpOwner->GetComponent<MoveComponent>();
+	mRadius = mRadius * mpOwner->GetScaleValue();
 
 	if (m_pMover != nullptr) return true;
 	return false;
@@ -33,14 +27,14 @@ void SphereColliderComponent::Destroy()
 
 void SphereColliderComponent::Update(float elapsed_time)
 {
-	mPosition = m_pOwner.lock()->GetPosition();
+	mPosition = mpOwner->GetPosition();
 }
 
 //----------------------------------------------------------------------------------------------------------------------------
 
 void SphereColliderComponent::ResponceToEnvironment(const Vector3& normal, float restitution, float penetration)
 {
-	Vector3& position = m_pOwner.lock()->GetPosition();
+	Vector3& position = mpOwner->GetPosition();
 	Vector3& velocity = m_pMover->GetVelocity();
 	float dot = velocity.dot(normal);
 	if (dot < 0)
@@ -52,7 +46,7 @@ void SphereColliderComponent::ResponceToEnvironment(const Vector3& normal, float
 
 //----------------------------------------------------------------------------------------------------------------------------
 
-void SphereColliderComponent::ResponceToSphere(const std::shared_ptr<SphereColliderComponent>& other, float restitution, float penetration)
+void SphereColliderComponent::ResponceToSphere(SphereColliderComponent* other, float restitution, float penetration)
 {
 	Vector3 pos1 = mPosition;
 	Vector3 pos2 = other->mPosition;
@@ -74,25 +68,25 @@ void SphereColliderComponent::ResponceToSphere(const std::shared_ptr<SphereColli
 		other->m_pMover->SetVelocity(other->m_pMover->GetVelocity() + (_v2 - v2) * n);
 	}
 
-	m_pOwner.lock()->SetPosition(pos1 - (m2 / (m1 + m2) * penetration * n));
-	other->m_pOwner.lock()->SetPosition(pos2 + (m1 / (m1 + m2) * penetration * n));
+	mpOwner->SetPosition(pos1 - (m2 / (m1 + m2) * penetration * n));
+	other->mpOwner->SetPosition(pos2 + (m1 / (m1 + m2) * penetration * n));
 
 }
 
 //----------------------------------------------------------------------------------------------------------------------------
 
-void SphereColliderComponent::Intersect(const std::shared_ptr<ColliderComponent>& other)
+void SphereColliderComponent::Intersect(ColliderComponent* other)
 {
 	int type = other->GetType();
 
 	switch (type)
 	{
 	case kC_Sphere:
-		IntersectToSphere(other);
+		IntersectToSphere(static_cast<SphereColliderComponent*>(other));
 		break;
 
 	case kC_Capsule:
-		IntersectToCapsule(other);
+		IntersectToCapsule(static_cast<CapsuleColliderComponent*>(other));
 		break;
 	default:
 		break;
@@ -101,19 +95,19 @@ void SphereColliderComponent::Intersect(const std::shared_ptr<ColliderComponent>
 
 //----------------------------------------------------------------------------------------------------------------------------
 
-void SphereColliderComponent::IntersectToSphere(const std::shared_ptr<ColliderComponent>& other)
+void SphereColliderComponent::IntersectToSphere(SphereColliderComponent* other)
 {
 	Vector3 e = mPosition - other->GetCenterPosition();
 	float eLength = e.getLength();
 
 
-	if (eLength < mRadius + std::static_pointer_cast<SphereColliderComponent>(other)->GetRadius())
+	if (eLength < mRadius + other->GetRadius())
 	{
 
 		ResponceToSphere(
-			std::static_pointer_cast<SphereColliderComponent>(other),
+			other,
 			0.9f,
-			mRadius + std::static_pointer_cast<SphereColliderComponent>(other)->GetRadius() - eLength
+			mRadius + other->GetRadius() - eLength
 		);
 
 	}
@@ -122,10 +116,10 @@ void SphereColliderComponent::IntersectToSphere(const std::shared_ptr<ColliderCo
 
 //----------------------------------------------------------------------------------------------------------------------------
 
-void SphereColliderComponent::IntersectToCapsule(const std::shared_ptr<ColliderComponent>& other)
+void SphereColliderComponent::IntersectToCapsule(CapsuleColliderComponent* other)
 {
 	Vector3 sphereCenter = mPosition;
-	std::shared_ptr<CapsuleColliderComponent> cap = std::static_pointer_cast<CapsuleColliderComponent>(other);
+	CapsuleColliderComponent* cap = other;
 	Segment capsuleCenter = cap->GetCenterSegment();
 	Vector3 h;
 	float t = 0.0f;
@@ -135,7 +129,7 @@ void SphereColliderComponent::IntersectToCapsule(const std::shared_ptr<ColliderC
 	if (d <= 1.0f)
 	{
 		cap->ResponceToSphere(
-			std::static_pointer_cast<SphereColliderComponent>(shared_from_this()),
+			this,
 			0.9f,
 			1.0f - d
 		);

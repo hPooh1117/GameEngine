@@ -273,6 +273,11 @@ float3 F_Schlick(float3 specColor, float hDotV)
 	return (specColor + (1.0 - specColor) * pow(1.0 - hDotV, 5.0));
 }
 
+float3 F_SchlickRoughness(float3 specColor, float hDotV, float roughness)
+{
+	return (specColor + (max((float3)(1.0 - roughness), specColor) - specColor) * pow(1.0 - hDotV, 5.0));
+}
+
 float D_GGX(float roughness, float nDotH)
 {
 	float roughness2 = roughness * roughness;
@@ -373,7 +378,7 @@ float4 PSmain2(PS_Input input) : SV_TARGET
 		directionalLight = diffuseTerm + specularTerm;
 	}
 
-	float3 F = F_Schlick(surfaceSpec, dot(V, H));
+	float3 F = F_SchlickRoughness(surfaceSpec, dot(V, H), roughness);
 	float3 Kd = lerp(1.0 - F, 0.0, metallic);
 
 	// Indirect Diffuse

@@ -163,7 +163,7 @@
 ////	for (auto i = 0u; i < p_actors->GetActorsSize(); ++i)
 ////	{
 ////		if (mMeshDataTable.find(i) != mMeshDataTable.end()) continue;
-////		mMeshDataTable.emplace(i, p_actors->GetActor(i)->GetComponent<NewMeshComponent>());
+////		mMeshDataTable.emplace(i, p_actors->GetActor(i)->GetComponent<MeshComponent>());
 ////	}
 ////
 ////
@@ -173,7 +173,7 @@
 ////{
 ////	for (auto& mesh : mMeshTable)
 ////	{
-////		std::shared_ptr<NewMeshComponent> component = mMeshDataTable.find(mesh.first)->second;
+////		std::shared_ptr<MeshComponent> component = mMeshDataTable.find(mesh.first)->second;
 ////		DirectX::XMMATRIX world = component->GetWorldMatrix();
 ////		Vector4 matColor = component->GetMaterialColor();
 ////		bool bIsSolid = component->GetIsSolid();

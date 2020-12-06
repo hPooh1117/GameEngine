@@ -5,15 +5,8 @@ using namespace DirectX;
 
 //----------------------------------------------------------------------------------------------------------------------------
 
-CCPhysicalMove::CCPhysicalMove(const std::shared_ptr<Actor>& owner):MoveComponent(owner)
+CCPhysicalMove::CCPhysicalMove(Actor* owner):MoveComponent(owner)
 {
-}
-
-//----------------------------------------------------------------------------------------------------------------------------
-
-std::shared_ptr<CCPhysicalMove> CCPhysicalMove::Initialize(const std::shared_ptr<Actor>& owner)
-{
-	return std::shared_ptr<CCPhysicalMove>(new CCPhysicalMove(owner));
 }
 
 //----------------------------------------------------------------------------------------------------------------------------
@@ -48,7 +41,7 @@ void CCPhysicalMove::Integrate(float elapsed_time)
 
 	mAcceleration = mResultant / mMass;
 	mVelocity += mAcceleration * elapsed_time;
-	m_pOwner.lock()->SetPosition(m_pOwner.lock()->GetPosition() + mVelocity * elapsed_time);
+	mpOwner->SetPosition(mpOwner->GetPosition() + mVelocity * elapsed_time);
 
 	mResultant = {};
 }
@@ -58,12 +51,6 @@ void CCPhysicalMove::Integrate(float elapsed_time)
 void CCPhysicalMove::AddForce(const Vector3& force)
 {
 	mResultant += force;
-}
-
-//----------------------------------------------------------------------------------------------------------------------------
-
-CCPhysicalMove::~CCPhysicalMove()
-{
 }
 
 //----------------------------------------------------------------------------------------------------------------------------

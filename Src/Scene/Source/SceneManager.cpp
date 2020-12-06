@@ -7,7 +7,7 @@
 #include "SceneC.h"
 #include "SceneD.h"
 #include "SceneE.h"
-#include "SceneShadowMapTest.h"
+#include "SceneCubeMapTest.h"
 #include "SceneTest.h"
 
 #include "SceneLoading.h"
@@ -23,7 +23,7 @@
 //----------------------------------------------------------------------------------------------------------------------------
 
 SceneManager::SceneManager(D3D::DevicePtr& p_device)
-	:mCurrentScene(SceneID::SCENE_B),
+	:mCurrentScene(SceneID::SCENE_A),
 	mClearFlag(false),
 	m_bIsLoading(false),
 	m_pDevice(p_device),

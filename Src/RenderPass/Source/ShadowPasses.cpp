@@ -22,7 +22,7 @@
 
 void ShadowPass::Initialize(D3D::DevicePtr& device)
 {
-	GetRenderTargetManager()->Create(device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::EShadow);
+	GetRenderTargetManager()->Create(device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R32G32B32A32_FLOAT, RenderTarget::EShadow);
 	
 	if (mbIsInitialized) return;
 
@@ -76,8 +76,12 @@ void ShadowPass::RenderUI(bool b_open)
 
 		if (ImGui::ImageButton((void*)GetRenderTargetManager()->GetShaderResource(RenderTarget::EShadow).Get(), ImVec2(320, 180)))
 		{
-			mCurrentScreenNum = RenderTarget::EShadow;
-			mbIsOpen2ndScreen = true;
+			//mCurrentScreenNum = RenderTarget::EShadow;
+			//mbIsOpen2ndScreen = true;
+
+			mChosenRenderTarget = RenderTarget::EShadow;
+			mbShowsResult = false;
+
 		}
 		ImGui::TreePop();
 	}

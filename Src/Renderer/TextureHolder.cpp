@@ -110,11 +110,11 @@ bool TextureHolder::Initialize(D3D::DevicePtr& p_device)
     return true;
 }
 
-void TextureHolder::RegisterTextureFromActors(D3D::DevicePtr& p_device, std::unique_ptr<ActorManager>& p_actors)
+void TextureHolder::RegisterTextureFromActors(D3D::DevicePtr& p_device, ActorManager* p_actors)
 {
 	for (auto i = 0u; i < p_actors->GetActorsSize(); ++i)
 	{
-		std::shared_ptr<NewMeshComponent> component = p_actors->GetActor(i)->GetComponent<NewMeshComponent>();
+		MeshComponent* component = p_actors->GetActor(i)->GetComponent<MeshComponent>();
 		const std::vector<TextureData>& table = component->GetTextureTable();
 		
 		for (auto i = 0u; i < table.size(); ++i)

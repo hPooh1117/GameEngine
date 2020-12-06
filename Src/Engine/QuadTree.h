@@ -17,21 +17,14 @@ class ObjectForTree : public std::enable_shared_from_this<ObjectForTree<T>>
 public:
 	std::shared_ptr<Cell<T>> m_pCell;
 	//Cell<T>* m_pCell = nullptr;
-	std::shared_ptr<T> m_pObject;
+	T* m_pObject;
 	//T* m_pObject = nullptr;
 	std::weak_ptr<ObjectForTree<T>> m_pPreObject;
 	std::weak_ptr<ObjectForTree<T>> m_pNextObject;
 	
 
 
-private:
-	ObjectForTree() {}
-public:
-	std::shared_ptr<ObjectForTree<T>> Initialize()
-	{
-		return std::shared_ptr<ObjectForTree<T>>(new ObjectForTree<T>());
-	}
-
+public:	ObjectForTree() {}
 	virtual ~ObjectForTree() = default;
 
 public:
@@ -211,7 +204,7 @@ public:
 	}
 
 	unsigned int GetAllCollisionList(
-		std::vector<std::shared_ptr<T>>& colList)
+		std::vector<T*>& colList)
 	{
 		// リスト初期化
 		colList.clear();
@@ -220,7 +213,7 @@ public:
 		if (m_pCellmap[0] == NULL) return 0; // 空間が存在していない
 
 		// ルート空間を処理
-		std::list<std::shared_ptr<T>> colStac;
+		std::list<T*> colStac;
 		GetCollisionList(0, colList, colStac);
 
 		return static_cast<unsigned int>(colList.size());
@@ -231,8 +224,8 @@ protected:
 	// 空間内で衝突リストを作成する
 	bool GetCollisionList(
 		unsigned int element,
-		std::vector<std::shared_ptr<T>>& colList,
-		std::list<std::shared_ptr<T>>& colStac)
+		std::vector<T*>& colList,
+		std::list<T*>& colStac)
 	{
 		// 空間内のオブジェクト動詞の衝突リスト作成	
 		std::weak_ptr<ObjectForTree<T>> pObject1 = m_pCellmap.at(element)->GetFirstObj();

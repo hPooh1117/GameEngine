@@ -59,7 +59,7 @@ PS_Output_Light PSmain(PS_InputD input)
 {
 	PS_Output_Light output = (PS_Output_Light)0;
 
-	float depth = depth_texture.Sample(decal_sampler, input.texcoord).r;
+	const float depth = depth_texture.Sample(decal_sampler, input.texcoord).r;
 	float2 uv = float2(input.texcoord.x * 2.0 - 1.0, (1.0 - input.texcoord.y) * 2.0 - 1.0);
 	//float4 projP = float4(input.projPos.xy, depth, 1);
 	float4 projP = float4(uv, depth, 1);
@@ -90,7 +90,7 @@ PS_Output_Light PSmain(PS_InputD input)
 	float3 D = diffuse(N, L, C, Kd);
 
 	float3 Ks = float3(1, 1, 1);
-	float3 S = blinnPhongSpecular(N, L, C, E, Ks, 30);
+	float3 S = blinnPhongSpecular(N, L, C, E, Ks, shininess);
 
 	// ポイントライト
 	float3 PL;
@@ -121,63 +121,50 @@ PS_Output_Light PSmain(PS_InputD input)
 	}
 
 	//スポットライト
-	float3 SpotLight = (float3)0;
-	float3 SpotLightColor = (float3)0;
-	float3 SpotDiffuse = (float3)0;
-	float3 SpotSpecular = (float3)0;
+	//float3 SpotLight = (float3)0;
+	//float3 SpotLightColor = (float3)0;
+	//float3 SpotDiffuse = (float3)0;
+	//float3 SpotSpecular = (float3)0;
 
-	for (i = 0; i < SPOTMAX; ++i)
-	{
-		if ((light_config & 4) == 0) break;
+	//for (i = 0; i < SPOTMAX; ++i)
+	//{
+	//	if ((light_config & 4) == 0) break;
 
-		if (spot_lights[i].type == 0.0f) continue;
+	//	if (spot_lights[i].type == 0.0f) continue;
 
-		SpotLight = P - spot_lights[i].pos.xyz;
-		float d = length(SpotLight);
+	//	SpotLight = P - spot_lights[i].pos.xyz;
+	//	float d = length(SpotLight);
 
-		float r = spot_lights[i].range;
-		if (d > r) continue;
+	//	float r = spot_lights[i].range;
+	//	if (d > r) continue;
 
-		float3 SpotFront = normalize(spot_lights[i].dir.xyz);
-		SpotLight = normalize(SpotLight);
+	//	float3 SpotFront = normalize(spot_lights[i].dir.xyz);
+	//	SpotLight = normalize(SpotLight);
 
-		float angle = dot(SpotLight, SpotFront);
-		float area = spot_lights[i].inner_corn - spot_lights[i].outer_corn;
+	//	float angle = dot(SpotLight, SpotFront);
+	//	float area = spot_lights[i].inner_corn - spot_lights[i].outer_corn;
 
-		float influence2 = spot_lights[i].inner_corn - angle;
-		influence2 = saturate(1.0 - influence2 / area);
-		influence = 1;
-		SpotLightColor = spot_lights[i].color.rgb;
-		SpotDiffuse += diffuse(N, SpotLight, SpotLightColor, Kd) * influence * influence * influence2;
-		SpotSpecular += blinnPhongSpecular(N, SpotLight, SpotLightColor, E, Ks, 20) * influence * influence * influence2;
-	}
+	//	float influence2 = spot_lights[i].inner_corn - angle;
+	//	influence2 = saturate(1.0 - influence2 / area);
+	//	influence = 1;
+	//	SpotLightColor = spot_lights[i].color.rgb;
+	//	SpotDiffuse += diffuse(N, SpotLight, SpotLightColor, Kd) * influence * influence * influence2;
+	//	SpotSpecular += blinnPhongSpecular(N, SpotLight, SpotLightColor, E, Ks, 20) * influence * influence * influence2;
+	//}
 
 
-	//float4 shadow = shadow_texture.Sample(decal_sampler, input.texcoord);
+	float4 shadow = HasShadowMap(gTextureConfig) > 0 ? shadow_texture.Sample(decal_sampler, input.texcoord) : 1.0;
 	float4 albedo = albedo_texture.Sample(decal_sampler, input.texcoord);
 
-	float Length = length(eye_pos.xyz - P.xyz);
-	float4 skyboxAlbedo = step(450.0, Length) * albedo;
+	float4 skyboxAlbedo = (depth < 0.1) * albedo;
 	skyboxAlbedo.a = 1;
 
-	//float angle = 1.0 - dot(E, N);
-	//angle = saturate(angle * 1.5);
-	//float4 reflect = float4(1, 1, angle, 1);
+
 	float4 reflect = float4(1, 1, 1, 1);
 
-	output.diffuse = float4(D + PD + SpotDiffuse, 1) * reflect;
-	output.specular = float4(S + PS + SpotSpecular, 1) * reflect;
-	output.prelighting = float4(output.diffuse.rgb + output.specular.rgb + A * reflect.rgb, 1) * albedo/* + skyboxAlbedo * light_color*/;
-	//if (P.x < 5.0 && P.x > -5.0)
-	//{
-	//	P.x = 0.0f;
-	//	P.y = 0.0f;
-	//}
-	//if (P.z < 5.0 && P.z > -5.0)
-	//{
-	//	P.z = 0.0f;
-	//	P.y = 0.0f;
-	//}
+	output.diffuse = float4(D + PD/* + SpotDiffuse*/, 1) * reflect;
+	output.specular = float4(S + PS/* + SpotSpecular*/, 1) * reflect;
+	output.prelighting = float4(output.diffuse.rgb + output.specular.rgb + A * reflect.rgb, 1) * albedo * shadow + skyboxAlbedo * light_color;
 	
 
 	//output.prelighting = float4(P, 1);

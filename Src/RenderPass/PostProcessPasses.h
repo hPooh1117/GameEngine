@@ -20,8 +20,10 @@ private:
 	float mSaturationLevel;
 	float mVignetteLevel;
 
+	bool mbIsDesaturated;
 	bool mbIsBlurred;
 	bool mbIsDrawing;
+
 	UINT mCurrentRenderTarget;
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer> mpConstantBuffer;
@@ -48,4 +50,7 @@ public:
 	void RenderUI();
 	void RenderUIForSettings();
 	void SetPostProcessed(bool flag) { mbIsPostProcessed = flag; }
+
+private:
+	void ChooseCurrentRenderTarget();
 };

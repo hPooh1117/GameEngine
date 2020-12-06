@@ -56,7 +56,8 @@ private:
 	float   mYaw;
 	Vector4 mAmbientColor = { 0.1f, 0.1f, 0.1f, 0 };
 	Vector4 mLightColor = { 0.9f, 0.9f, 0.9f, 1.0f };
-	
+	float   mShininess;
+
 	float   mTessFactor = 1.0f;
 	float   mEnvironmentMapAlpha;
 	float   mTimer;
@@ -88,6 +89,7 @@ public:
 	void ActivatePointLight(unsigned int index, bool b_activate);
 	void ActivateSpotLight(unsigned int index, bool b_activate);
 
+	float GetShininess() { return mShininess; }
 	
 
 	void SendLightData(
@@ -98,6 +100,7 @@ public:
 	void SetLightColor(const Vector4& color) { mLightColor = color; }
 	void SetLightColor(const Vector3& color) { SetLightColor(color.x, color.y, color.z); }
 	void SetLightColor(float r, float g, float b) { mLightColor.x = r, mLightColor.y = g, mLightColor.z = b; }
+	void SetShininess(float shininess) { mShininess = shininess; }
 
 	void SetPointData(
 		unsigned int        index, 

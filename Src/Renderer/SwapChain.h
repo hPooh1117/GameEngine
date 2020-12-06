@@ -5,27 +5,26 @@
 class Swapchain
 {
 private:
-    D3D::SwapChainPtr                                 m_swapchain          = nullptr;                   // スワップチェイン
-    Microsoft::WRL::ComPtr<ID3D11RenderTargetView>    m_render_target_view = nullptr;            // 描画先領域
-    Microsoft::WRL::ComPtr<ID3D11DepthStencilView>    m_depth_stencil_view = nullptr;            // 描画先の深度情報
+    D3D::SwapChainPtr                                 mpSwapChain          = nullptr;                   // スワップチェイン
+    Microsoft::WRL::ComPtr<ID3D11RenderTargetView>    mpRTV = nullptr;            // 描画先領域
+    Microsoft::WRL::ComPtr<ID3D11DepthStencilView>    mpDSV = nullptr;            // 描画先の深度情報
 
 private:
-    Microsoft::WRL::ComPtr<IDXGIDevice>               m_dxgi_device = nullptr;
-    Microsoft::WRL::ComPtr<IDXGIAdapter>              m_dxgi_adapter = nullptr;
-    Microsoft::WRL::ComPtr<IDXGIFactory1>              m_dxgi_factory = nullptr;
+    Microsoft::WRL::ComPtr<IDXGIDevice>               mpDxgiDevice = nullptr;
+    Microsoft::WRL::ComPtr<IDXGIAdapter>              mpDxgiAdapther = nullptr;
+    Microsoft::WRL::ComPtr<IDXGIFactory1>             mpDxgiFactory = nullptr;
 
 public:
     Swapchain(D3D::DevicePtr& device, HWND& hwnd);
+    ~Swapchain() = default;
+
     void Resize(D3D::DevicePtr& device, unsigned int width, unsigned int height);
-    bool present(bool vsync);
+    bool Present(bool vsync);
 private:
     void ReloadBuffers(D3D::DevicePtr& device, unsigned int width, unsigned int height);
 
 public:
-
-    Microsoft::WRL::ComPtr<ID3D11RenderTargetView>& getRenderTargetView();
-
-    Microsoft::WRL::ComPtr<ID3D11DepthStencilView>& getDepthStencilView();
-    ~Swapchain();
+    Microsoft::WRL::ComPtr<ID3D11RenderTargetView>& GetRenderTargetView() { return mpRTV; }
+    Microsoft::WRL::ComPtr<ID3D11DepthStencilView>& GetDepthStencilView() { return mpDSV; }
 };
 

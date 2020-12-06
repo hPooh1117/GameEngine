@@ -104,9 +104,8 @@ void MakeCubeMapPass::MakeCubeMap(std::unique_ptr<GraphicsEngine>& p_graphics, f
 	pImmContext->GSSetConstantBuffers(3, 1, mpCBufferForView.GetAddressOf());
 	pImmContext->PSSetConstantBuffers(3, 1, mpCBufferForView.GetAddressOf());
 
-	ENGINE.GetMeshRenderer()->RenderMesh(pImmContext, elapsed_time, RenderPassID::ECubeMapPass);
+	ENGINE.GetMeshRenderer()->Render(p_graphics, elapsed_time, RenderPassID::ECubeMapPass);
 
-	ENGINE.GetMeshRenderer()->RenderSkybox(pImmContext, elapsed_time, RenderPassID::ECubeMapPass);
 
 	p_graphics->ActivateBackBuffer();
 
@@ -122,8 +121,12 @@ void MakeCubeMapPass::RenderUI(bool b_open)
 		//if (ImGui::ImageButton((void*)mpRenderTargets->GetShaderResource(0).Get(), ImVec2(320, 180))) Log::Info("shader");
 		if (ImGui::ImageButton((void*)GetRenderTargetManager()->GetShaderResource(RenderTarget::ECubemap).Get(), ImVec2(320, 180)))
 		{
-			mbIsOpen2ndScreen = true;
-			mCurrentScreenNum = RenderTarget::ECubemap;
+			//mbIsOpen2ndScreen = true;
+			//mCurrentScreenNum = RenderTarget::ECubemap;
+
+			mChosenRenderTarget = RenderTarget::ECubemap;
+			mbShowsResult = false;
+
 		}
 		ImGui::TreePop();
 	}

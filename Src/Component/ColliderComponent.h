@@ -8,6 +8,8 @@
 #include "./Utilities/PrimitiveData.h"
 
 class Actor;
+class SphereColliderComponent;
+class CapsuleColliderComponent;
 
 enum ColliderType
 {
@@ -24,26 +26,24 @@ enum ColliderType
 class ColliderComponent : public Component
 {
 protected:
-	Vector3 mPosition;
+	Vector3			    mPosition;
+	Vector3			    mScale;
 	DirectX::XMFLOAT4X4 mOrientation = {};
-	Vector3 mScale;
-
-
 	ColliderType mType = ColliderType::kC_None;
-protected:
-	ColliderComponent(const std::shared_ptr<Actor>& owner) : Component(owner) {}
+
 
 public:
-	virtual ~ColliderComponent() {}
+	ColliderComponent(Actor* owner) : Component(owner) {}
+	virtual ~ColliderComponent() = default;
 
 	virtual bool Create() = 0;
 	virtual void Destroy() = 0;
 
 	virtual void Update(float elapsed_time) = 0;
 
-	virtual void Intersect(const std::shared_ptr<ColliderComponent>& other) = 0;
-	virtual void IntersectToSphere(const std::shared_ptr<ColliderComponent>& other) = 0;
-	virtual void IntersectToCapsule(const std::shared_ptr<ColliderComponent>& other) = 0;
+	virtual void Intersect(ColliderComponent* other) = 0;
+	virtual void IntersectToSphere(SphereColliderComponent* other) = 0;
+	virtual void IntersectToCapsule(CapsuleColliderComponent* other) = 0;
 
 	// calculation of shortest distance
 	float CalculateBetweenPointAndLine(

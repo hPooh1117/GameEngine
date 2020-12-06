@@ -7,7 +7,9 @@ class OrthoView : public Camera
 {
 public:
 	OrthoView(const Vector3& pos);
-	virtual void Update(float elapsed_time);
+	virtual ~OrthoView() = default;
+
+	virtual void Update(float elapsed_time) override;
 
 	void SetOrtho(float width, float height, float min, float max);
 	//virtual DirectX::XMMATRIX getViewProj(Microsoft::WRL::ComPtr<ID3D11DeviceContext>& imm_context);
@@ -18,5 +20,4 @@ public:
 	//virtual DirectX::XMMATRIX getProjInverse(Microsoft::WRL::ComPtr<ID3D11DeviceContext>& imm_context);
 	DirectX::XMMATRIX GetProjection(D3D::DeviceContextPtr& imm_context);
 
-	~OrthoView() = default;
 };

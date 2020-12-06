@@ -35,11 +35,10 @@ SceneE::SceneE(SceneManager* manager, D3D::DevicePtr& device) :Scene(manager, de
 
     ENGINE.GetLightPtr()->Init(0, 0);
     ENGINE.GetLightPtr()->SetLightColor(Vector4(0.9f, 0.9f, 0.9f, 1.0f));
-
+    ENGINE.GetLightPtr()->SetShininess(10.0f);
     InitializeActors();
 
 
-    ENGINE.GetCameraPtr()->SetTarget(mpShiba);
 
     Settings::Renderer renderSettings = {
     true,   // shadow
@@ -63,69 +62,68 @@ void SceneE::InitializeActors()
 //----------------------------------------------------------------------------------------
 // アクター・コンポーネント初期化
 //----------------------------------------------------------------------------------------
-    mpCat = Actor::Initialize(ActorID::kNonPlayer);
-    mpCat->SetPosition(Vector3(1.0f, 1, -1.5f - 5.0f));
-    mpCat->SetScale(2, 4, 2);
-    mpCat->AddComponent<NewMeshComponent>();
-    mpCat->GetComponent<NewMeshComponent>()->RegisterMesh(MeshTypeID::E_BasicCylinder, ShaderID::EDefferedNormal, nullptr, FbxType::EDefault);
-    mpCat->GetComponent<NewMeshComponent>()->SetMaterialColor(Vector4(0.7f, 0.3f, 0.5f, 1.0f));
-    mpCat->GetComponent<NewMeshComponent>()->RegisterAdditionalShader(ShaderID::EToShadow, ShaderUsage::EShader);
-    ENGINE.GetActorManagerPtr()->AddActor(mpCat);
+    int count = 0;
 
-    mpOswell = Actor::Initialize(ActorID::kEnemy);
-    mpOswell->SetPosition(Vector3(-2.5f, 3.0f, 0.0f - 5.0f));
-    mpOswell->SetScale(0.05f, 0.05f, 0.05f);
-    mpOswell->AddComponent<NewMeshComponent>();
-    mpOswell->GetComponent<NewMeshComponent>()->RegisterMesh(MeshTypeID::E_SkinnedMesh, ShaderID::EDefferedNormalForSkinning, L"./Data/Models/oswell/oswell_test1.fbx", FbxType::EMaya);
-    mpOswell->GetComponent<NewMeshComponent>()->RegisterMotion("Move", L"./Data/Models/oswell/oswell_movemove.fbx");
-    mpOswell->GetComponent<NewMeshComponent>()->RegisterAdditionalShader(ShaderID::EToShadowForSkinning, ShaderUsage::EShader);
-    ENGINE.GetActorManagerPtr()->AddActor(mpOswell);
+    Actor* pCylinder = new Actor();
+    pCylinder->SetPosition(Vector3(5.0f, 1, -3.5f));
+    pCylinder->SetScale(2, 4, 2);
+    pCylinder->AddComponent<MeshComponent>();
+    pCylinder->GetComponent<MeshComponent>()->RegisterMesh(MeshTypeID::E_BasicCylinder, ShaderID::EDefferedNormal, nullptr, FbxType::EDefault);
+    pCylinder->GetComponent<MeshComponent>()->SetMaterialColor(Vector4(0.7f, 0.3f, 0.5f, 1.0f));
+    pCylinder->GetComponent<MeshComponent>()->RegisterAdditionalShader(ShaderID::EToShadow, ShaderUsage::EShader);
+    ENGINE.GetActorManagerPtr()->AddActor(pCylinder, count++);
 
-    mpShiba = Actor::Initialize(ActorID::kPlayer);
-    mpShiba->SetScale(3, 3, 3);
-    mpShiba->SetPosition(Vector3(0, 1.5f, -4 - 4.0f));
-    mpShiba->AddComponent<NewMeshComponent>();
-    mpShiba->GetComponent<NewMeshComponent>()->RegisterMesh(MeshTypeID::E_BasicSphere, ShaderID::EDefferedNormal, nullptr, FbxType::EDefault);
-    mpShiba->GetComponent<NewMeshComponent>()->SetMaterialColor(Vector4(0.4f, 0.3f, 0.5f, 1.0f));
-    mpShiba->GetComponent<NewMeshComponent>()->RegisterAdditionalShader(ShaderID::EToShadow, ShaderUsage::EShader);
+    Actor* pOswell = new Actor();
+    pOswell->SetPosition(Vector3(0.0f, 2.75f, 0.0f));
+    pOswell->SetScale(0.05f, 0.05f, 0.05f);
+    pOswell->AddComponent<MeshComponent>();
+    pOswell->GetComponent<MeshComponent>()->RegisterMesh(MeshTypeID::E_SkinnedMesh, ShaderID::EDefferedNormalForSkinning, L"./Data/Models/oswell/oswell_test1.fbx", FbxType::EMaya);
+    pOswell->GetComponent<MeshComponent>()->RegisterMotion("Move", L"./Data/Models/oswell/oswell_movemove.fbx");
+    pOswell->GetComponent<MeshComponent>()->RegisterAdditionalShader(ShaderID::EToShadowForSkinning, ShaderUsage::EShader);
+    ENGINE.GetActorManagerPtr()->AddActor(pOswell, count++);
 
-    ENGINE.GetActorManagerPtr()->AddActor(mpShiba);
+    Actor* pSphere = new Actor();
+    pSphere->SetScale(3, 3, 3);
+    pSphere->SetPosition(Vector3(3, 1.5f, -5.0f));
+    pSphere->AddComponent<MeshComponent>();
+    pSphere->GetComponent<MeshComponent>()->RegisterMesh(MeshTypeID::E_BasicSphere, ShaderID::EDefferedNormal, nullptr, FbxType::EDefault);
+    pSphere->GetComponent<MeshComponent>()->SetMaterialColor(Vector4(0.4f, 0.3f, 0.5f, 1.0f));
+    pSphere->GetComponent<MeshComponent>()->RegisterAdditionalShader(ShaderID::EToShadow, ShaderUsage::EShader);
 
-    mpField = Actor::Initialize(ActorID::kFloor);
-    mpField->SetPosition(Vector3(0, 0, 0));
-    mpField->SetScale(50, 0.5f, 50);
-    mpField->AddComponent<NewMeshComponent>();
-    mpField->GetComponent<NewMeshComponent>()->RegisterMesh(MeshTypeID::E_BasicCube, ShaderID::EDefferedNormal, nullptr, FbxType::EDefault);
-    //mpField->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Images/PBR/Metal_Panel_Color.jpg", TextureConfig::EColorMap);
-    mpField->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Images/PBR/Metal_Panel_Normal.jpg", TextureConfig::ENormalMap);
-    mpField->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Images/PBR/Metal_Panel_Height.png", TextureConfig::EHeightMap);
-    mpField->GetComponent<NewMeshComponent>()->RegisterAdditionalShader(ShaderID::EToShadow, ShaderUsage::EShader);
-    ENGINE.GetActorManagerPtr()->AddActor(mpField);
+    ENGINE.GetActorManagerPtr()->AddActor(pSphere, count++);
+
+    Actor* pCylinder1 = new Actor();
+    pCylinder1->SetPosition(Vector3(-5.0f, 1, -3.5f));
+    pCylinder1->SetScale(2, 4, 2);
+    pCylinder1->AddComponent<MeshComponent>();
+    pCylinder1->GetComponent<MeshComponent>()->RegisterMesh(MeshTypeID::E_BasicCylinder, ShaderID::EDefferedNormal, nullptr, FbxType::EDefault);
+    pCylinder1->GetComponent<MeshComponent>()->SetMaterialColor(Vector4(0.7f, 0.3f, 0.5f, 1.0f));
+    pCylinder1->GetComponent<MeshComponent>()->RegisterAdditionalShader(ShaderID::EToShadow, ShaderUsage::EShader);
+    ENGINE.GetActorManagerPtr()->AddActor(pCylinder1, count++);
+
+    Actor* pSphere1 = new Actor();
+    pSphere1->SetScale(3, 3, 3);
+    pSphere1->SetPosition(Vector3(-3, 1.5f, -5.0f));
+    pSphere1->AddComponent<MeshComponent>();
+    pSphere1->GetComponent<MeshComponent>()->RegisterMesh(MeshTypeID::E_BasicSphere, ShaderID::EDefferedNormal, nullptr, FbxType::EDefault);
+    pSphere1->GetComponent<MeshComponent>()->SetMaterialColor(Vector4(0.4f, 0.3f, 0.5f, 1.0f));
+    pSphere1->GetComponent<MeshComponent>()->RegisterAdditionalShader(ShaderID::EToShadow, ShaderUsage::EShader);
+
+    ENGINE.GetActorManagerPtr()->AddActor(pSphere1, count++);
+
+    Actor* pField = new Actor();
+    pField->SetPosition(Vector3(0, 0, 0));
+    pField->SetScale(50, 0.5f, 50);
+    pField->AddComponent<MeshComponent>();
+    pField->GetComponent<MeshComponent>()->RegisterMesh(MeshTypeID::E_BasicCube, ShaderID::EDefferedNormal, nullptr, FbxType::EDefault);
+    //pField->GetComponent<MeshComponent>()->RegisterTexture(L"./Data/Images/PBR/Metal_Panel_Color.jpg", TextureConfig::EColorMap);
+    pField->GetComponent<MeshComponent>()->RegisterTexture(L"./Data/Images/PBR/Metal_Panel_Normal.jpg", TextureConfig::ENormalMap);
+    pField->GetComponent<MeshComponent>()->RegisterTexture(L"./Data/Images/PBR/Metal_Panel_Height.png", TextureConfig::EHeightMap);
+    pField->GetComponent<MeshComponent>()->RegisterAdditionalShader(ShaderID::EToShadow, ShaderUsage::EShader);
+    ENGINE.GetActorManagerPtr()->AddActor(pField, count++);
 
 
-    //std::shared_ptr<Actor> m_pWall = Actor::Create(ActorID::kNonPlayer0);
-    //m_pWall->SetPosition(Vector3(0, 25, 25));
-    //m_pWall->SetScale(50, 50, 0.5f);
-    //m_pWall->AddComponent<NewMeshComponent>();
-    //m_pWall->GetComponent<NewMeshComponent>()->RegisterMesh(MeshTypeID::E_BasicCube, ShaderID::EDefferedNormal, nullptr, FbxType::EDefault);
-    //m_pWall->GetComponent<NewMeshComponent>()->RegisterAdditionalShader(ShaderID::EToShadow, ShaderUsage::EShader);
-    //ENGINE.GetActorManagerPtr()->AddActor(m_pWall);
-
-    //std::shared_ptr<Actor> m_pWall1 = Actor::Create(ActorID::kNonPlayer0 + 1);
-    //m_pWall1->SetPosition(Vector3(-25, 25, 0));
-    //m_pWall1->SetScale(0.5f, 50.0f, 50.0f);
-    //m_pWall1->AddComponent<NewMeshComponent>();
-    //m_pWall1->GetComponent<NewMeshComponent>()->RegisterMesh(MeshTypeID::E_BasicCube, ShaderID::EDefferedNormal, nullptr, FbxType::EDefault);
-    //m_pWall1->GetComponent<NewMeshComponent>()->RegisterAdditionalShader(ShaderID::EToShadow, ShaderUsage::EShader);
-    //ENGINE.GetActorManagerPtr()->AddActor(m_pWall1);
-
-    //std::shared_ptr<Actor> m_pWall2 = Actor::Create(ActorID::kNonPlayer0 + 2);
-    //m_pWall2->SetPosition(Vector3(25, 25, 0));
-    //m_pWall2->SetScale(0.5f, 50.0f, 50.0f);
-    //m_pWall2->AddComponent<NewMeshComponent>();
-    //m_pWall2->GetComponent<NewMeshComponent>()->RegisterMesh(MeshTypeID::E_BasicCube, ShaderID::EDefferedNormal, nullptr, FbxType::EDefault);
-    //m_pWall2->GetComponent<NewMeshComponent>()->RegisterAdditionalShader(ShaderID::EToShadow, ShaderUsage::EShader);
-    //ENGINE.GetActorManagerPtr()->AddActor(m_pWall2);
+    ENGINE.GetCameraPtr()->SetTarget(pSphere);
 
 }
 
@@ -135,7 +133,7 @@ void SceneE::Update(float elapsed_time)
 {
     //if (InputPtr.OnKeyDown("X"))
     //{
-    //    mpOswell->GetComponent<NewMeshComponent>()->Play("Move");
+    //    pOswell->GetComponent<MeshComponent>()->Play("Move");
     //}
 
     ENGINE.GetActorManagerPtr()->Update(elapsed_time);

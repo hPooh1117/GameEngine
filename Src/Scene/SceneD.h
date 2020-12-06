@@ -25,12 +25,6 @@ public:
 
 private:
 
-    std::shared_ptr<Actor> mpPlayer;
-    std::shared_ptr<Actor> mpNonPlayer;
-    std::shared_ptr<Actor> mpEnemy;
-    std::shared_ptr<Actor> mpField;
-    std::shared_ptr<Actor> mpPlane;
-    std::array<std::shared_ptr<Actor>, 200> mpActors;
 
 
     std::unique_ptr<AudioSystem> mpAudioSystem;

@@ -54,60 +54,42 @@ SceneD::SceneD(SceneManager* manager, Microsoft::WRL::ComPtr<ID3D11Device>& devi
 	//);
 
 
-
+	int count = 0;
 // ----------------------------------------------------------------------------------------------
 // アクター・コンポーネント作成
 // ----------------------------------------------------------------------------------------------
-	mpPlayer = Actor::Initialize(ActorID::kPlayer);
-	mpPlayer->AddComponent<CCPlayerMove>();
-	//mpPlayer->AddComponent(
-	//	MeshComponent::MeshID::EBasicSphere,
-	//	m_pRenderer,
-	//	m_phong_shader,
-	//	L"./Data/Images/check.jpg");
-	mpPlayer->AddComponent<NewMeshComponent>();
-	mpPlayer->GetComponent<NewMeshComponent>()->RegisterMesh(MeshTypeID::E_BasicSphere, ShaderID::ELambert, nullptr, FbxType::EDefault);
-	mpPlayer->AddComponent<SphereColliderComponent>();
-	mpPlayer->SetPosition(Vector3(1.5f, 4, -3));
-	mpPlayer->GetComponent<NewMeshComponent>()->SetMaterialColor(Vector3(0.8f, 0.2f, 0.1f));
-	ENGINE.GetActorManagerPtr()->AddActor(mpPlayer);
+	Actor* pPlayer = new Actor();
+	pPlayer->AddComponent<CCPlayerMove>();
+	pPlayer->AddComponent<MeshComponent>();
+	pPlayer->GetComponent<MeshComponent>()->RegisterMesh(MeshTypeID::E_BasicSphere, ShaderID::ELambert, nullptr, FbxType::EDefault);
+	pPlayer->AddComponent<SphereColliderComponent>();
+	pPlayer->SetPosition(Vector3(1.5f, 4, -3));
+	pPlayer->GetComponent<MeshComponent>()->SetMaterialColor(Vector3(0.8f, 0.2f, 0.1f));
+	ENGINE.GetActorManagerPtr()->AddActor(pPlayer, count++);
 
-	int actorCounter = 1;
-	for (auto& actor : mpActors)
+	for (int i = 0; i < 200; ++i)
 	{
-		actor = Actor::Initialize(actorCounter++);
+		Actor* actor = new Actor();
 		actor->SetPosition(Vector3(
 			static_cast<float>(rand() % 2000) / 100.0f - 10.0f,
 			static_cast<float>(rand() % 2000) / 100.0f,
 			static_cast<float>(rand() % 2000) / 100.0f - 10.0f));
 		actor->SetScale(0.5f, 0.5f, 0.5f);
 		actor->AddComponent<CCPhysicalMove>();
-		//actor->AddComponent(
-		//	MeshComponent::MeshID::EBasicSphere,
-		//	m_pRenderer,
-		//	m_phong_shader,
-		//	L"./Data/Images/Sand_003_SD/Sand_003_COLOR.jpg"
-		//	);
-		actor->AddComponent<NewMeshComponent>();
-		actor->GetComponent<NewMeshComponent>()->RegisterMesh(MeshTypeID::E_BasicSphere, ShaderID::ELambert, nullptr, FbxType::EDefault);
-		actor->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Images/Sand_003_SD/Sand_003_COLOR.jpg", TextureConfig::EColorMap);
+		actor->AddComponent<MeshComponent>();
+		actor->GetComponent<MeshComponent>()->RegisterMesh(MeshTypeID::E_BasicSphere, ShaderID::ELambert, nullptr, FbxType::EDefault);
+		actor->GetComponent<MeshComponent>()->RegisterTexture(L"./Data/Images/Sand_003_SD/Sand_003_COLOR.jpg", TextureConfig::EColorMap);
 		actor->AddComponent<SphereColliderComponent>();
-		ENGINE.GetActorManagerPtr()->AddActor(actor);
+		ENGINE.GetActorManagerPtr()->AddActor(actor, count++);
 	}
 	// Field
-	mpField = Actor::Initialize(actorCounter);
-	//mpField->AddComponent(
-	//	MeshComponent::MeshID::EBasicCube,
-	//	m_pRenderer,
-	//	m_phong_shader,
-	//	L"./Data/Images/Test.png"
-	//);
-	mpField->AddComponent<NewMeshComponent>();
-	mpField->GetComponent<NewMeshComponent>()->RegisterMesh(MeshTypeID::E_BasicCube, ShaderID::ELambert, nullptr, FbxType::EDefault);
-	mpField->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Images/Test.png", TextureConfig::EColorMap);
-	mpField->SetPosition(Vector3(0, -0.5f, 0));
-	mpField->SetScale(20.0f, 0.5f, 20.0f);
-	ENGINE.GetActorManagerPtr()->AddActor(mpField);
+	Actor* pField = new Actor();
+	pField->AddComponent<MeshComponent>();
+	pField->GetComponent<MeshComponent>()->RegisterMesh(MeshTypeID::E_BasicCube, ShaderID::ELambert, nullptr, FbxType::EDefault);
+	pField->GetComponent<MeshComponent>()->RegisterTexture(L"./Data/Images/Test.png", TextureConfig::EColorMap);
+	pField->SetPosition(Vector3(0, -0.5f, 0));
+	pField->SetScale(20.0f, 0.5f, 20.0f);
+	ENGINE.GetActorManagerPtr()->AddActor(pField, count++);
 
 
 	mpAudioSystem = std::make_unique<AudioSystem>();
@@ -115,7 +97,7 @@ SceneD::SceneD(SceneManager* manager, Microsoft::WRL::ComPtr<ID3D11Device>& devi
 	mpAudioSystem->playMusic(0, true);
 
 	mpPhysics = std::make_unique<PhysicsManager>();
-	mpPhysics->Init(ENGINE.GetActorManagerPtr(), true);
+	mpPhysics->Init(ENGINE.GetActorManagerPtr().get(), true);
 
 
 	ENGINE.GetCameraPtr()->SetPositionOfMoveableCamera(Vector3(0, 5, -40));
@@ -146,7 +128,7 @@ void SceneD::Update(float elapsed_time)
 
 	ENGINE.GetActorManagerPtr()->Update(elapsed_time);
 
-	mpPhysics->DetectCollision(ENGINE.GetActorManagerPtr(), elapsed_time);
+	mpPhysics->DetectCollision(ENGINE.GetActorManagerPtr().get(), elapsed_time);
 
 }
 
@@ -163,14 +145,16 @@ void SceneD::Render(std::unique_ptr<GraphicsEngine>& p_graphics,
 
 void SceneD::RenderUI()
 {
+	Actor* actor = ENGINE.GetActorManagerPtr()->GetActor(0);
+
 	ENGINE.GetUIRenderer()->SetText("player position :" +
-		std::to_string(mpPlayer->GetPosition().x) + ". " +
-		std::to_string(mpPlayer->GetPosition().y) + ". " +
-		std::to_string(mpPlayer->GetPosition().z));
+		std::to_string(actor->GetPosition().x) + ". " +
+		std::to_string(actor->GetPosition().y) + ". " +
+		std::to_string(actor->GetPosition().z));
 	ENGINE.GetUIRenderer()->SetText("player velocity :" +
-		std::to_string(mpPlayer->GetComponent<MoveComponent>()->GetVelocity().x) + ". " +
-		std::to_string(mpPlayer->GetComponent<MoveComponent>()->GetVelocity().y) + ". " +
-		std::to_string(mpPlayer->GetComponent<MoveComponent>()->GetVelocity().z));
+		std::to_string(actor->GetComponent<MoveComponent>()->GetVelocity().x) + ". " +
+		std::to_string(actor->GetComponent<MoveComponent>()->GetVelocity().y) + ". " +
+		std::to_string(actor->GetComponent<MoveComponent>()->GetVelocity().z));
 	ENGINE.GetUIRenderer()->SetText("collision counter :" +
 		std::to_string(mpPhysics->GetCollisionCounter() / 2));
 	ENGINE.GetUIRenderer()->SetText("GamePad Connection : " +

@@ -85,7 +85,7 @@ float4 PSmain(PS_InputBump input) : SV_TARGET
 	float3 D = diffuse(N, L, C, Kd);
 
 	float3 Ks = float3(1, 1, 1);
-	float3 S = blinnPhongSpecular(N, L, C, E, Ks, 20);
+	float3 S = blinnPhongSpecular(N, L, C, E, Ks, shininess);
 
 	return color * input.color * float4(A + D + S, 1.0);
 }

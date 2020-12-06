@@ -4,30 +4,23 @@
 
 class Actor;
 
-class Component : public std::enable_shared_from_this<Component>
+class Component
 {
 protected:
-    //std::shared_ptr<Actor> m_pOwner;
-    std::weak_ptr<Actor> m_pOwner;
-    #define OwnerPtr    (m_pOwner.lock())
+    Actor* mpOwner;
 
     bool mIsValid = true;
-protected:
-    Component(const std::shared_ptr<Actor>& owner):m_pOwner(owner) {}
+
 public:
-    template<class T>
-    static std::shared_ptr<T> Initialize(const std::shared_ptr<Actor>& p_owner)
-    {
-        return std::shared_ptr<T>(new T(p_owner));
-    }
+
+    Component(Actor* owner):mpOwner(owner) {}
     virtual bool Create() = 0;
     virtual void Destroy() = 0;
     virtual void Update(float elapsed_time) = 0;
     void BeInvalid() { mIsValid = false; }
     void BeValid() { mIsValid = true; }
     bool GetIsValid() { return mIsValid; }
-    virtual ~Component()
-    {}
+    virtual ~Component() = default;
 };
 
 

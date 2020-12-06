@@ -25,6 +25,7 @@ PostProcessPass::PostProcessPass()
 	mVignetteLevel(0.0f),
 	mbIsDrawing(true),
 	mbIsBlurred(true),
+	mbIsDesaturated(true),
 	mpPostProcessTex(std::make_unique<ComputedTexture>()),
 	mpBlurPass(std::make_unique<BlurExecuter>())
 {
@@ -35,6 +36,14 @@ void PostProcessPass::Initialize(D3D::DevicePtr& device)
 
 	GetRenderTargetManager()->Create(device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::EPostProcess);
 
+	if (!ENGINE.IsDefferedRendering()) mChosenRenderTarget = RenderTarget::EForward;
+	else
+	{
+		if (ENGINE.IsSSAOActivated()) mChosenRenderTarget = RenderTarget::EThirdResult;
+		else						  mChosenRenderTarget = RenderTarget::EFirstResult;
+	}
+
+	mbShowsResult = true;
 
 	if (mbIsInitialized) return;
 
@@ -78,24 +87,22 @@ void PostProcessPass::RenderPostProcess(std::unique_ptr<GraphicsEngine>& p_graph
 
 	D3D::DeviceContextPtr& pImmContext = p_graphics->GetImmContextPtr();
 
-	if (!ENGINE.IsDefferedRendering()) mCurrentRenderTarget = RenderTarget::EForward;
-	else
-	{
-		if (ENGINE.IsSSAOActivated()) mCurrentRenderTarget = RenderTarget::EThirdResult;
-		else						  mCurrentRenderTarget = RenderTarget::EFirstResult;
-	}
+
+	ChooseCurrentRenderTarget();
 
 	GetRenderTargetManager()->Deactivate(pImmContext, mCurrentRenderTarget);
 
 	if (mbIsPostProcessed)
 	{
-
 		//const D3D::SRVPtr& pSRV = 
 
 		// Compute Shaderˆ—‚ÌŽÀs
-		mpPostProcessTex->SetCBuffer(pImmContext, static_cast<float>(SCREEN_WIDTH), static_cast<float>(SCREEN_HEIGHT));
-		mpPostProcessTex->Compute(pImmContext, GetRenderTargetManager()->GetShaderResource(mCurrentRenderTarget), SCREEN_WIDTH / 32, SCREEN_HEIGHT / 16, 1);
-		mpPostProcessTex->Set(pImmContext, 0);
+		if (mbIsDesaturated)
+		{
+			mpPostProcessTex->SetCBuffer(pImmContext, static_cast<float>(SCREEN_WIDTH), static_cast<float>(SCREEN_HEIGHT));
+			mpPostProcessTex->Compute(pImmContext, GetRenderTargetManager()->GetShaderResource(mCurrentRenderTarget), SCREEN_WIDTH / 32, SCREEN_HEIGHT / 16, 1);
+			mpPostProcessTex->Set(pImmContext, 0);
+		}
 
 		if (mbIsBlurred)
 		{
@@ -122,17 +129,24 @@ void PostProcessPass::RenderPostProcess(std::unique_ptr<GraphicsEngine>& p_graph
 
 void PostProcessPass::RenderUI()
 {
+	ImGui::Checkbox("Show Final Screen", &mbShowsResult);
+
 	if (mbIsPostProcessed == false) return;
 
 	if (ImGui::TreeNode("Post Process"))
 	{
 		if (ImGui::ImageButton((void*)mpPostProcessTex->GetSRV().Get(), ImVec2(320, 180)))
 		{
+			mChosenRenderTarget = RenderTarget::EPostProcess;
+			mbShowsResult = false;
 
 		}
 
 		ImGui::TreePop();
 	}
+
+
+
 	mpBlurPass->RenderUI();
 }
 
@@ -141,13 +155,13 @@ void PostProcessPass::RenderUIForSettings()
 	ImGui::Separator();
 
 
-
 	if (ImGui::TreeNode("Post Process"))
 	{
 
 		ImGui::Checkbox("Drawing", &mbIsDrawing);
 		ImGui::Checkbox("PostProcess", &mbIsPostProcessed);
 		ImGui::Checkbox("Blur", &mbIsBlurred);
+		ImGui::Checkbox("Desaturate", &mbIsDesaturated);
 		int blurStrength = mpBlurPass->GetBlurStrength();
 		ImGui::SliderInt("Blur Level", &blurStrength, 0, 1);
 		mpBlurPass->SetBlurStrength(blurStrength);
@@ -166,5 +180,20 @@ void PostProcessPass::RenderUIForSettings()
 
 	}
 
+}
+
+void PostProcessPass::ChooseCurrentRenderTarget()
+{
+	if (!ENGINE.IsDefferedRendering()) mCurrentRenderTarget = RenderTarget::EForward;
+	else
+	{
+		if (ENGINE.IsSSAOActivated()) mCurrentRenderTarget = RenderTarget::EThirdResult;
+		else						  mCurrentRenderTarget = RenderTarget::EFirstResult;
+	}
+
+	if (!mbShowsResult)
+	{
+		mCurrentRenderTarget = mChosenRenderTarget;
+	}
 }
 

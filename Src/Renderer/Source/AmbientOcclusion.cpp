@@ -134,12 +134,12 @@ bool AmbientOcclusion::Initialize(D3D::DevicePtr& p_device)
 	_ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
 	mpSSAOTex->CreateShader(p_device, L"./Src/Shaders/CS_SSAO.hlsl", "CSmain");
-	mpSSAOTex->CreateTexture(p_device, mScreenSize.x, mScreenSize.y, DXGI_FORMAT_R16G16B16A16_FLOAT);
+	mpSSAOTex->CreateTexture(p_device, static_cast<UINT>(mScreenSize.x), static_cast<UINT>(mScreenSize.y), DXGI_FORMAT_R16G16B16A16_FLOAT);
 	mpSSAOTex->CreateTextureUAV(p_device, 0);
 	mpSSAOTex->CreateSampler(p_device, D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_CLAMP);
 
 	mpAlchemyAOTex->CreateShader(p_device, L"./Src/Shaders/CS_SSAO_Optimized.hlsl", "CSmain");
-	mpAlchemyAOTex->CreateTexture(p_device, mScreenSize.x, mScreenSize.y, DXGI_FORMAT_R16G16B16A16_FLOAT);
+	mpAlchemyAOTex->CreateTexture(p_device, static_cast<UINT>(mScreenSize.x), static_cast<UINT>(mScreenSize.y), DXGI_FORMAT_R16G16B16A16_FLOAT);
 	mpAlchemyAOTex->CreateTextureUAV(p_device, 0);
 	mpAlchemyAOTex->CreateSampler(p_device, D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_CLAMP);
 
@@ -217,28 +217,31 @@ void AmbientOcclusion::Deactivate(std::unique_ptr<GraphicsEngine>& p_graphics, U
 void AmbientOcclusion::RenderUI()
 {
 	using namespace ImGui;
-	Text("SSAO Settings");
+	if (TreeNode("SSAO Settings"))
+	{
+		static int aoTypeFlag = EOldSSAO;
+		ImGui::RadioButton("SSAO", &aoTypeFlag, EOldSSAO);
+		ImGui::SameLine();
+		ImGui::RadioButton("AlchemyAO", &aoTypeFlag, EAlchemyAO);
+		mAOType = aoTypeFlag;
 
-	static int aoTypeFlag = EOldSSAO;
-	ImGui::RadioButton("SSAO", &aoTypeFlag, EOldSSAO);
-	ImGui::SameLine();
-	ImGui::RadioButton("AlchemyAO", &aoTypeFlag, EAlchemyAO);
-	mAOType = aoTypeFlag;
 
+		SliderFloat("Intensity", &mPower, 0.0f, 5.0f);
 
-	SliderFloat("Intensity", &mPower, 0.0f, 5.0f);
+		SliderFloat("Sample Radius", &mSampleRadius, 0.1f, 5.0f);
 
-	SliderFloat("Sample Radius", &mSampleRadius, 0.1f, 5.0f);
+		SliderFloat("Ambient Bias", &mBias, 0.0f, 5.0f);
 
-	SliderFloat("Ambient Bias", &mBias, 0.0f, 5.0f);
+		SliderFloat("KernelSize", &mKernelSize, 16.0f, 128.0f);
+		mKernelSizeRcp = 1.0f / mKernelSize;
+		//int blursize = mBlurSize;
+		//SliderInt("BlurExecuter Size", &blursize, 0.0f, 10.0f);
+		//mBlurSize = static_cast<float>(blursize);
 
-	SliderFloat("KernelSize", &mKernelSize, 16.0f, 128.0f);
-	mKernelSizeRcp = 1.0f / mKernelSize;
-	//int blursize = mBlurSize;
-	//SliderInt("BlurExecuter Size", &blursize, 0.0f, 10.0f);
-	//mBlurSize = static_cast<float>(blursize);
+		Separator();
 
-	Separator();
+		TreePop();
+	}
 }
 
 AmbientOcclusion::~AmbientOcclusion()

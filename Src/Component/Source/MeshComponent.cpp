@@ -80,7 +80,7 @@ using namespace DirectX;
 //
 //	SetAdditionalResource(imm_context);
 //
-//	XMMATRIX world = m_pOwner.lock()->GetWorldMatrix();
+//	XMMATRIX world = mpOwner.lock()->GetWorldMatrix();
 //	if (m_pColData != nullptr) world = m_pColData->GetWorldMatrix();
 //	m_pMesh->Render(imm_context, elapsed_time, world, camera.get(), m_pShader.get(), mMatColor, false, m_bIsSolid);
 //}
@@ -94,7 +94,7 @@ using namespace DirectX;
 //{
 //	if (m_pShaderForShadow == nullptr) return;
 //
-//	XMMATRIX world = m_pOwner.lock()->GetWorldMatrix();
+//	XMMATRIX world = mpOwner.lock()->GetWorldMatrix();
 //	if (m_pColData != nullptr) world = m_pColData->GetWorldMatrix();
 //	m_pMesh->Render(imm_context, elapsed_time, world, p_camera.get(), m_pShaderForShadow.get(), mMatColor, true, m_bIsSolid);
 //
@@ -184,7 +184,7 @@ using namespace DirectX;
 //--------------------------------------------------------------------------------------------------------------------------------
 
 
-const std::string NewMeshComponent::MESH_TYPE_NAMES[MeshTypeID::ENUM_MESH_TYPE_MAX] = {
+const std::string MeshComponent::MESH_TYPE_NAMES[MeshTypeID::ENUM_MESH_TYPE_MAX] = {
 	"None",
 	"BasicCube",
 	"BasicCylinder",
@@ -198,7 +198,7 @@ const std::string NewMeshComponent::MESH_TYPE_NAMES[MeshTypeID::ENUM_MESH_TYPE_M
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-NewMeshComponent::NewMeshComponent(const std::shared_ptr<Actor>& p_owner)
+MeshComponent::MeshComponent(Actor* p_owner)
 	:Component(p_owner),
 	mbIsSolid(true),
 	mCurrentMotionKey("default"),
@@ -218,27 +218,27 @@ NewMeshComponent::NewMeshComponent(const std::shared_ptr<Actor>& p_owner)
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-bool NewMeshComponent::Create()
+bool MeshComponent::Create()
 {
 	return true;
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-void NewMeshComponent::Destroy()
+void MeshComponent::Destroy()
 {
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-void NewMeshComponent::Update(float elapsed_time)
+void MeshComponent::Update(float elapsed_time)
 {
 
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-void NewMeshComponent::Play(const char* name)
+void MeshComponent::Play(const char* name)
 {
 	mCurrentMotionKey = name;
 	mbChangedMotion = true;
@@ -246,7 +246,7 @@ void NewMeshComponent::Play(const char* name)
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-bool NewMeshComponent::RegisterMesh(UINT mesh_type_id, UINT shader_id, const wchar_t* mesh_filename, UINT coord_system)
+bool MeshComponent::RegisterMesh(UINT mesh_type_id, UINT shader_id, const wchar_t* mesh_filename, UINT coord_system)
 {
 	mMeshID = mesh_type_id < MeshTypeID::ENUM_MESH_TYPE_MAX ? mesh_type_id : MeshTypeID::E_Default;
 	mFbxType = coord_system;
@@ -265,14 +265,14 @@ bool NewMeshComponent::RegisterMesh(UINT mesh_type_id, UINT shader_id, const wch
 		mTextureTable.emplace_back(data);
 	}
 
-	Log::Info("[MESH COMP] Regist Mesh ( ActorNo.%d ). ( MeshType : %s, ShaderType : %d )",OwnerPtr->GetID(),  MESH_TYPE_NAMES[static_cast<u_int>(mMeshID)].c_str(), shader_id);
+	Log::Info("[MESH COMP] Regist Mesh ( ActorNo.%d ). ( MeshType : %s, ShaderType : %d )", mpOwner->GetID(),  MESH_TYPE_NAMES[static_cast<u_int>(mMeshID)].c_str(), shader_id);
 	return true;
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
 
-bool NewMeshComponent::RegisterTexture(const wchar_t* tex_filename, TextureConfig textureConfig)
+bool MeshComponent::RegisterTexture(const wchar_t* tex_filename, TextureConfig textureConfig)
 {
 	if (tex_filename == nullptr)
 	{
@@ -293,11 +293,11 @@ bool NewMeshComponent::RegisterTexture(const wchar_t* tex_filename, TextureConfi
 	if (textureConfig == TextureConfig::EMetallicMap || textureConfig == TextureConfig::ERoughnessMap) mbIsPBR = true;
 
 	mTextureTable.emplace_back(data);
-	Log::Info("[MESH COMP] Regist Texture (ActorNo.%d). ( Slot : %d)", OwnerPtr->GetID(), data.slot/*, mMeshFileName*/);
+	Log::Info("[MESH COMP] Regist Texture (ActorNo.%d). ( Slot : %d)", mpOwner->GetID(), data.slot/*, mMeshFileName*/);
 	return true;
 }
 
-bool NewMeshComponent::RegisterMotion(const char* name, const wchar_t* motion_filename)
+bool MeshComponent::RegisterMotion(const char* name, const wchar_t* motion_filename)
 {
 	mMotionFileTable[name] = motion_filename;
 	return true;
@@ -305,10 +305,10 @@ bool NewMeshComponent::RegisterMotion(const char* name, const wchar_t* motion_fi
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-bool NewMeshComponent::RegisterAdditionalShader(ShaderID shader_id, unsigned int usage)
+bool MeshComponent::RegisterAdditionalShader(ShaderID shader_id, unsigned int usage)
 {
 	mShaderIDTable.emplace(usage, shader_id);
-	Log::Info("[MESH COMP] Regist Additional Shader (ActorNo.%d). ( Usage : %d, ShaderType : %d", OwnerPtr->GetID(), usage, shader_id);
+	Log::Info("[MESH COMP] Regist Additional Shader (ActorNo.%d). ( Usage : %d, ShaderType : %d", mpOwner->GetID(), usage, shader_id);
 	if (usage == ShaderUsage::EShader) mTextureConfig += static_cast<int>(TextureConfig::EShadowMap);
 	mMaterialData.textureConfig = mTextureConfig;
 	return false;
@@ -316,19 +316,19 @@ bool NewMeshComponent::RegisterAdditionalShader(ShaderID shader_id, unsigned int
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-const DirectX::XMMATRIX& NewMeshComponent::GetWorldMatrix()
+const DirectX::XMMATRIX& MeshComponent::GetWorldMatrix()
 {
-	return OwnerPtr->GetWorldMatrix();
+	return mpOwner->GetWorldMatrix();
 }
 
-const DirectX::XMFLOAT4& NewMeshComponent::GetMaterialColor()
+const DirectX::XMFLOAT4& MeshComponent::GetMaterialColor()
 {
 	return mMaterialData.mat_color;
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-UINT    NewMeshComponent::GetShaderID(u_int usage)
+UINT    MeshComponent::GetShaderID(u_int usage)
 {
 	if (usage == 1 && mShaderIDTable.size() == 1)
 	{
@@ -340,19 +340,19 @@ UINT    NewMeshComponent::GetShaderID(u_int usage)
 }
 //--------------------------------------------------------------------------------------------------------------------------------
 
-void NewMeshComponent::SetMaterialColor(const Vector4& color)
+void MeshComponent::SetMaterialColor(const Vector4& color)
 {
 	mMaterialData.mat_color = color;
 }
 
-void NewMeshComponent::SetMaterialColor(const Vector3& color)
+void MeshComponent::SetMaterialColor(const Vector3& color)
 {
 	mMaterialData.mat_color.x = color.x;
 	mMaterialData.mat_color.y = color.y;
 	mMaterialData.mat_color.z = color.z;
 }
 
-void NewMeshComponent::SetBRDFFactors(float metalness, float roughness, const Vector3& specColor)
+void MeshComponent::SetBRDFFactors(float metalness, float roughness, const Vector3& specColor)
 {
 	mMaterialData.metalness = metalness;
 	mMaterialData.roughness = roughness;
@@ -361,7 +361,7 @@ void NewMeshComponent::SetBRDFFactors(float metalness, float roughness, const Ve
 }
 
 
-void NewMeshComponent::RenderUI()
+void MeshComponent::RenderUI()
 {
 	if (mMeshID == MeshTypeID::E_SkinnedMesh) ImGui::SliderInt("AnimeBlendTime", &mAnimeBlendTime, 30, 240);
 
@@ -385,17 +385,6 @@ void NewMeshComponent::RenderUI()
 
 	MyArrayFromVector color = MyArrayFromVector(mMaterialData.mat_color);
 	ImGui::ColorPicker4("Diffuse Color", color.SetArray());
-
-	
-	//MyArrayFromVector specColor = MyArrayFromVector(mMaterialData.specularColor);
-	//ImGui::SliderFloat3("Specular Color", specColor.SetArray(), 0.0f, 1.0f);
-	//ImGui::SliderFloat("BRDF Specular Factor", &mMaterialData.brdfFactor, 0.0f, 1.0f);
-	//ImGui::Separator();
-}
-
-std::shared_ptr<NewMeshComponent> NewMeshComponent::Initialize(const std::shared_ptr<Actor>& p_owner)
-{
-	return std::shared_ptr<NewMeshComponent>(new NewMeshComponent(p_owner));
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------

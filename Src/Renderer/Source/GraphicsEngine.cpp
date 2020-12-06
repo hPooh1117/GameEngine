@@ -125,6 +125,14 @@ bool GraphicsEngine::Initialize(HWND hwnd)
         Log::Error("Couldn't Create DepthStencilState(DS_TRUE).");
     }
 
+    dsDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+    result = m_pD3dDevice->CreateDepthStencilState(&dsDesc, m_pDepthStencilState[DS_TRUE_LESS_EQUAL].GetAddressOf());
+    if (FAILED(result))
+    {
+        Log::Error("Couldn't Create DepthStencilState(DS_TRUE_LESS_EQUAL).");
+    }
+
+
     dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
     result = m_pD3dDevice->CreateDepthStencilState(&dsDesc, m_pDepthStencilState[DS_WRITE_FALSE].GetAddressOf());
     if (FAILED(result))
@@ -173,13 +181,13 @@ void GraphicsEngine::ActivateBackBuffer()
     float ClearColor[4] = { 0.456f, 0.456f, 0.456f, 1.0f };
 
 
-    m_pImmContext->ClearRenderTargetView(m_pSwapChain->getRenderTargetView().Get(), ClearColor);
+    m_pImmContext->ClearRenderTargetView(m_pSwapChain->GetRenderTargetView().Get(), ClearColor);
 
     // Unit1 7-③　深度ステンシル　リソースのクリア
-    m_pImmContext->ClearDepthStencilView(m_pSwapChain->getDepthStencilView().Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+    m_pImmContext->ClearDepthStencilView(m_pSwapChain->GetDepthStencilView().Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
     // Unit1 7-④　レンダーターゲットと深度ステンシルバッファ―のバインド
-    m_pImmContext->OMSetRenderTargets(1, m_pSwapChain->getRenderTargetView().GetAddressOf(), m_pSwapChain->getDepthStencilView().Get());
+    m_pImmContext->OMSetRenderTargets(1, m_pSwapChain->GetRenderTargetView().GetAddressOf(), m_pSwapChain->GetDepthStencilView().Get());
 
 
 }
@@ -226,7 +234,7 @@ void GraphicsEngine::EndRender()
 {
     //EndImGuiRender();
     // Flip
-    m_pSwapChain->present(1);
+    m_pSwapChain->Present(1);
 }
 
 Microsoft::WRL::ComPtr<ID3D11Device>& GraphicsEngine::GetDevicePtr()
@@ -241,12 +249,12 @@ Microsoft::WRL::ComPtr<ID3D11DeviceContext>& GraphicsEngine::GetImmContextPtr()
 
 Microsoft::WRL::ComPtr<ID3D11RenderTargetView>& GraphicsEngine::GetRTVPtr()
 {
-    return m_pSwapChain->getRenderTargetView();
+    return m_pSwapChain->GetRenderTargetView();
 }
 
 Microsoft::WRL::ComPtr<ID3D11DepthStencilView>& GraphicsEngine::GetDSVPtr()
 {
-    return m_pSwapChain->getDepthStencilView();
+    return m_pSwapChain->GetDepthStencilView();
 }
 
 D3D::DepthStencilPtr& GraphicsEngine::GetDepthStencilPtr(int ds_num)

@@ -30,6 +30,7 @@ public:
     {
     }
 
+
     virtual void Update(float elapsed_time) = 0;
 
 

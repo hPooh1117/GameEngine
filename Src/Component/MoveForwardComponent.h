@@ -6,13 +6,11 @@ class MoveForwardComponent final : public MoveComponent
 private:
 	float mSpeed = 1.0f;
 
-private:
-	MoveForwardComponent(const std::shared_ptr<Actor>& owner);
 
 public:
-	virtual ~MoveForwardComponent();
+	MoveForwardComponent(Actor* owner);
+	virtual ~MoveForwardComponent() = default;
 
-	static std::shared_ptr<MoveForwardComponent> Initialize(const std::shared_ptr<Actor>& owner);
 	virtual bool Create() override;
 	virtual void Destroy() override;
 

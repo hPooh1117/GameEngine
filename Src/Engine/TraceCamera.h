@@ -14,7 +14,7 @@ private:
 
 
 private:
-	std::shared_ptr<Actor> m_pTargetActor;
+	Actor* m_pTargetActor;
 	float mDeltaTime = 0.0f;
 	Vector3 mForward = Vector3(0, 0, 1);
 
@@ -22,7 +22,7 @@ public:
 	TraceCamera();
 
 	virtual void Update(float elapsed_time);
-	void SetTarget(const std::shared_ptr<Actor>& target);
+	void SetTarget(Actor* target);
 	void ResetCameraPosition();
 	void SetFocusPoint(const Vector3& pos);
 

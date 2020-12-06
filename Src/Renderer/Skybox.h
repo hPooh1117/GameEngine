@@ -5,43 +5,46 @@
 #include <algorithm>
 
 class Texture;
-class Texture;
+class ComputedTexture;
 
 enum SkyboxTextureID
 {
     EFootprintCourt,
-    ERidgecrestRoad,
-    ESerpentineValley,
+    EFactoryCatWalk,
+    EMonoLake,
     ETokyoBigSight,
     EUenoShrine,
     EWalkOfFame,
-
-    ENUM_SKYBOXID_MAX
+    EDUMMY,
+    EGray0,
+    EGray1,
+    SKYBOXID_MAX
 };
 
 class Skybox : public Mesh
 {
 private:
-    static const wchar_t* SKYBOX_TEXTURE[ENUM_SKYBOXID_MAX];
+    static const wchar_t* SKYBOX_TEXTURE[SKYBOXID_MAX];
     static const std::wstring TEXTURE_PATH;
+    static constexpr float BOX_SIZE = 1.0f;
 
     unsigned int mCurrentID;
-    std::array<std::unique_ptr<Texture>, ENUM_SKYBOXID_MAX> mpTextures;
-    std::unique_ptr<Texture> mpTexture;
+    std::array<std::unique_ptr<Texture>, SKYBOXID_MAX> mpTextures;
+    std::array<std::unique_ptr<ComputedTexture>, SKYBOXID_MAX> mpComputedTexs;
 
     Microsoft::WRL::ComPtr<ID3D11Buffer>            mpVertexBuffer;
     Microsoft::WRL::ComPtr<ID3D11Buffer>            mpIndexBuffer;
     D3D::SamplerStatePtr                            mpClampSampler;
     bool mbIsDrawing = true;
+    bool mbHasComputed = false;
 public:
-	Skybox(Microsoft::WRL::ComPtr<ID3D11Device>& device,
-        const wchar_t* filename = L"\0",
-        unsigned int slices = 15,
-        unsigned int stacks = 15,
-        float radius = 1000.0f
-    );
+	Skybox();
+    virtual ~Skybox();
 
-    virtual void CreateBuffers(Microsoft::WRL::ComPtr<ID3D11Device>& device) override;
+    bool Initialize(D3D::DevicePtr& device,
+        const wchar_t* filename = L"\0",
+        float radius = BOX_SIZE);
+    virtual void CreateBuffers(D3D::DevicePtr& device) override;
     virtual void Render(
         D3D::DeviceContextPtr& imm_context,
         float elapsed_time,
@@ -52,10 +55,12 @@ public:
         bool isShadow = false,
         bool isSolid = true
     ) override;
+    void ConvertEquirectToCubeMap(D3D::DeviceContextPtr& imm_context);
 
     void RenderUI();
 
-    void SetCurrentSkybox(int id) { mCurrentID = std::clamp<int>(id, 0, ENUM_SKYBOXID_MAX - 1); }
+    ComputedTexture* GetTexturePtr() { return mpComputedTexs[mCurrentID].get(); }
+    void SetCurrentSkybox(int id) { mCurrentID = std::clamp<int>(id, 0, SKYBOXID_MAX - 1); }
 
-    virtual ~Skybox();
+    bool HasComputed() { return mbHasComputed; }
 };

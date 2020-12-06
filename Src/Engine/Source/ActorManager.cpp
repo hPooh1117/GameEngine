@@ -10,26 +10,26 @@ ActorManager::ActorManager()
 
 //----------------------------------------------------------------------------------------------------------------------------
 
-std::shared_ptr<Actor> ActorManager::AddActor(int type)
+Actor* ActorManager::AddActor(int type)
 {
-    std::shared_ptr<Actor> actor;
+    Actor* actor = new Actor();
     actor->Initialize(type);
-    m_pActors.emplace(type, actor);
+    m_pActors.emplace(type, std::unique_ptr<Actor>(actor));
     return actor;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------
 
-void ActorManager::AddActor(std::shared_ptr<Actor>& actor)
+void ActorManager::AddActor(Actor* actor, int id)
 {
-    m_pActors.emplace(actor->GetID(), actor);
+    m_pActors.emplace(id, std::unique_ptr<Actor>(actor));
 }
 
 //----------------------------------------------------------------------------------------------------------------------------
 
-std::shared_ptr<Actor>& ActorManager::GetActor(int type)
+Actor* ActorManager::GetActor(int type)
 {
-    return m_pActors.find(type)->second;
+    return m_pActors.find(type)->second.get();
 }
 
 //----------------------------------------------------------------------------------------------------------------------------

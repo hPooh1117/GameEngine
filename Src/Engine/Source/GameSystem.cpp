@@ -11,6 +11,7 @@
 #include "./Engine/UIRenderer.h"
 #include "./Engine/ComputeExecuter.h"
 #include "./Engine/Settings.h"
+#include "./Engine/OrthoView.h"
 
 #include "./Renderer/RenderTarget.h"
 #include "./Renderer/DepthStencilView.h"
@@ -90,11 +91,11 @@ void GameSystem::Initialize(std::unique_ptr<GraphicsEngine>& p_graphics)
 
 	mpMeshRenderer->Initialize(p_device);
 
-	m_pSceneManager = std::make_unique<SceneManager>(p_device);
+	mpSceneManager = std::make_unique<SceneManager>(p_device);
 
-	m_pSceneManager->InitializeLoadingScene();
+	mpSceneManager->InitializeLoadingScene();
 
-	Settings::Renderer currentSettings = m_pSceneManager->GetNextSceneSettings();
+	Settings::Renderer currentSettings = mpSceneManager->GetNextSceneSettings();
 	mbIsCastingShadow = currentSettings.bCastShadow;
 	mbIsDeffered = currentSettings.bIsDeffered;
 	mbIsSSAO = currentSettings.bEnableAO;
@@ -111,11 +112,11 @@ void GameSystem::Initialize(std::unique_ptr<GraphicsEngine>& p_graphics)
 
 		{
 			std::unique_lock<std::mutex> lck(mLoadingMutex);
-			m_pSceneManager->InitializeCurrentScene();
+			mpSceneManager->InitializeCurrentScene();
 		}
 		{
 			std::unique_lock<std::mutex> lck(mLoadingMutex);
-			mpMeshRenderer->RegistMeshDataFromActors(p_device, mpActorManager);
+			mpMeshRenderer->RegistMeshDataFromActors(p_device, mpActorManager.get());
 		}
 		if (!mpTextureHolder->Initialize(p_device))
 		{
@@ -123,7 +124,7 @@ void GameSystem::Initialize(std::unique_ptr<GraphicsEngine>& p_graphics)
 		}
 		{
 			std::unique_lock<std::mutex> lck(mLoadingMutex);
-			mpTextureHolder->RegisterTextureFromActors(p_device, mpActorManager);
+			mpTextureHolder->RegisterTextureFromActors(p_device, mpActorManager.get());
 		}
 		{
 			std::unique_lock<std::mutex> lck(mLoadingMutex);
@@ -151,14 +152,14 @@ void GameSystem::Initialize(std::unique_ptr<GraphicsEngine>& p_graphics)
 
 void GameSystem::Update(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time)
 {
-	if (m_pSceneManager->IsLoading())
+	if (mpSceneManager->IsLoading())
 	{
 		if (!mbIsLoadingScene)		  LoadNextScene(p_graphics);
 		if (!mbIsLoadingRenderPasses) LoadRenderPasses(p_graphics);
 	}
 	if (mbIsLoadingRenderPasses || mbIsLoadingScene)
 	{
-		m_pSceneManager->ExecuteLoadingScene(elapsed_time);
+		mpSceneManager->ExecuteLoadingScene(elapsed_time);
 		return;
 	}
 
@@ -171,7 +172,7 @@ void GameSystem::Update(std::unique_ptr<GraphicsEngine>& p_graphics, float elaps
 
 	mpTimer->Reset();
 	mpTimer->Start();
-	m_pSceneManager->ExecuteCurrentScene(elapsed_time);
+	mpSceneManager->ExecuteCurrentScene(elapsed_time);
 	mpActorManager->Update(elapsed_time);
 	mpTimer->Stop();
 	mFrameTimer = mpTimer->GetDeltaTime();
@@ -188,7 +189,7 @@ void GameSystem::Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elaps
 	if (mbIsLoadingRenderPasses || mbIsLoadingScene)
 	{
 
-		m_pSceneManager->RenderLoadingScene(p_graphics, elapsed_time);
+		mpSceneManager->RenderLoadingScene(p_graphics, elapsed_time);
 		return;
 	}
 
@@ -212,7 +213,7 @@ void GameSystem::Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elaps
 	mpPostProcessPass->RenderPostProcess(p_graphics, elapsed_time);
 
 	//mpFinalPass->RenderResult(p_graphics, elapsed_time);
-	m_pSceneManager->RenderCurrentScene(p_graphics, elapsed_time);
+	mpSceneManager->RenderCurrentScene(p_graphics, elapsed_time);
 
 	RenderUI(p_graphics, elapsed_time);
 }
@@ -231,7 +232,8 @@ void GameSystem::RenderUIForSettings(std::unique_ptr<GraphicsEngine>& p_graphics
 	mpUIRenderer->SetNextWindowSettings(Vector2(SCREEN_WIDTH - 350, 360), Vector2(350, SCREEN_HEIGHT - 360));
 	mpUIRenderer->BeginRenderingNewWindow("Settings");
 
-	if (mbIsSSAO) mpSSAOPass->RenderUIForSettings();
+	if (mbIsDeffered) ImGui::Checkbox("Enable SSAO", &mbIsSSAO);
+	if (mbIsDeffered) mpSSAOPass->RenderUIForSettings();
 	mpCamera->RenderUI();
 	mpLight->RenderUI();
 	mpMeshRenderer->RenderUI();
@@ -316,12 +318,12 @@ void GameSystem::RenderUIForScene(std::unique_ptr<GraphicsEngine>& p_graphics, f
 	mpUIRenderer->SetNextUIConfig(true);
 	ENGINE.GetUIRenderer()->BeginRenderingNewWindow("Scene", false);
 
-	m_pSceneManager->RenderUI();
+	mpSceneManager->RenderUI();
 
 
 	ENGINE.GetUIRenderer()->FinishRenderingWindow();
 
-	m_pSceneManager->RenderUIForCurrentScene();
+	mpSceneManager->RenderUIForCurrentScene();
 }
 
 
@@ -365,7 +367,7 @@ void GameSystem::LoadNextScene(std::unique_ptr<GraphicsEngine>& p_graphics)
 
 	mbIsLoadingScene = true;
 
-	Settings::Renderer currentSettings = m_pSceneManager->GetNextSceneSettings();
+	Settings::Renderer currentSettings = mpSceneManager->GetNextSceneSettings();
 	mbIsCastingShadow = currentSettings.bCastShadow;
 	mbIsDeffered = currentSettings.bIsDeffered;
 	mbIsSSAO = currentSettings.bEnableAO;
@@ -380,6 +382,8 @@ void GameSystem::LoadNextScene(std::unique_ptr<GraphicsEngine>& p_graphics)
 		timer.Start();
 		{
 			std::unique_lock<std::mutex> lck(mLoadingMutex);
+			mpTextureHolder->ClearTextureTable();
+			mpMeshRenderer->ClearAll();
 			mpActorManager->ClearAll();
 		}
 		{
@@ -388,17 +392,15 @@ void GameSystem::LoadNextScene(std::unique_ptr<GraphicsEngine>& p_graphics)
 		}
 		{
 			std::unique_lock<std::mutex> lck(mLoadingMutex);
-			m_pSceneManager->LoadNextScene();
+			mpSceneManager->LoadNextScene();
 		}
 		{
 			std::unique_lock<std::mutex> lck(mLoadingMutex);
-			mpMeshRenderer->ClearAll();
-			mpMeshRenderer->RegistMeshDataFromActors(p_device, mpActorManager);
+			mpMeshRenderer->RegistMeshDataFromActors(p_device, mpActorManager.get());
 		}
 		{
 			std::unique_lock<std::mutex> lck(mLoadingMutex);
-			mpTextureHolder->ClearTextureTable();
-			mpTextureHolder->RegisterTextureFromActors(p_device, mpActorManager);
+			mpTextureHolder->RegisterTextureFromActors(p_device, mpActorManager.get());
 		}
 
 		mbIsLoadingScene = false;
@@ -439,7 +441,7 @@ void GameSystem::LoadRenderPasses(std::unique_ptr<GraphicsEngine>& p_graphics)
 		}
 		{
 			std::unique_lock<std::mutex> lck(mLoadingMutex);
-			if (mbIsSSAO) mpSSAOPass->Initialize(pDevice);
+			if (mbIsDeffered) mpSSAOPass->Initialize(pDevice);
 		}
 		{
 			std::unique_lock<std::mutex> lck(mLoadingMutex);

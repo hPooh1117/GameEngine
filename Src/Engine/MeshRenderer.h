@@ -53,12 +53,12 @@
 //};
 //#pragma endregion
 //
-////class NewMeshComponent;
+////class MeshComponent;
 ////
 ////class NewMeshRenderer
 ////{
 ////private:
-////	std::unordered_map<u_int, std::shared_ptr<NewMeshComponent>> mMeshDataTable;
+////	std::unordered_map<u_int, std::shared_ptr<MeshComponent>> mMeshDataTable;
 ////	std::unordered_map<u_int, std::unique_ptr<Mesh>>             mMeshTable;
 ////
 ////public:

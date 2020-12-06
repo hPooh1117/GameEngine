@@ -32,7 +32,7 @@ void TraceCamera::Update(float elapsed_time)
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-void TraceCamera::SetTarget(const std::shared_ptr<Actor>& target)
+void TraceCamera::SetTarget(Actor* target)
 {
 	if (m_pTargetActor != nullptr) return;
 

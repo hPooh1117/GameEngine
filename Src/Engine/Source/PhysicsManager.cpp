@@ -20,7 +20,7 @@ PhysicsManager::PhysicsManager()
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-bool PhysicsManager::Init(const std::unique_ptr<ActorManager>& actor_manager, bool b_used_octree)
+bool PhysicsManager::Init(ActorManager* actor_manager, bool b_used_octree)
 {
     Log::Info("[PHYSICS] Initializing PhysicsManager.");
     if (b_used_octree)
@@ -42,18 +42,17 @@ bool PhysicsManager::Init(const std::unique_ptr<ActorManager>& actor_manager, bo
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-void PhysicsManager::RegistSphere(const std::unique_ptr<ActorManager>& actor_manager)
+void PhysicsManager::RegistSphere(ActorManager* actor_manager)
 {
     //mNumberOfSphere += add;
 
     for (auto it = actor_manager->GetActors().begin(); it != actor_manager->GetActors().end(); ++it)
     {
-        std::shared_ptr<SphereColliderComponent> sphere = it->second->GetComponent<SphereColliderComponent>();
+        SphereColliderComponent* sphere = it->second->GetComponent<SphereColliderComponent>();
         if (sphere == nullptr) continue;
         if (sphere->GetType() != kC_Sphere) continue;
 
-        std::shared_ptr<ObjectForTree<SphereColliderComponent>> obj;
-        m_pObjTrees.emplace_back(obj->Initialize());
+        m_pObjTrees.emplace_back(std::make_shared< ObjectForTree<SphereColliderComponent>>());
 
         m_pObjTrees.at(mNumberOfSphere)->m_pObject = sphere;
         mNumberOfSphere++;
@@ -62,20 +61,20 @@ void PhysicsManager::RegistSphere(const std::unique_ptr<ActorManager>& actor_man
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-void PhysicsManager::DetectCollision(const std::unique_ptr<ActorManager>& actor_manager)
+void PhysicsManager::DetectCollision(ActorManager* actor_manager)
 {
     for (unsigned int i = 0; i < actor_manager->GetActorsSize(); ++i)
 {
-    std::shared_ptr<Actor> actor1 = actor_manager->GetActor(i);
-    std::shared_ptr<ColliderComponent> collider1 = actor1->GetComponent<ColliderComponent>();
+    Actor* actor1 = actor_manager->GetActor(i);
+    ColliderComponent* collider1 = actor1->GetComponent<ColliderComponent>();
     if (collider1 == nullptr) continue;
 
 
     for (unsigned int j = i + 1; j < actor_manager->GetActorsSize(); ++j)
     {
-        std::shared_ptr<Actor> actor2 = actor_manager->GetActor(j);
+        Actor* actor2 = actor_manager->GetActor(j);
 
-        std::shared_ptr<ColliderComponent> collider2 = actor2->GetComponent<ColliderComponent>();
+        ColliderComponent* collider2 = actor2->GetComponent<ColliderComponent>();
         if (collider2 == nullptr) continue;
 
 
@@ -89,13 +88,13 @@ void PhysicsManager::DetectCollision(const std::unique_ptr<ActorManager>& actor_
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-void PhysicsManager::DetectCollision(const std::unique_ptr<ActorManager>& actor_manager, float elapsed_time)
+void PhysicsManager::DetectCollision(ActorManager* actor_manager, float elapsed_time)
 {
     if (m_pQuadTree == nullptr) return;
 
     for (int i = 0; i < mNumberOfSphere; ++i)
     {
-        std::shared_ptr<SphereColliderComponent> pTmp = m_pObjTrees.at(i)->m_pObject;
+        SphereColliderComponent* pTmp = m_pObjTrees.at(i)->m_pObject;
         
         GetNextPosition(pTmp, elapsed_time);
         m_pObjTrees[i]->Remove();
@@ -110,20 +109,20 @@ void PhysicsManager::DetectCollision(const std::unique_ptr<ActorManager>& actor_
 
     for (auto i = 0; i < mCollisionCounter / 2; ++i)
     {
-        mCollisionList[i * 2]->Intersect(std::static_pointer_cast<ColliderComponent>(mCollisionList[i * 2 + 1]));
+        mCollisionList[i * 2]->Intersect(mCollisionList[i * 2 + 1]);
     }
 
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-void PhysicsManager::CollisionToEnvironment(std::shared_ptr<Actor>& actor)
+void PhysicsManager::CollisionToEnvironment(Actor* actor)
 {
     int type = actor->GetComponent<ColliderComponent>()->GetType();
 
     if (type == ColliderType::kC_Sphere)
     {
-        std::shared_ptr<SphereColliderComponent> collider = actor->GetComponent<SphereColliderComponent>();
+        SphereColliderComponent* collider = actor->GetComponent<SphereColliderComponent>();
 
         if (actor->GetPosition().x + 0.5f > 10)
         {
@@ -150,7 +149,7 @@ void PhysicsManager::CollisionToEnvironment(std::shared_ptr<Actor>& actor)
 
     if (type == ColliderType::kC_Capsule)
     {
-        std::shared_ptr<CapsuleColliderComponent> collider = actor->GetComponent<CapsuleColliderComponent>();
+        CapsuleColliderComponent* collider = actor->GetComponent<CapsuleColliderComponent>();
 
         if (actor->GetPosition().x + 0.5f > 10)
         {
@@ -181,7 +180,7 @@ void PhysicsManager::CollisionToEnvironment(std::shared_ptr<Actor>& actor)
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-void PhysicsManager::GetNextPosition(const std::shared_ptr<SphereColliderComponent>& sphere, float elapsed_time)
+void PhysicsManager::GetNextPosition(SphereColliderComponent* sphere, float elapsed_time)
 {
     sphere->IntersectToEnvironment(RESTITUTION_FACTOR + 0.2f);
 }

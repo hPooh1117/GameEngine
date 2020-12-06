@@ -36,6 +36,8 @@ SceneB::SceneB(SceneManager * manager, Microsoft::WRL::ComPtr<ID3D11Device>& dev
 
     ENGINE.GetLightPtr()->Init(128, 0);
     ENGINE.GetLightPtr()->SetLightColor(Vector4(0.1f, 0.1f, 0.1f, 1.0f));
+    ENGINE.GetLightPtr()->SetShininess(30.0f);
+
     //ENGINE.GetLightPtr()->SetSpotData(0, Vector3(-5, 5, -5), Vector4(0.9f, 0.2f, 0.2f, 1.0f), Vector3(1.0f, -0.2f, 0.0f), 50.0f, 0.99f, 0.8f);
     //ENGINE.GetLightPtr()->SetSpotData(1, Vector3(-5, 5, 5), Vector4(0.2f, 0.2f, 0.9f, 1.0f), Vector3(-1.0f, -0.2f, 0.0f), 50.0f, 0.99f, 0.8f);
     //ENGINE.GetLightPtr()->SetSpotData(2, Vector3(5, 5, -5), Vector4(0.2f, 0.9f, 0.2f, 1.0f), Vector3(0.0f, -0.2f, 1.0f), 50.0f, 0.99f, 0.8f);
@@ -45,10 +47,9 @@ SceneB::SceneB(SceneManager * manager, Microsoft::WRL::ComPtr<ID3D11Device>& dev
     //ENGINE.GetLightPtr()->SetPointData(2, Vector3(5, 5, -5), Vector4(0.2f, 0.9f, 0.2f, 1.0f),  50.0f);
     //ENGINE.GetLightPtr()->SetPointData(3, Vector3(5, 5, 5), Vector4(0.7f, 0.7f, 0.7f, 1.0f),    50.0f);
 
-    ENGINE.GetCameraPtr()->SetTarget(m_pPlayer);
 
     Settings::Renderer renderSettings = {
-        true,   // shadow
+        false,   // shadow
         false,  // ssao
         true,   // deffered
         false   // cubemap
@@ -59,31 +60,33 @@ SceneB::SceneB(SceneManager * manager, Microsoft::WRL::ComPtr<ID3D11Device>& dev
 // アクター・コンポーネント作成
 // ----------------------------------------------------------------------------------------------
     int count = 0;
-    m_pPlayer = Actor::Initialize(count++);
-    m_pPlayer->SetScale(0.05f, 0.05f, 0.05f);
-    m_pPlayer->SetPosition(Vector3(0, 0.5f, 0));
-    m_pPlayer->AddComponent<NewMeshComponent>();
-    m_pPlayer->GetComponent<NewMeshComponent>()->RegisterMesh(MeshTypeID::E_SkinnedMesh, ShaderID::EDefferedNormalForSkinning, L"./Data/Models/Female/Idle.fbx", FbxType::EMaya);
-    m_pPlayer->GetComponent<NewMeshComponent>()->RegisterMotion("Idle", L"./Data/Models/Female/Idle.fbx");
-    m_pPlayer->GetComponent<NewMeshComponent>()->RegisterMotion("Walking", L"./Data/Models/Female/Walking.fbx");
-    m_pPlayer->GetComponent<NewMeshComponent>()->RegisterMotion("Running", L"./Data/Models/Female/Running.fbx");
-    //m_pPlayer->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Images/PBR/Metal_Panel_Normal.jpg", TextureConfig::ENormalMap);
-    //m_pPlayer->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Images/PBR/Metal_Panel_Height.png", TextureConfig::EHeightMap);
-    m_pPlayer->GetComponent<NewMeshComponent>()->RegisterAdditionalShader(ShaderID::EToShadowForSkinning, ShaderUsage::EShader);
-    ENGINE.GetActorManagerPtr()->AddActor(m_pPlayer);
+    Actor* pPlayer = new Actor();
+    pPlayer->SetScale(0.05f, 0.05f, 0.05f);
+    pPlayer->SetPosition(Vector3(0, 0.5f, 0));
+    pPlayer->AddComponent<MeshComponent>();
+    pPlayer->GetComponent<MeshComponent>()->RegisterMesh(MeshTypeID::E_SkinnedMesh, ShaderID::EDefferedNormalForSkinning, L"./Data/Models/Female/Idle.fbx", FbxType::EMaya);
+    pPlayer->GetComponent<MeshComponent>()->RegisterMotion("Idle", L"./Data/Models/Female/Idle.fbx");
+    pPlayer->GetComponent<MeshComponent>()->RegisterMotion("Walking", L"./Data/Models/Female/Walking.fbx");
+    pPlayer->GetComponent<MeshComponent>()->RegisterMotion("Running", L"./Data/Models/Female/Running.fbx");
+    //pPlayer->GetComponent<MeshComponent>()->RegisterTexture(L"./Data/Images/PBR/Metal_Panel_Normal.jpg", TextureConfig::ENormalMap);
+    //pPlayer->GetComponent<MeshComponent>()->RegisterTexture(L"./Data/Images/PBR/Metal_Panel_Height.png", TextureConfig::EHeightMap);
+    //pPlayer->GetComponent<MeshComponent>()->RegisterAdditionalShader(ShaderID::EToShadowForSkinning, ShaderUsage::EShader);
+    ENGINE.GetActorManagerPtr()->AddActor(pPlayer, count++);
 
-    m_pPlayer->GetComponent<NewMeshComponent>()->Play("Idle");
+    pPlayer->GetComponent<MeshComponent>()->Play("Idle");
 
-    m_pField = Actor::Initialize(count++);
-    m_pField->SetPosition(Vector3(0, -0.5f, 0));
-    m_pField->SetScale(200, 200, 200);
-    m_pField->AddComponent<NewMeshComponent>();
-    m_pField->GetComponent<NewMeshComponent>()->RegisterMesh(MeshTypeID::E_StaticMesh, ShaderID::EDefferedSea, L"./Data/Models/OBJ/sea/sea.obj", FbxType::EDefault);
-    m_pField->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Models/OBJ/sea/Nsea.png", TextureConfig::ENormalMap);
-    m_pField->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Models/OBJ/sea/Hsea.png", TextureConfig::EHeightMap);
-    m_pField->GetComponent<NewMeshComponent>()->RegisterAdditionalShader(ShaderID::EToShadow, ShaderUsage::EShader);
-    ENGINE.GetActorManagerPtr()->AddActor(m_pField);
+    Actor* pField = new Actor();
+    pField->SetPosition(Vector3(0, -0.5f, 0));
+    pField->SetScale(200, 200, 200);
+    pField->AddComponent<MeshComponent>();
+    pField->GetComponent<MeshComponent>()->RegisterMesh(MeshTypeID::E_StaticMesh, ShaderID::EDefferedSea, L"./Data/Models/OBJ/sea/sea.obj", FbxType::EDefault);
+    pField->GetComponent<MeshComponent>()->RegisterTexture(L"./Data/Models/OBJ/sea/Nsea.png", TextureConfig::ENormalMap);
+    pField->GetComponent<MeshComponent>()->RegisterTexture(L"./Data/Models/OBJ/sea/Hsea.png", TextureConfig::EHeightMap);
+    //pField->GetComponent<MeshComponent>()->RegisterAdditionalShader(ShaderID::EToShadow, ShaderUsage::EShader);
+    ENGINE.GetActorManagerPtr()->AddActor(pField, count++);
 
+    ENGINE.GetCameraPtr()->SetTarget(pPlayer);
+    ENGINE.GetCameraPtr()->SetPositionOfMoveableCamera(Vector3(0.0f, 10.0f, -60.0f));
 
 }
 
@@ -95,20 +98,20 @@ void SceneB::Update(float elapsed_time)
 {
     //if (InputPtr.OnKeyDown("X"))
     //{
-    //    m_pOswell->GetComponent<NewMeshComponent>()->Play("Move");
+    //    m_pOswell->GetComponent<MeshComponent>()->Play("Move");
     //}
 
     static float angle = XM_PI * 0.25f;
-    angle += elapsed_time;
+    angle += elapsed_time/* * 0.3f*/;
 
-    float a = 8.0f * sinf(angle);
+    float a = 16.0f * sinf(angle);
     float s = sinf(angle) * a;
     float c = cosf(angle) * a;
     float halfS = sinf(angle + XM_PI * 0.25f) * a;
     float halfC = cosf(angle + XM_PI * 0.25f) * a;
     float astS = sinf(angle + XM_PI * -0.25f) * a;
     float astC = cosf(angle + XM_PI * -0.25f) * a;
-    float range = Math::Lerp(5.0f, 30.0f, abs(sinf(angle)));
+    float range = Math::Lerp(5.0f, 20.0f, abs(sinf(angle)));
     Vector4 R(0.9f, 0.20f, 0.05f, 1.0f);
     Vector4 G(0.2f, 0.99f, 0.3f, 1.0f);
     Vector4 B(0.1f, 0.4f, 0.99f, 1.0f);
@@ -157,14 +160,15 @@ void SceneB::Render(std::unique_ptr<GraphicsEngine>& p_graphics,
 
 void SceneB::RenderUI()
 {
+    Actor* player = ENGINE.GetActorManagerPtr()->GetActor(0);
     ENGINE.GetUIRenderer()->SetNextWindowSettings(Vector2(0, SCREEN_HEIGHT - 200), Vector2(300, 200));
     ENGINE.GetUIRenderer()->SetNextUIConfig(false);
     ENGINE.GetUIRenderer()->BeginRenderingNewWindow("Motion");
-    if (ImGui::Button("Idle"))    m_pPlayer->GetComponent<NewMeshComponent>()->Play("Idle");
-    if (ImGui::Button("Walking")) m_pPlayer->GetComponent<NewMeshComponent>()->Play("Walking");
-    if (ImGui::Button("Running")) m_pPlayer->GetComponent<NewMeshComponent>()->Play("Running");
+    if (ImGui::Button("Idle"))    player->GetComponent<MeshComponent>()->Play("Idle");
+    if (ImGui::Button("Walking")) player->GetComponent<MeshComponent>()->Play("Walking");
+    if (ImGui::Button("Running")) player->GetComponent<MeshComponent>()->Play("Running");
 
-    m_pPlayer->GetComponent<NewMeshComponent>()->RenderUI();
+    player->GetComponent<MeshComponent>()->RenderUI();
 
 
 

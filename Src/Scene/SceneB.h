@@ -28,15 +28,4 @@ public:
     virtual void RenderUI() override;
 
     ~SceneB();
-private:
-    std::shared_ptr<Actor> m_pPlayer;
-    std::shared_ptr<Actor> m_pCat;
-    std::shared_ptr<Actor> m_pOswell;
-    std::shared_ptr<Actor> m_pShiba;
-
-   
-
-    std::shared_ptr<Actor> m_pField;
-
-
 };

@@ -5,10 +5,10 @@ class CCPhysicalMove final : public MoveComponent
 {
 
 private:
-	CCPhysicalMove(const std::shared_ptr<Actor>& owner);
 
 public:
-	static std::shared_ptr<CCPhysicalMove> Initialize(const std::shared_ptr<Actor>& owner);
+	CCPhysicalMove(Actor* owner);
+	virtual ~CCPhysicalMove() = default;
 
 	virtual bool Create() override;
 
@@ -19,8 +19,4 @@ public:
 
 	void Integrate(float elapsed_time);
 	void AddForce(const Vector3& force);
-
-
-
-	~CCPhysicalMove();
 };

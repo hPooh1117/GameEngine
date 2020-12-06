@@ -26,6 +26,7 @@ public:
         DS_FALSE,
         DS_TRUE,
         DS_WRITE_FALSE,
+        DS_TRUE_LESS_EQUAL,
 
         DS_TYPE_NUM_MAX,
     };

@@ -37,6 +37,9 @@ const std::wstring RenderPass::SHADER_FILE_PATH = L"./Src/Shaders/";
 std::unique_ptr<RenderTarget>  RenderPass::mpRenderTargetManager = std::make_unique<RenderTarget>();
 int RenderPass::mCurrentScreenNum = -1;
 bool RenderPass::mbIsOpen2ndScreen = false;
+bool RenderPass::mbShowsResult = true;
+UINT RenderPass::mChosenRenderTarget = RenderTarget::EPostProcess;
+
 //--------------------------------------------------------------------------------------------------------------------------------
 
 RenderPass::RenderPass()
@@ -53,7 +56,7 @@ RenderPass::RenderPass()
 void RenderPass::InitializeCommonShader(D3D::DevicePtr& device)
 {
 	AddVertexAndPixelShader(device, ShaderID::ESprite, L"FromGBuffer.hlsl", L"FromGBuffer.hlsl", "VSmain", "PSmain", VEDType::VED_SPRITE);
-	//AddVertexAndPixelShader(device, ShaderID::ESkybox, L"SkyBox.hlsl", L"SkyBox.hlsl", "VSmain", "PSmain", VEDType::VED_DEFAULT);
+	AddVertexAndPixelShader(device, ShaderID::ESkyboxRevised, L"SkyBox.hlsl", L"SkyBox.hlsl", "VSmain", "PSmain", VEDType::VED_DEFAULT);
 	AddVertexAndPixelShader(device, ShaderID::ESkybox, L"EquirectangularToCube.hlsl", L"EquirectangularToCube.hlsl", "VSmain", "PSmain", VEDType::VED_DEFAULT);
 }
 

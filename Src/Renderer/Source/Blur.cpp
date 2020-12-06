@@ -178,17 +178,17 @@ void BlurExecuter::Deactivate(D3D::DeviceContextPtr& p_imm_context)
 
 void BlurExecuter::RenderUI()
 {
-	if (ImGui::TreeNode("Blur"))
-	{
-		for (UINT i = 0; i < BLUR_PASS_MAX; ++i)
-		{
-			if (ImGui::ImageButton((void*)mpBlurTex[i]->GetSRV().Get(), ImVec2(320, 180)))
-			{
+	//if (ImGui::TreeNode("Blur"))
+	//{
+	//	for (UINT i = 0; i < BLUR_PASS_MAX; ++i)
+	//	{
+	//		if (ImGui::ImageButton((void*)mpBlurTex[i]->GetSRV().Get(), ImVec2(320, 180)))
+	//		{
 
-			}
-		}
-		ImGui::TreePop();
-	}
+	//		}
+	//	}
+	//	ImGui::TreePop();
+	//}
 
 }
 

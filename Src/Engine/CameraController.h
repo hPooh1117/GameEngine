@@ -29,16 +29,16 @@ private:
 
 private:
 	// カメラ管理コンテナ
-	std::array<std::shared_ptr<Camera>, CameraMode::kNumMax> m_pCameras;
+	std::array<std::unique_ptr<Camera>, CameraMode::kNumMax> mpCameras;
 	std::array < std::string, CameraMode::kNumMax > mCameraNameTable;
 
 	// 平行投影カメラ
-	std::shared_ptr<OrthoView> m_pOrthoView;
+	std::unique_ptr<OrthoView> mpOrthoView;
 
 
 	unsigned int mCurrentMode = kMoveable; // 現在のカメラモード
 	unsigned int mPrevMode = kMoveable;    // 以前のカメラモード
-	bool         m_bIsBlended = false;     // TRUE : BLEND ENABLE / FALSE : DISABLE
+	bool         mbIsBlended = false;     // TRUE : BLEND ENABLE / FALSE : DISABLE
 	int          mBlendingTime = 0;            // カメラ同士のブレンドにかける時間(フレーム)計測用変数
 	int          mBlendingTimeMax = 90;         // カメラ同士のブレンドにかける時間(フレーム)
 
@@ -80,19 +80,18 @@ public:
 	//--< GETTER >----------------------------------------------------------------------
 	inline const Vector3& GetCameraPosition() { return mCameraPos; }
 	inline const Vector3& GetCameraTarget() { return mCameraTarget; }
-	inline const float GetNearZ() { return mNearPlane; }
-	inline const float GetFarZ() { return mFarPlane; }
-	DirectX::XMMATRIX GetViewMatrix();
-	DirectX::XMMATRIX GetInvViewMatrix();
-	DirectX::XMMATRIX GetProjMatrix(D3D::DeviceContextPtr& p_imm_context);
-	DirectX::XMMATRIX GetInvProjMatrix(D3D::DeviceContextPtr& p_imm_context);
-	DirectX::XMMATRIX GetInvProjViewMatrix(D3D::DeviceContextPtr& p_imm_context);
-	//const std::shared_ptr<Camera>& GetCameraPtr(unsigned int mode);
-	DirectX::XMMATRIX GetOrthoView();
-	DirectX::XMMATRIX GetOrthoProj(D3D::DeviceContextPtr& p_imm_context);
+	inline const float	  GetNearZ() { return mNearPlane; }
+	inline const float    GetFarZ() { return mFarPlane; }
+	DirectX::XMMATRIX	  GetViewMatrix();
+	DirectX::XMMATRIX	  GetInvViewMatrix();
+	DirectX::XMMATRIX	  GetProjMatrix(D3D::DeviceContextPtr& p_imm_context);
+	DirectX::XMMATRIX	  GetInvProjMatrix(D3D::DeviceContextPtr& p_imm_context);
+	DirectX::XMMATRIX	  GetInvProjViewMatrix(D3D::DeviceContextPtr& p_imm_context);
+	DirectX::XMMATRIX	  GetOrthoView();
+	DirectX::XMMATRIX	  GetOrthoProj(D3D::DeviceContextPtr& p_imm_context);
 
 	//--< SETTER >----------------------------------------------------------------------
-	void SetTarget(std::shared_ptr<Actor>& p_actor);
+	void SetTarget(Actor* p_actor);
 	void SetOrthoPos(Vector3 pos);
 	void SetPositionOfMoveableCamera(const Vector3& pos);
 	void SetFocusPointOfMovableCamera(const Vector3& pos);
@@ -105,4 +104,3 @@ private:
 	CameraController& operator=(const CameraController& other) = delete;
 };
 
-using CameraPtr = std::shared_ptr<CameraController>;

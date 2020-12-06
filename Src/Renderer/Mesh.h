@@ -47,7 +47,7 @@ protected:
 
 
 protected:
-    Microsoft::WRL::ComPtr<ID3D11Buffer>            m_pConstantBufferMesh   = nullptr;
+    Microsoft::WRL::ComPtr<ID3D11Buffer>            mpConstantBufferMesh   = nullptr;
     Microsoft::WRL::ComPtr<ID3D11Buffer>            m_pConstantBufferMaterial = nullptr;
 
     // RenderState

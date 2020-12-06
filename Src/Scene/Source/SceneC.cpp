@@ -33,52 +33,52 @@ SceneC::SceneC(SceneManager* manager, Microsoft::WRL::ComPtr<ID3D11Device>& devi
 {
     mNextScene = SceneID::SCENE_D;
 
-
+    int count = 0;
 // ----------------------------------------------------------------------------------------------
 // アクター・コンポーネント作成
 // ----------------------------------------------------------------------------------------------
-    mpPlayer = Actor::Initialize(ActorID::kPlayer);
-    mpPlayer->AddComponent<MoveRotationComponent>();
-    mpPlayer->AddComponent<NewMeshComponent>();
-    mpPlayer->GetComponent<NewMeshComponent>()->RegisterMesh(MeshTypeID::E_BasicSphere, ShaderID::ESpotLightBump, nullptr, FbxType::EDefault);
-    mpPlayer->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Images/earthmap.jpg", TextureConfig::EColorMap);
-    mpPlayer->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Images/earthnormal.jpg", TextureConfig::ENormalMap);
-    mpPlayer->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Images/earthbump.jpg", TextureConfig::EHeightMap);
-    mpPlayer->SetScale(5, 5, 5);
-    mpPlayer->SetPosition(Vector3(0, 4, 0));
-    ENGINE.GetActorManagerPtr()->AddActor(mpPlayer);
+    Actor* pPlayer = new Actor();
+    pPlayer->AddComponent<MoveRotationComponent>();
+    pPlayer->AddComponent<MeshComponent>();
+    pPlayer->GetComponent<MeshComponent>()->RegisterMesh(MeshTypeID::E_BasicSphere, ShaderID::ESpotLightBump, nullptr, FbxType::EDefault);
+    pPlayer->GetComponent<MeshComponent>()->RegisterTexture(L"./Data/Images/earthmap.jpg", TextureConfig::EColorMap);
+    pPlayer->GetComponent<MeshComponent>()->RegisterTexture(L"./Data/Images/earthnormal.jpg", TextureConfig::ENormalMap);
+    pPlayer->GetComponent<MeshComponent>()->RegisterTexture(L"./Data/Images/earthbump.jpg", TextureConfig::EHeightMap);
+    pPlayer->SetScale(5, 5, 5);
+    pPlayer->SetPosition(Vector3(0, 4, 0));
+    ENGINE.GetActorManagerPtr()->AddActor(pPlayer, count++);
 
-    mpCat = Actor::Initialize(ActorID::kNonPlayer);
-    mpCat->AddComponent<NewMeshComponent>();
-    mpCat->GetComponent<NewMeshComponent>()->RegisterMesh(MeshTypeID::E_SkinnedMesh, ShaderID::ESpotLightPhong, L"./Data/Models/oswell/cat_mdl.fbx", FbxType::EMaya);
-    mpCat->SetPosition(Vector3(4, 1, 0));
-    mpCat->SetScale(0.5f, 0.5f, 0.5f);
-    ENGINE.GetActorManagerPtr()->AddActor(mpCat);
+    Actor* pCat = new Actor();
+    pCat->AddComponent<MeshComponent>();
+    pCat->GetComponent<MeshComponent>()->RegisterMesh(MeshTypeID::E_SkinnedMesh, ShaderID::ESpotLightPhong, L"./Data/Models/oswell/cat_mdl.fbx", FbxType::EMaya);
+    pCat->SetPosition(Vector3(4, 1, 0));
+    pCat->SetScale(0.5f, 0.5f, 0.5f);
+    ENGINE.GetActorManagerPtr()->AddActor(pCat, count++);
 
-    mpOswell = Actor::Initialize(ActorID::kEnemy);
-    mpOswell->AddComponent<NewMeshComponent>();
-    mpOswell->GetComponent<NewMeshComponent>()->RegisterMesh(MeshTypeID::E_SkinnedMesh, ShaderID::ESpotLightPhongForSkinning, L"./Data/Models/oswell/oswell_test1.fbx", FbxType::EMaya);
-    mpOswell->GetComponent<NewMeshComponent>()->RegisterMotion("Move", L"./Data/Models/oswell/oswell_movemove.fbx");
-    mpOswell->SetPosition(Vector3(-4, 3, 0));
-    mpOswell->SetScale(0.05f, 0.05f, 0.05f);
-    ENGINE.GetActorManagerPtr()->AddActor(mpOswell);
+    Actor* pOswell = new Actor();
+    pOswell->AddComponent<MeshComponent>();
+    pOswell->GetComponent<MeshComponent>()->RegisterMesh(MeshTypeID::E_SkinnedMesh, ShaderID::ESpotLightPhongForSkinning, L"./Data/Models/oswell/oswell_test1.fbx", FbxType::EMaya);
+    pOswell->GetComponent<MeshComponent>()->RegisterMotion("Move", L"./Data/Models/oswell/oswell_movemove.fbx");
+    pOswell->SetPosition(Vector3(-4, 3, 0));
+    pOswell->SetScale(0.05f, 0.05f, 0.05f);
+    ENGINE.GetActorManagerPtr()->AddActor(pOswell, count++);
 
-    mpShiba = Actor::Initialize(ActorID::kNonPlayer0);
-    mpShiba->AddComponent<NewMeshComponent>();
-    mpShiba->GetComponent<NewMeshComponent>()->RegisterMesh(MeshTypeID::E_SkinnedMesh, ShaderID::ESpotLightBump, L"./Data/Models/0810/shiba_mdl.fbx", FbxType::EMaya);
-    mpShiba->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Models/0810/shina_N.png", TextureConfig::ENormalMap);
-    mpShiba->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Models/0810/shiba_H.png", TextureConfig::EHeightMap);
-    mpShiba->SetPosition(Vector3(0, 0.5f, -4));
-    ENGINE.GetActorManagerPtr()->AddActor(mpShiba);
+    Actor* pShiba = new Actor();
+    pShiba->AddComponent<MeshComponent>();
+    pShiba->GetComponent<MeshComponent>()->RegisterMesh(MeshTypeID::E_SkinnedMesh, ShaderID::ESpotLightBump, L"./Data/Models/0810/shiba_mdl.fbx", FbxType::EMaya);
+    pShiba->GetComponent<MeshComponent>()->RegisterTexture(L"./Data/Models/0810/shina_N.png", TextureConfig::ENormalMap);
+    pShiba->GetComponent<MeshComponent>()->RegisterTexture(L"./Data/Models/0810/shiba_H.png", TextureConfig::EHeightMap);
+    pShiba->SetPosition(Vector3(0, 0.5f, -4));
+    ENGINE.GetActorManagerPtr()->AddActor(pShiba, count++);
 
-    mpField = Actor::Initialize(ActorID::kFloor);
-    mpField->AddComponent<NewMeshComponent>();
-    mpField->GetComponent<NewMeshComponent>()->RegisterMesh(MeshTypeID::E_StaticMesh, ShaderID::ESpotLightOcean, L"./Data/Models/OBJ/sea/sea.obj", FbxType::EDefault);
-    mpField->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Models/OBJ/sea/Nsea.png", TextureConfig::ENormalMap);
-    mpField->GetComponent<NewMeshComponent>()->RegisterTexture(L"./Data/Models/OBJ/sea/Hsea.png", TextureConfig::EHeightMap);
-    mpField->SetPosition(Vector3(0, 0, 0));
-    mpField->SetScale(200, 200, 200);
-    ENGINE.GetActorManagerPtr()->AddActor(mpField);
+    Actor* pField = new Actor();
+    pField->AddComponent<MeshComponent>();
+    pField->GetComponent<MeshComponent>()->RegisterMesh(MeshTypeID::E_StaticMesh, ShaderID::ESpotLightOcean, L"./Data/Models/OBJ/sea/sea.obj", FbxType::EDefault);
+    pField->GetComponent<MeshComponent>()->RegisterTexture(L"./Data/Models/OBJ/sea/Nsea.png", TextureConfig::ENormalMap);
+    pField->GetComponent<MeshComponent>()->RegisterTexture(L"./Data/Models/OBJ/sea/Hsea.png", TextureConfig::EHeightMap);
+    pField->SetPosition(Vector3(0, 0, 0));
+    pField->SetScale(200, 200, 200);
+    ENGINE.GetActorManagerPtr()->AddActor(pField, count++);
 
 
    ENGINE.GetLightPtr()->Init(0, 4);
@@ -87,9 +87,11 @@ SceneC::SceneC(SceneManager* manager, Microsoft::WRL::ComPtr<ID3D11Device>& devi
    ENGINE.GetLightPtr()->SetSpotData(1, Vector3(-5, 5, 5), Vector4(0.2f, 0.2f, 0.9f, 1.0f), Vector3(-1.0f, -0.2f, 0.0f), 50.0f, 0.99f, 0.8f);
    ENGINE.GetLightPtr()->SetSpotData(2, Vector3(5, 5, -5), Vector4(0.2f, 0.9f, 0.2f, 1.0f), Vector3(0.0f, -0.2f, 1.0f), 50.0f, 0.99f, 0.8f);
    ENGINE.GetLightPtr()->SetSpotData(3, Vector3(5, 5, 5), Vector4(0.7f, 0.7f, 0.7f, 1.0f), Vector3(0.0f, -0.2f, -1.0f), 50.0f, 0.99f, 0.8f);
+   ENGINE.GetLightPtr()->SetShininess(30.0f);
 
 
-    ENGINE.GetCameraPtr()->SetTarget(mpSphere);
+    ENGINE.GetCameraPtr()->SetTarget(pPlayer);
+    ENGINE.GetCameraPtr()->SetPositionOfMoveableCamera(Vector3(0.0f, 10.0f, -60.0f));
 
     Settings::Renderer renderSettings = {
     false,   // shadow
@@ -110,7 +112,7 @@ void SceneC::Update(float elapsed_time)
 {
     //if (InputPtr.OnKeyDown("X"))
     //{
-    //    mpOswell->GetComponent<NewMeshComponent>()->Play("Move");
+    //    pOswell->GetComponent<MeshComponent>()->Play("Move");
     //}
 }
 

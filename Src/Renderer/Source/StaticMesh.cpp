@@ -32,7 +32,7 @@ StaticMesh::StaticMesh(Microsoft::WRL::ComPtr<ID3D11Device>& device, const wchar
             0
             ),
         nullptr,
-        m_pConstantBufferMesh.GetAddressOf()
+        mpConstantBufferMesh.GetAddressOf()
         );
     _ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
@@ -224,14 +224,14 @@ void StaticMesh::Render(
         matData.diffuse = mat_data.diffuse;
         matData.specular = mat_data.specular;
 
-        imm_context->UpdateSubresource(m_pConstantBufferMesh.Get(), 0, nullptr, &meshData, 0, 0);
+        imm_context->UpdateSubresource(mpConstantBufferMesh.Get(), 0, nullptr, &meshData, 0, 0);
         imm_context->UpdateSubresource(m_pConstantBufferMaterial.Get(), 0, nullptr, &matData, 0, 0);
 
-        imm_context->VSSetConstantBuffers(0, 1, m_pConstantBufferMesh.GetAddressOf());
-        imm_context->HSSetConstantBuffers(0, 1, m_pConstantBufferMesh.GetAddressOf());
-        imm_context->DSSetConstantBuffers(0, 1, m_pConstantBufferMesh.GetAddressOf());
-        imm_context->GSSetConstantBuffers(0, 1, m_pConstantBufferMesh.GetAddressOf());
-        imm_context->PSSetConstantBuffers(0, 1, m_pConstantBufferMesh.GetAddressOf());
+        imm_context->VSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
+        imm_context->HSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
+        imm_context->DSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
+        imm_context->GSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
+        imm_context->PSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
 
         imm_context->VSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());
         imm_context->HSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());

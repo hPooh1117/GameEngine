@@ -11,7 +11,7 @@ DirectX::XMMATRIX ColliderComponent::GetWorldMatrix()
 	DirectX::XMMATRIX world;
 	world = DirectX::XMMatrixScaling(mScale.x, mScale.y, mScale.z);
 	//world *= XMMatrixRotationQuaternion(m_rotation);
-	world *= DirectX::XMLoadFloat4x4(&Matrix::CreateFromQuaternion(m_pOwner.lock()->GetQuaternion()));
+	world *= DirectX::XMLoadFloat4x4(&Matrix::CreateFromQuaternion(mpOwner->GetQuaternion()));
 	world *= DirectX::XMMatrixTranslation(mPosition.x, mPosition.y, mPosition.z);
 	return world;
 }
@@ -20,7 +20,7 @@ DirectX::XMMATRIX ColliderComponent::GetWorldMatrix()
 
 void ColliderComponent::SetCenterPosition(Vector3& pos)
 {
-	mPosition = pos; m_pOwner.lock()->SetPosition(pos);
+	mPosition = pos; mpOwner->SetPosition(pos);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------

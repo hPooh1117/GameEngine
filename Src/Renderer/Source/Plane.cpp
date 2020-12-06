@@ -59,7 +59,7 @@ Plane::Plane(D3D::DevicePtr& device, const wchar_t* filename) :Mesh()
 			0
 		),
 		nullptr,
-		m_pConstantBufferMesh.GetAddressOf()
+		mpConstantBufferMesh.GetAddressOf()
 	);
 	_ASSERT_EXPR_A(SUCCEEDED(result), hr_trace(result));
 
@@ -205,9 +205,9 @@ void Plane::Render(
 	DirectX::XMStoreFloat4x4(&meshData.invView, camera->GetInvViewMatrix());
 	DirectX::XMStoreFloat4x4(&meshData.invProj, camera->GetInvProjMatrix(imm_context));
 
-	imm_context->UpdateSubresource(m_pConstantBufferMesh.Get(), 0, nullptr, &meshData, 0, 0);
-	imm_context->VSSetConstantBuffers(0, 1, m_pConstantBufferMesh.GetAddressOf());
-	imm_context->PSSetConstantBuffers(0, 1, m_pConstantBufferMesh.GetAddressOf());
+	imm_context->UpdateSubresource(mpConstantBufferMesh.Get(), 0, nullptr, &meshData, 0, 0);
+	imm_context->VSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
+	imm_context->PSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
 
 	CBufferForMaterial matData = {};
 	matData.mat_color = mat_data.mat_color;

@@ -160,7 +160,7 @@ struct TextureData
 };
 
 
-class NewMeshComponent : public Component
+class MeshComponent : public Component
 {
 public:
 	using MotionTable = std::unordered_map<std::string, std::wstring>;
@@ -193,10 +193,9 @@ private:
 	//------------------------------------------------------
 	// ÉRÉAä÷êî
 	//------------------------------------------------------
-private:
-	NewMeshComponent(const std::shared_ptr<Actor>& p_owner);
 public:
-	virtual ~NewMeshComponent() = default;
+	MeshComponent(Actor* p_owner);
+	virtual ~MeshComponent() = default;
 	
 	virtual bool Create() override;
 	virtual void Destroy() override;
@@ -235,7 +234,6 @@ public:
 	void SetBRDFFactors(float metalness, float roughness, const Vector3& specColor = { 1, 1, 1 });
 	void RenderUI();
 
-	static std::shared_ptr<NewMeshComponent> Initialize(const std::shared_ptr<Actor>& p_owner);
 	static constexpr int                     GetID() { return ComponentID::kRender; }
 
 };

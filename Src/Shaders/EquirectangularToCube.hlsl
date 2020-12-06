@@ -73,6 +73,7 @@ PS_Input_ VSmain(VS_Input input)
 	PS_Input_ output = (PS_Input_)0;
 	float4 P = float4(input.position, 1);
 	output.position = mul(P, matWVP);
+	output.position.z = output.position.w;
 	output.color = input.color;
 	output.texcoord = input.texcoord;
 	output.localPos = input.position;
@@ -81,7 +82,7 @@ PS_Input_ VSmain(VS_Input input)
 
 #define PI 3.14159265359
 #define TWO_PI 6.28318530718
-#define INV_GAMMA  1 / 2.2
+#define INV_GAMMA  (1 / 2.2)
 
 float2 SampleSphericalMap(float3 v)
 {
@@ -98,6 +99,7 @@ PS_Input_Deffered VSmainDeffered(VS_Input input)
 	float4 P = float4(input.position, 1);
 
 	output.position = mul(P, matWVP);
+	output.position.z = output.position.w;
 	output.texcoord = input.texcoord;
 	output.color = input.color;
 	output.w_pos = mul(P, world).xyz;

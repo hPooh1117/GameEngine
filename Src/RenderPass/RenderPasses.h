@@ -44,6 +44,9 @@ private:
 protected:
 	static int										       mCurrentScreenNum;
 	static bool 									       mbIsOpen2ndScreen;
+	static bool											   mbShowsResult;
+	static UINT											   mChosenRenderTarget;
+
 
 	std::unordered_map<UINT, std::unique_ptr<Shader>>      mpShaderTable;
 	std::unordered_map<UINT, std::wstring>                 mpShaderNameTable;

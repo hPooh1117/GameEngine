@@ -41,7 +41,7 @@ struct DirectionalLightGPU
 	float   time = 0.0f;
 	float   tess_factor = 0.0f;
 	unsigned int    light_config;
-	float   dummy;
+	float   shininess;
 	float   dummy1;
 	float   dummy2;
 };
@@ -59,6 +59,7 @@ struct MaterialData
 {
 	DirectX::XMFLOAT4 mat_color;
 	DirectX::XMFLOAT3 specularColor;
+	
 	float metalness;
 	float roughness;
 	float diffuse;

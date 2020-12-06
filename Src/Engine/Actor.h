@@ -14,39 +14,21 @@
 
 
 
-enum ActorID
-{
-	kPlayer,
-	kNonPlayer,
-	kEnemy,
-	kFloor,
-	kNonPlayer0,
-	kNonPlayer1,
-	kNonPlayer2,
-	kNonPlayer3,
-	kNonPlayer4,
-	kNonPlayer5,
-	kNonPlayer6,
-	kNonPlayer7,
-
-	kPlane,
-	ACTOR_ID_MAX,
-};
 
 class Shader;
 //class MeshRenderer;
 //class MeshComponent;
 
-class Actor : public std::enable_shared_from_this<Actor>
+class Actor final
 {
 private: // Variables
-	std::multimap<int, std::shared_ptr<Component>> m_pComponents;
-	Vector3 mPosition = { 0, 0, 0 };
-	Vector3 mScale = { 1.0f, 1.0f, 1.0f };
-	Vector3 mAdditiveRotation = { 0.0f, 0.0f, 0.0f };
-	DirectX::XMFLOAT4X4 mRotation;
-	Quaternion mRot;
-	int mId = -1;
+	std::map<int, std::unique_ptr<Component>>       mpComponentTable;
+	Vector3											mPosition;
+	Vector3											mScale;
+	Vector3											mAdditiveRotation;
+	DirectX::XMFLOAT4X4								mRotation;
+	Quaternion										mRot;
+	int												mId;
 
 
 public:
@@ -72,56 +54,31 @@ public:
 
 
 
-private: 
-	Actor(int id);
 public:
-	static std::shared_ptr<Actor> Initialize(int id);
-	~Actor();
+	Actor();
+	~Actor() = default;
 
+	bool Initialize(int id);
 	void Update(float elapsed_time);
 
-
-public: 
-	template<typename T>
-	std::shared_ptr<T> AddComponent();
-
-	//std::shared_ptr<MeshComponent> AddComponent(
-	//	int mesh_id,
-	//	std::shared_ptr<MeshRenderer>& renderer,
-	//	std::shared_ptr<Shader>& shader
-	//);
-
-	//std::shared_ptr<MeshComponent> AddComponent(
-	//	int mesh_id,
-	//	std::shared_ptr<MeshRenderer>& renderer,
-	//	std::shared_ptr<Shader>& shader,
-	//	const char* filename
-	//);
-
-	//std::shared_ptr<MeshComponent> AddComponent(
-	//	int mesh_id,
-	//	std::shared_ptr<MeshRenderer>& renderer,
-	//	std::shared_ptr<Shader>& shader,
-	//	const wchar_t* filename
-	//);
+	void RenderUI();
 
 	template<typename T>
-	std::shared_ptr<T> GetComponent();
+	T* AddComponent();
 
-
-
-	//std::shared_ptr<MeshComponent> GetComponent(int no);
+	template<typename T>
+	T* GetComponent();
 };
 
 //----------------------------------------------------------------------------------------------------------------------------
 
 template<typename T>
-std::shared_ptr<T> Actor::AddComponent()
+T* Actor::AddComponent()
 {
 	assert(GetComponent<T>() == nullptr);
-	auto component = T::Initialize(shared_from_this());
+	T* component = new T(this);
 	component->Create();
-	m_pComponents.emplace(T::GetID(), component);
+	mpComponentTable.emplace(T::GetID(), std::unique_ptr<T>(component));
 
 	return component;
 }
@@ -129,15 +86,15 @@ std::shared_ptr<T> Actor::AddComponent()
 //----------------------------------------------------------------------------------------------------------------------------
 
 template<typename T>
-std::shared_ptr<T> Actor::GetComponent()
+T* Actor::GetComponent()
 {
-	if (m_pComponents.empty()) return nullptr;
+	if (mpComponentTable.empty()) return nullptr;
 
-	auto it = m_pComponents.find(T::GetID());
-	if (it != m_pComponents.end())
+	auto it = mpComponentTable.find(T::GetID());
+	if (it != mpComponentTable.end())
 	{
 		it->second->Destroy();
-		std::shared_ptr<T> component = std::static_pointer_cast<T>(it->second);
+		T* component = static_cast<T*>(it->second.get());
 		return component;
 	}
 	return nullptr;

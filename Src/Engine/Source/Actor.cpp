@@ -2,6 +2,9 @@
 
 #include "./Component/MeshComponent.h"
 #include "MeshRenderer.h"
+
+#include "./Utilities/ImGuiSelf.h"
+#include "./Utilities/MyArrayFromVector.h"
 //-----------------------------------------------------
 // NS
 //-----------------------------------------------------
@@ -9,117 +12,49 @@ using namespace DirectX;
 
 //----------------------------------------------------------------------------------------------------------------------------
 
-Actor::Actor(int id):mId(id)
+Actor::Actor()
+	:mId(0),
+	mPosition({0,0,0}),
+	mScale({1,1,1}),
+	mAdditiveRotation({0,0,0})
 {
     XMMATRIX r = XMMatrixIdentity();
     XMStoreFloat4x4(&mRotation, r);
 }
 
+
 //----------------------------------------------------------------------------------------------------------------------------
 
-std::shared_ptr<Actor> Actor::Initialize(int id)
+bool Actor::Initialize(int id)
 {
-    return std::shared_ptr<Actor>(new Actor(id));
+	return true;
 }
-
-//----------------------------------------------------------------------------------------------------------------------------
-
-Actor::~Actor()
-{
-};
 
 //----------------------------------------------------------------------------------------------------------------------------
 
 void Actor::Update(float elapsed_time)
 {
-    for (auto& component : m_pComponents)
+    for (auto& component : mpComponentTable)
     {
         component.second->Update(elapsed_time);
     }
 }
 
-//----------------------------------------------------------------------------------------------------------------------------
+void Actor::RenderUI()
+{
+	std::string actorName = "Actor" + std::to_string(mId);
+	if (ImGui::TreeNode(actorName.c_str()))
+	{
+		MyArrayFromVector pos = MyArrayFromVector(mPosition);
+		ImGui::InputFloat3("Pos", pos.SetArray());
+		float scale = mScale.x;
+		ImGui::InputFloat("Scale", &scale);
+		
 
-//std::shared_ptr<MeshComponent> Actor::AddComponent(
-//	int mesh_id,
-//	std::shared_ptr<MeshRenderer>& renderer,
-//	std::shared_ptr<Shader>& shader
-//)
-//{
-//	auto component = MeshComponent::Create(shared_from_this());
-//	component->Create();
-//	if (component->Load(mesh_id, renderer))
-//	{
-//#ifdef _DEBUG
-//		Log::Info("[ACTOR] Complete Connecting Mesh with MeshComponent.");
-//#endif
-//	}
-//
-//	component->SetShader(shader);
-//	m_pComponents.emplace(MeshComponent::GetID(), component);
-//	return component;
-//}
-//
-////----------------------------------------------------------------------------------------------------------------------------
-//
-//std::shared_ptr<MeshComponent> Actor::AddComponent(
-//	int mesh_id,
-//	std::shared_ptr<MeshRenderer>& renderer,
-//	std::shared_ptr<Shader>& shader,
-//	const char* filename)
-//{
-//	auto component = MeshComponent::Create(shared_from_this());
-//	component->Create();
-//	if (component->Load(filename, mesh_id, renderer))
-//	{
-//#ifdef _DEBUG
-//		Log::Info("[ACTOR] Complete Connecting Mesh with MeshComponent.");
-//#endif
-//	}
-//	component->SetShader(shader);
-//	m_pComponents.emplace(MeshComponent::GetID(), component);
-//	return component;
-//}
-//
-////----------------------------------------------------------------------------------------------------------------------------
-//
-//std::shared_ptr<MeshComponent> Actor::AddComponent(
-//	int mesh_id,
-//	std::shared_ptr<MeshRenderer>& renderer,
-//	std::shared_ptr<Shader>& shader,
-//	const wchar_t* filename)
-//{
-//	auto component = MeshComponent::Create(shared_from_this());
-//	component->Create();
-//	if (component->Load(filename, mesh_id, renderer))
-//	{
-//#ifdef _DEBUG
-//		Log::Info("[ACTOR] Complete Connecting Mesh with MeshComponent.");
-//#endif
-//	}
-//	component->SetShader(shader);
-//	m_pComponents.emplace(MeshComponent::GetID(), component);
-//	return component;
-//}
-//
-////----------------------------------------------------------------------------------------------------------------------------
-//
-//
-//std::shared_ptr<MeshComponent> Actor::GetComponent(int no)
-//{
-//	auto range = m_pComponents.equal_range(kRender);
-//
-//	for (auto it = range.first; it != range.second; ++it)
-//	{
-//		auto target = *it;
-//		if (no == std::static_pointer_cast<MeshComponent>(target.second)->GetMeshID())
-//		{
-//			std::shared_ptr<MeshComponent> component = std::static_pointer_cast<MeshComponent>(target.second);
-//			return component;
-//		}
-//	}
-//	return nullptr;
-//}
+
+		ImGui::TreePop();
+	}
+}
 
 //----------------------------------------------------------------------------------------------------------------------------
 

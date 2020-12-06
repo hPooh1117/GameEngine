@@ -113,6 +113,8 @@ struct PS_Input
 	float2 texcoord : TEXCOORD;
 };
 
+
+
 TextureCube env_texture : register(t13);
 SamplerState decal_sampler : register(s0);
 
@@ -126,12 +128,18 @@ cbuffer CBPerMatrix : register(b0)
 
 };
 
+static const float GAMMA = 2.2;
+static const float EXPOSURE = 0.5;
+static const float PURE_WHITE = 1.0;
+
+
 PS_Input VSmain(VS_Input input)
 {
 	PS_Input output = (PS_Input)0;
 	output.localPos = input.position;
 	float4 P = float4(input.position, 1);
 	output.position = mul (P, matWVP);
+	output.position.z = output.position.w;
 
 	return output;
 }
@@ -140,7 +148,21 @@ float4 PSmain(PS_Input input) : SV_TARGET
 {
 	float3 envVector = normalize(input.localPos);
 	//float3 tex = float3(input.texcoord, 1);
-	float4 color = env_texture.SampleLevel(decal_sampler, envVector, 0);
+	float3 color = env_texture.SampleLevel(decal_sampler, envVector, 0).rgb;
 
-	return color;
+	// Reinhard tonemapping operator.
+	// see: "Photographic Tone Reproduction for Digital Images" 2002
+	// src: https://t-pot.com/program/123_ToneMapping/index.html
+	//float luminance = dot(color, float3(0.2126, 0.7152, 0.0722));
+	//float mappedLuminance = (luminance * (1.0 + luminance / (PURE_WHITE * PURE_WHITE))) / (1.0 + luminance);
+
+	//// 平均輝度でスケーリング
+	//float3 mappedColor = (mappedLuminance / luminance) * color;
+
+	//// ガンマ補正
+	//float4 output = float4(pow(abs(mappedColor), 1.0 / GAMMA), 1.0);
+
+
+	return float4(color,1);
 }
+

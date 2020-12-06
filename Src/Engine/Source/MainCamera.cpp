@@ -25,7 +25,7 @@ void MainCamera::Update(float elapsed_time)
 
 	ResetCameraPosition();
 
-	if (m_bEnableMoving) MoveCamera();
+	/*if (m_bEnableMoving) */MoveCamera();
 }
 
 
@@ -42,49 +42,53 @@ void MainCamera::MoveCamera()
 
 	float speed = 5.0f;
 	Vector2 deltaMouse = InputPtr.GetMouseDelta();
-
-	// マウスMボタン押下 & マウス移動でカメラ平行移動
-	if ((GetKeyState(VK_MBUTTON) & 0x8000)/* && (deltaMouse.x != 0 && deltaMouse.y != 0)*/)
-	{
-		Vector3 delta3D = Vector3(-deltaMouse.x, deltaMouse.y, 0);
-		mForward.normalize();
-		Vector3 Y = Vector3(0, 1, 0);
-		Vector3 X = Y.cross(mForward);
-		X.normalize();
-		Vector3 Z = X.cross(Y);
-		Z.normalize();
-
-		Vector3 delta;
-		delta.x = delta3D.x * X.x + delta3D.y * Y.x + delta3D.z * Z.x;
-		delta.y = delta3D.x * X.y + delta3D.y * Y.y + delta3D.z * Z.y;
-		delta.z = delta3D.x * X.z + delta3D.y * Y.z + delta3D.z * Z.z;
-		mPos = Math::Lerp(mPos, mPos + delta * 0.06f, 0.8f);
-	}
-
-	// マウスホイールでカメラの前後平行移動
-	if (InputPtr.GetIsMouseWheelUp())
-	{
-		mPos += mForward * speed;
-	}
-	if (InputPtr.GetIsMouseWheelDown())
-	{
-		mPos -= mForward * speed;
-	}
-
-	// マウス右クリック中のマウス移動で視野操作
 	float pitch = 0.0f, yaw = 0.0f;
-	if (InputPtr.IsConnected(0))    // ゲームパッド操作
+
+	if (m_bEnableMoving && !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow))
 	{
-		pitch = InputPtr.GetThumbRYValue() * mDeltaTime * -0.4f;
-		yaw = InputPtr.GetThumbRXValue() * mDeltaTime * 0.4f;
-	}
-	else                             // マウス操作
-	{
-		if (GetAsyncKeyState(VK_RBUTTON) < 0)
+		// マウスMボタン押下 & マウス移動でカメラ平行移動
+		if ((GetKeyState(VK_MBUTTON) & 0x8000)/* && (deltaMouse.x != 0 && deltaMouse.y != 0)*/)
 		{
-			pitch = deltaMouse.y * mDeltaTime * 0.1f;
-			yaw = deltaMouse.x * mDeltaTime * 0.1f;
+			Vector3 delta3D = Vector3(-deltaMouse.x, deltaMouse.y, 0);
+			mForward.normalize();
+			Vector3 Y = Vector3(0, 1, 0);
+			Vector3 X = Y.cross(mForward);
+			X.normalize();
+			Vector3 Z = X.cross(Y);
+			Z.normalize();
+
+			Vector3 delta;
+			delta.x = delta3D.x * X.x + delta3D.y * Y.x + delta3D.z * Z.x;
+			delta.y = delta3D.x * X.y + delta3D.y * Y.y + delta3D.z * Z.y;
+			delta.z = delta3D.x * X.z + delta3D.y * Y.z + delta3D.z * Z.z;
+			mPos = Math::Lerp(mPos, mPos + delta * 0.06f, 0.8f);
 		}
+
+		// マウスホイールでカメラの前後平行移動
+		if (InputPtr.GetIsMouseWheelUp())
+		{
+			mPos += mForward * speed;
+		}
+		if (InputPtr.GetIsMouseWheelDown())
+		{
+			mPos -= mForward * speed;
+		}
+
+		// マウス右クリック中のマウス移動で視野操作
+		if (InputPtr.IsConnected(0))    // ゲームパッド操作
+		{
+			pitch = InputPtr.GetThumbRYValue() * mDeltaTime * -0.4f;
+			yaw = InputPtr.GetThumbRXValue() * mDeltaTime * 0.4f;
+		}
+		else                             // マウス操作
+		{
+			if (GetAsyncKeyState(VK_RBUTTON) < 0)
+			{
+				pitch = deltaMouse.y * mDeltaTime * 0.1f;
+				yaw = deltaMouse.x * mDeltaTime * 0.1f;
+			}
+		}
+
 	}
 
 

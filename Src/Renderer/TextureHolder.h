@@ -37,7 +37,7 @@ public:
 
 	bool Initialize(D3D::DevicePtr& p_device);
 
-	void RegisterTextureFromActors(D3D::DevicePtr& p_device, std::unique_ptr<ActorManager>& p_actors);
+	void RegisterTextureFromActors(D3D::DevicePtr& p_device, ActorManager* p_actors);
 
 
 	void ClearTextureTable();

@@ -18,6 +18,7 @@ private:
 
 	std::unique_ptr<BlurExecuter> mpBlurPass;
 	bool mbIsUsingCS;
+
 public:
 	SSAOPass();
 	~SSAOPass() = default;
@@ -32,4 +33,3 @@ public:
 
 	const std::unique_ptr<RenderTarget>& GetBlurPassTargetPtr() { return mpBlurPassTargets; }
 };
-

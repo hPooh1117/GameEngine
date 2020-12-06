@@ -257,8 +257,16 @@ PS_Output_SSAO PSmain2(PS_Input input)
 	PS_Output_SSAO output = (PS_Output_SSAO)0;
 
 	//float2 depthBufferColor = depth_texture.Sample(border_sampler, input.texcoord).rg;
+	float3 albedo = albedo_texture.Sample(decal_sampler, input.texcoord).xyz;
 
 	float depth = depth_texture.Sample(border_sampler, input.texcoord).r;
+	if (depth < 0.1)
+	{
+		output.ambient = float4(1, 1, 1, 1);
+		output.result = float4(albedo, 1);
+		return output;
+	}
+
 	float4 projP = float4(input.projPos.xy, depth, 1);
 	float4 viewP = mul(inv_proj_mat, projP);
 	viewP /= viewP.w;
@@ -305,7 +313,6 @@ PS_Output_SSAO PSmain2(PS_Input input)
 
 	float3 diffuse = diffuse_texture.Sample(decal_sampler, input.texcoord).xyz;
 	float3 specular = specular_texture.Sample(decal_sampler, input.texcoord).xyz;
-	float3 albedo = albedo_texture.Sample(decal_sampler, input.texcoord).xyz;
 	float3 shadow = shadow_texture.Sample(decal_sampler, input.texcoord).xyz;
 	float3 skybox = skybox_texture.Sample(decal_sampler, input.texcoord).xyz;
 

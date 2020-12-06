@@ -14,6 +14,7 @@ private:
 
 public:
     MainCamera(Vector3 pos);
+
     virtual void Update(float elapsed_time);
 
 private:

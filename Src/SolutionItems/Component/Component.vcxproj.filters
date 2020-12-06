@@ -18,9 +18,6 @@
     <ClInclude Include="..\..\Component\CapsuleColliderComponent.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Component\CCCapsuleCollider.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Component\CCPhysicalMove.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -31,9 +28,6 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Component\Component.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Component\ComponentHelper.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Component\MeshComponent.h">
@@ -60,9 +54,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Component\Source\CapsuleColliderComponent.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Component\Source\CCCapsuleCollider.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Component\Source\CCPhysicalMove.cpp">

@@ -170,6 +170,11 @@ void CSmain(
 	//}
 
 	const float depth = depth_texture[dispatchTid.xy].r;
+	if (depth < 0.01)
+	{
+		outputTexture[dispatchTid.xy] = float4(1, 1, 1, 1);
+		return;
+	}
 
 
 	// depth buffer‚©‚çflat normals‚ðÄ\’z

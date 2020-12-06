@@ -101,8 +101,7 @@ void ForwardPass::RenderForwardLighting(std::unique_ptr<GraphicsEngine>& p_graph
 	GetRenderTargetManager()->Activate(pImmContext, mpDSV, RenderTarget::EForward, 1);
 
 
-	ENGINE.GetMeshRenderer()->RenderMesh(pImmContext, elapsed_time, RenderPassID::EForwardPass);
-	ENGINE.GetMeshRenderer()->RenderSkybox(pImmContext, elapsed_time, RenderPassID::EForwardPass);
+	ENGINE.GetMeshRenderer()->Render(p_graphics, elapsed_time, RenderPassID::EForwardPass);
 
 
 	p_graphics->SetDepthStencil(GraphicsEngine::DS_TRUE);
@@ -123,8 +122,11 @@ void ForwardPass::RenderUI(bool b_open)
 	{
 		if (ImGui::ImageButton((void*)GetRenderTargetManager()->GetShaderResource(RenderTarget::EForward).Get(), ImVec2(320, 180)))
 		{
-			mCurrentScreenNum = RenderTarget::EForward;
-			mbIsOpen2ndScreen = true;
+			//mCurrentScreenNum = RenderTarget::EForward;
+			//mbIsOpen2ndScreen = true;
+
+			mChosenRenderTarget = RenderTarget::EForward;
+			mbShowsResult = false;
 		}
 
 		ImGui::TreePop();

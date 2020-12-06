@@ -28,11 +28,5 @@ private:
 	void InitializeActors();
 
 
-private:
-	std::shared_ptr<Actor> mpPlayer;
-	std::shared_ptr<Actor> mpCat;
-	std::shared_ptr<Actor> mpOswell;
-	std::shared_ptr<Actor> mpShiba;
-	std::shared_ptr<Actor> mpField;
 
 };

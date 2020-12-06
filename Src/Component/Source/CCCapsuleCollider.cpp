@@ -16,7 +16,7 @@ std::shared_ptr<CCCapsuleCollider> CCCapsuleCollider::Initialize(const std::shar
 bool CCCapsuleCollider::Create()
 {
 	mType = ColliderType::kC_Capsule;
-	m_pMover = m_pOwner.lock()->GetComponent<MoveComponent>();
+	m_pMover = mpOwner.lock()->GetComponent<MoveComponent>();
 
 	if (m_pMover != nullptr) return true;
 
@@ -35,9 +35,9 @@ void CCCapsuleCollider::Update(float elapsed_time)
 {
 	float scaleY = mScale.y;
 
-	mPosition = m_pOwner.lock()->GetPosition() + mOffset;
+	mPosition = mpOwner.lock()->GetPosition() + mOffset;
 
-	Matrix rotation = Matrix::CreateFromQuaternion(m_pOwner.lock()->GetQuaternion());
+	Matrix rotation = Matrix::CreateFromQuaternion(mpOwner.lock()->GetQuaternion());
 	DirectX::XMMATRIX rot = DirectX::XMLoadFloat4x4(&rotation);
 
 	Vector3 dirStart(0, -1 * scaleY * 0.5f, 0);

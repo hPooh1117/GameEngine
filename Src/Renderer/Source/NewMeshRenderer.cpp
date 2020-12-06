@@ -12,6 +12,7 @@
 #include "StaticMesh.h"
 #include "TextureHolder.h"
 #include "Plane.h"
+#include "ComputedTexture.h"
 
 #include "./Engine/Actor.h"
 #include "./Engine/ActorManager.h"
@@ -31,7 +32,8 @@
 //http://www.hdrlabs.com/sibl/
 
 NewMeshRenderer::NewMeshRenderer()
-	:mSkyboxFilename(L"./Data/Images/Environment/Footprint_Court/Footprint_Court_8k_TMap.jpg")
+	:mSkyboxFilename(L"./Data/Images/Environment/Footprint_Court/Footprint_Court_8k_TMap.jpg"),
+	mpSkybox(std::make_unique<Skybox>())
 {
 }
 
@@ -39,8 +41,7 @@ NewMeshRenderer::NewMeshRenderer()
 
 bool NewMeshRenderer::Initialize(D3D::DevicePtr& p_device)
 {
-	mpSkybox = std::make_unique<Skybox>(p_device, mSkyboxFilename.c_str(), 10, 10);
-
+	mpSkybox->Initialize(p_device, mSkyboxFilename.c_str());
 	return true;
 }
 
@@ -48,11 +49,8 @@ bool NewMeshRenderer::Initialize(D3D::DevicePtr& p_device)
 
 bool NewMeshRenderer::InitializeMeshes(D3D::DevicePtr& p_device)
 {
-
 	for (auto& component : mMeshDataTable)
 	{
-
-
 		switch (component.second->GetMeshTypeID())
 		{
 		case MeshTypeID::E_BasicCube:
@@ -102,38 +100,36 @@ bool NewMeshRenderer::InitializeMeshes(D3D::DevicePtr& p_device)
 			Log::Warning("Couldn't create Mesh. it doesn't exist.");
 			break;
 		}
-
 	}
-
 	return true;
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-void NewMeshRenderer::RegistMeshDataFromActors(D3D::DevicePtr& p_device, const std::unique_ptr<ActorManager>& p_actors)
+void NewMeshRenderer::RegistMeshDataFromActors(D3D::DevicePtr& p_device, ActorManager* p_actors)
 {
-
-
 	for (auto i = 0u; i < p_actors->GetActorsSize(); ++i)
 	{
 		if (mMeshDataTable.find(i) != mMeshDataTable.end()) continue;
-		mMeshDataTable.emplace(i, p_actors->GetActor(i)->GetComponent<NewMeshComponent>());
+		mMeshDataTable.emplace(i, p_actors->GetActor(i)->GetComponent<MeshComponent>());
 	}
 
 	InitializeMeshes(p_device);
-
-
 }
 
-void NewMeshRenderer::RenderSkybox(D3D::DeviceContextPtr& p_imm_context, float elapsed_time, unsigned int current_pass_id)
-{
-	ShaderID type = static_cast<ShaderID>(ChooseShaderIdForSkybox(current_pass_id));
-	ENGINE.GetRenderPass(current_pass_id)->SetShader(p_imm_context, type);
-	Vector3 pos = ENGINE.GetCameraPtr()->GetCameraPosition();
-	DirectX::XMMATRIX w = DirectX::XMMatrixTranslation(pos.x, pos.y, pos.z);
-	MaterialData data = {};
-	mpSkybox->Render(p_imm_context, elapsed_time, w, ENGINE.GetCameraPtr().get(), nullptr, data);
+//--------------------------------------------------------------------------------------------------------------------------------
 
+void NewMeshRenderer::Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time, unsigned int current_pass_id)
+{
+	D3D::DeviceContextPtr pImmContext = p_graphics->GetImmContextPtr();
+
+	p_graphics->SetDepthStencil(GraphicsEngine::DS_TRUE_LESS_EQUAL);
+
+	RenderSkybox(pImmContext, elapsed_time, current_pass_id);
+
+	p_graphics->SetDepthStencil(GraphicsEngine::DS_TRUE);
+
+	RenderMesh(pImmContext, elapsed_time, current_pass_id);
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
@@ -143,7 +139,7 @@ void NewMeshRenderer::RenderMesh(D3D::DeviceContextPtr& p_imm_context, float ela
 	for (auto& mesh : mMeshTable)
 	{
 		// メッシュデータ受け取り
-		std::shared_ptr<NewMeshComponent> component = mMeshDataTable.find(mesh.first)->second;
+		MeshComponent* component = mMeshDataTable.find(mesh.first)->second;
 
 		// メッシュ描画用情報の準備
 		DirectX::XMMATRIX world = component->GetWorldMatrix();
@@ -178,6 +174,23 @@ void NewMeshRenderer::RenderMesh(D3D::DeviceContextPtr& p_imm_context, float ela
 	}
 }
 
+//--------------------------------------------------------------------------------------------------------------------------------
+
+void NewMeshRenderer::RenderSkybox(D3D::DeviceContextPtr& p_imm_context, float elapsed_time, unsigned int current_pass_id)
+{
+	if (!mpSkybox->HasComputed()) mpSkybox->ConvertEquirectToCubeMap(p_imm_context);
+
+	UINT shaderID = static_cast<ShaderID>(ChooseShaderIdForSkybox(current_pass_id));
+	ENGINE.GetRenderPass(current_pass_id)->SetShader(p_imm_context, static_cast<ShaderID>(shaderID));
+	Vector3 pos = ENGINE.GetCameraPtr()->GetCameraPosition();
+	DirectX::XMMATRIX w = DirectX::XMMatrixTranslation(pos.x, pos.y, pos.z);
+	MaterialData data = {};
+	mpSkybox->Render(p_imm_context, elapsed_time, w, ENGINE.GetCameraPtr().get(), nullptr, data);
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------
+
+
 UINT NewMeshRenderer::ChooseShaderUsageForMesh(UINT current_pass)
 {
 	switch (current_pass)
@@ -191,14 +204,16 @@ UINT NewMeshRenderer::ChooseShaderUsageForMesh(UINT current_pass)
 	}
 }
 
+//--------------------------------------------------------------------------------------------------------------------------------
+
 UINT NewMeshRenderer::ChooseShaderIdForSkybox(UINT current_pass)
 {
 	switch (current_pass)
 	{
 	case RenderPassID::EForwardPass:
-		return ShaderID::ESkybox;
+		return ShaderID::ESkyboxRevised;
 	case RenderPassID::EDeferredPass:
-		return ShaderID::EDefferedSkybox;
+		return ShaderID::EDefferedSkyboxRevised;
 	case RenderPassID::ECubeMapPass:
 		return ShaderID::EMakeCubeMap;
 	default:
@@ -207,16 +222,29 @@ UINT NewMeshRenderer::ChooseShaderIdForSkybox(UINT current_pass)
 	}
 }
 
+//--------------------------------------------------------------------------------------------------------------------------------
+
 void NewMeshRenderer::RenderUI()
 {
 	mpSkybox->RenderUI();
 }
+
+//--------------------------------------------------------------------------------------------------------------------------------
 
 void NewMeshRenderer::ClearAll()
 {
 	mMeshDataTable.clear();
 	mMeshTable.clear();
 }
+
+//--------------------------------------------------------------------------------------------------------------------------------
+
+ComputedTexture* NewMeshRenderer::GetCurrentSkyTex()
+{
+	return mpSkybox->GetTexturePtr();
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------
 
 void NewMeshRenderer::SetSkybox(int id)
 {

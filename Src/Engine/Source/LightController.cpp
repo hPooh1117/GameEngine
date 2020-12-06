@@ -252,6 +252,7 @@ void LightController::SetDataForGPU(D3D::DeviceContextPtr& pImmContext, CameraCo
 	cb.directionalLight.tess_factor = mTessFactor;
 	cb.directionalLight.time = mTimer;
 	cb.directionalLight.light_config = mLightConfig;
+	cb.directionalLight.shininess = mShininess;
 
 	for (auto i = 0u; i < NUM_POINT_LIGHT; ++i)
 	{
@@ -313,6 +314,7 @@ void LightController::RenderUI()
 		MyArrayFromVector ambColor = MyArrayFromVector(mAmbientColor);
 		SliderFloat3("Ambient Color", ambColor.SetArray(), 0.0f, 1.0f);
 
+		SliderFloat("Shininess", &mShininess, 1.0f, 30.0f);
 		//SliderFloat("Environment Factor", &mEnvironmentMapAlpha, 0.0f, 1.0f);
 
 		//SliderFloat("TessFactor", &mTessFactor, 0.0f, 10.0f);

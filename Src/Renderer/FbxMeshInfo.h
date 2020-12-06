@@ -43,11 +43,11 @@ namespace FbxInfo
 		Material& operator=(const Material&) = default;
 	};
 
-	struct Texture
-	{
-		std::unique_ptr<Texture> p_texture;
-		const wchar_t* filename;
-	};
+	//struct Texture
+	//{
+	//	std::unique_ptr<Texture> p_texture;
+	//	const wchar_t* filename;
+	//};
 
 	struct Subset
 	{

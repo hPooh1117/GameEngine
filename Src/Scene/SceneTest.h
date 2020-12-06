@@ -21,21 +21,30 @@ public:
     ~SceneTest();
 
 private:
-    std::shared_ptr<Actor> mpPaintedMetal;
-    std::shared_ptr<Actor> mpWoodedPlank;
-    std::shared_ptr<Actor> mpCopperTiles;
-    std::shared_ptr<Actor> mpBlackHerringBoneTile;
-    std::shared_ptr<Actor> mpBlurGreenHexagonalTile;
-    std::shared_ptr<Actor> mpActors[25];
+    static constexpr UINT PBR_EXHIBITION_SIZE = 25;
 
-    std::shared_ptr<Actor> mpPBR;
-    std::shared_ptr<Actor> mpModel;
+    enum ActorID
+    {
+        EPaintedMetal,
+        EWoodedPlank,
+        ECopperTiles,
+        EBlackHerringBone,
+        EBlueGreenHexagonal,
+        EPBRSphere0,
+        EPBRSphereParam = EPBRSphere0 + PBR_EXHIBITION_SIZE,
+        EModelPBR,
+
+        ACTOR_SIZE_MAX,
+    };
+
 
     std::unique_ptr<ComputedTexture> mpIrradianceTex;
     std::unique_ptr<ComputedTexture> mpSpecularMapTex;
     std::unique_ptr<ComputedTexture> mpEnvironmentTex;
     std::unique_ptr<ComputedTexture> mpSpecularBRDF_LUT;
-    std::unique_ptr<Texture>      mpSkyTex;
+    std::unique_ptr<Texture>         mpSkyTex;
+
+    int  mPreComputeState;
 
     bool mbAutoSetParameter;
 };

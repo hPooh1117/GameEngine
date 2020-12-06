@@ -3,13 +3,11 @@
 //_declspec(align(16))
 class MoveRotationComponent final: public MoveComponent
 {
-private:
-	MoveRotationComponent(const std::shared_ptr<Actor>& owner);
 
 public:
-	virtual ~MoveRotationComponent();
+	MoveRotationComponent(Actor* owner);
+	virtual ~MoveRotationComponent() = default;
 
-	static std::shared_ptr<MoveRotationComponent> Initialize(const std::shared_ptr<Actor>& owner);
 	virtual bool Create() override;
 	virtual void Destroy() override;
 

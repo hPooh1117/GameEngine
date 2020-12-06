@@ -23,12 +23,4 @@ public:
     virtual void RenderUI() override;
 
     ~SceneC();
-private:
-    std::shared_ptr<Actor> mpPlayer;
-    std::shared_ptr<Actor> mpCat;
-    std::shared_ptr<Actor> mpOswell;
-    std::shared_ptr<Actor> mpShiba;
-    std::shared_ptr<Actor> mpSphere;
-    std::shared_ptr<Actor> mpField;
-    std::shared_ptr<Actor> mpSky;
 };

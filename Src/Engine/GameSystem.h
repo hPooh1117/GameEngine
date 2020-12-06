@@ -59,7 +59,7 @@ public:
     static unsigned int mCurrentHeight;
 
 private:                              
-    std::unique_ptr<SceneManager>     m_pSceneManager;
+    std::unique_ptr<SceneManager>     mpSceneManager;
     std::unique_ptr<PerfTimer>        mpTimer;
     std::shared_ptr<ThreadPool>       mpThreadPool;
 

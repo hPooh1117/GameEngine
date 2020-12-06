@@ -12,5 +12,7 @@ cbuffer CBPerLight : register(b2)
     float  reflact;
     float  time;
     float  tess;
+    uint   light_config;
+    float  shininess;
 };
 

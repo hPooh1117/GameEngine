@@ -3,13 +3,14 @@ enum ShaderID : unsigned int
 {
 	// CommonShader
 	ESprite,
+	ESkybox,
+	ESkyboxRevised,
 
 	// ForwardPasses
 	ELambert,
 	ELambertSkinned,
 	EPhong,
 	ELine,
-	ESkybox,
 
 	EEnvironmentMap,
 	ENormalMap,
@@ -49,6 +50,7 @@ enum ShaderID : unsigned int
 	EDefferedPreLighting, // POINT + DIRECTIONAL
 	EDefferedSea,
 	EDefferedLighting, // POINT + SPOT + DIRECTIONAL
+	EDefferedSkyboxRevised,
 
 	// ShadowPasses
 	EToShadow,

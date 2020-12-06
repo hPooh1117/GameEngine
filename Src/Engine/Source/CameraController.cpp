@@ -31,14 +31,14 @@ CameraController::CameraController()
     mCameraNameTable[kMoveable] = "Moveable Camera";
     mCameraNameTable[kTrace] = "Trace Camera";
 
-    m_pCameras[kMoveable] = std::make_shared<MainCamera>(Vector3(0, 10, -50));
-    m_pCameras[kTrace] = std::make_shared<TraceCamera>();
+    mpCameras[kMoveable] = std::make_unique<MainCamera>(Vector3(0, 10, -50));
+    mpCameras[kTrace] = std::make_unique<TraceCamera>();
 
-    m_pOrthoView = std::make_shared<OrthoView>(Vector3(0, 0, 0));
-    m_pOrthoView->SetOrtho(mOrthoWidth, mOrthoHeight, mOrthoNear, mOrthoFar);
+    mpOrthoView = std::make_unique<OrthoView>(Vector3(0, 0, 0));
+    mpOrthoView->SetOrtho(mOrthoWidth, mOrthoHeight, mOrthoNear, mOrthoFar);
 
-    mNearPlane = m_pCameras[kMoveable]->GetNearZ();
-    mFarPlane = m_pCameras[kTrace]->GetFarZ();
+    mNearPlane = mpCameras[kMoveable]->GetNearZ();
+    mFarPlane = mpCameras[kTrace]->GetFarZ();
 
     Log::Info("[CAMERA] Initialized.");
     NotifyCurrentMode();
@@ -65,28 +65,29 @@ void CameraController::Update(float elapsed_time)
 //    {
 //        mPrevMode = mCurrentMode;
 //        if (++mCurrentMode >= kNumMax) mCurrentMode = 0;
-//        m_bIsBlended = true;
+//        mbIsBlended = true;
 //        mBlendingTime = 0; // ブレンディング経過時間の初期化
 //        NotifyCurrentMode();
 //    }
 //#endif
 
-    //if (m_bIsBlended) // ブレンド中なら
+    //if (mbIsBlended) // ブレンド中なら
     //{
     //    // 前回カメラも更新
-    //    m_pCameras[mPrevMode]->Update(elapsed_time);
+    //    mpCameras[mPrevMode]->Update(elapsed_time);
 
     //    // ブレンド経過時間を更新
     //    mBlendingTime++;
 
     //    // ブレンド時間Maxを超えればブレンド終了
-    //    if (mBlendingTime >= mBlendingTimeMax) m_bIsBlended = false;
+    //    if (mBlendingTime >= mBlendingTimeMax) mbIsBlended = false;
     //}
 
-    if (ENGINE.GetUIRenderer()->GetUIEnable() && ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow)) return;
+    // UI表示中でImGuiウィンドウ上にマウスカーソルがある場合、更新しない。
+    //if (ENGINE.GetUIRenderer()->GetUIEnable() && ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow)) return;
 
     // 現在のカメラを更新
-    m_pCameras[mCurrentMode]->Update(elapsed_time);
+    mpCameras[mCurrentMode]->Update(elapsed_time);
 
 }
 
@@ -95,15 +96,15 @@ void CameraController::Update(float elapsed_time)
 void CameraController::SetMatrix(D3D::DeviceContextPtr& p_imm_context)
 {
     // 現在のカメラ
-    auto& itForCurrent = m_pCameras[mCurrentMode];
+    auto& itForCurrent = mpCameras[mCurrentMode];
 
     Vector3 pos;
     Vector3 target;
     Vector3 up;
 
-    //if (m_bIsBlended) // ブレンド中なら
+    //if (mbIsBlended) // ブレンド中なら
     //{
-    //    auto& itForPrev = m_pCameras[mPrevMode];
+    //    auto& itForPrev = mpCameras[mPrevMode];
 
     //    float t = static_cast<float>(mBlendingTime) / static_cast<float>(mBlendingTimeMax);
 
@@ -129,7 +130,7 @@ void CameraController::SetMatrix(D3D::DeviceContextPtr& p_imm_context)
     // 射影行列更新
     CreateProjectionMatrix(p_imm_context);
 
-    m_pOrthoView->SetOrtho(mOrthoWidth, mOrthoHeight, mOrthoNear, mOrthoFar);
+    mpOrthoView->SetOrtho(mOrthoWidth, mOrthoHeight, mOrthoNear, mOrthoFar);
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
@@ -152,7 +153,7 @@ void CameraController::CreateViewMatrix()
 
 void CameraController::CreateProjectionMatrix(D3D::DeviceContextPtr& p_imm_context)
 {
-    auto& it = m_pCameras[mCurrentMode];
+    auto& it = mpCameras[mCurrentMode];
 
     D3D11_VIEWPORT viewport = {};
     UINT numOfViewPorts = 1;
@@ -224,59 +225,47 @@ DirectX::XMMATRIX CameraController::GetInvProjViewMatrix(D3D::DeviceContextPtr& 
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-//const std::shared_ptr<Camera>& CameraController::GetCameraPtr(unsigned int mode)
-//{
-//    if (mode < 0 || mode >= CameraMode::kNumMax)
-//    {
-//        Log::Error("[CAMERA] Refered Nullptr(Mode : %d). Max Number of Camera Mode is %d", mode, CameraMode::kNumMax);
-//    }
-//
-//    return m_pCameras.at(mode);
-//}
-
-//--------------------------------------------------------------------------------------------------------------------------------
-
-
 DirectX::XMMATRIX CameraController::GetOrthoView()
 {
-    return m_pOrthoView->GetView();
+    return mpOrthoView->GetView();
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
 DirectX::XMMATRIX CameraController::GetOrthoProj(D3D::DeviceContextPtr& p_imm_context)
 {
-    return m_pOrthoView->GetProjection(p_imm_context);
+    return mpOrthoView->GetProjection(p_imm_context);
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-void CameraController::SetTarget(std::shared_ptr<Actor>& p_actor)
+void CameraController::SetTarget(Actor* p_actor)
 {
-    std::shared_ptr<Camera> camera = m_pCameras.at(kTrace);
-    std::static_pointer_cast<TraceCamera>(camera)->SetTarget(p_actor);
+    Camera* camera = mpCameras.at(kTrace).get();
+    static_cast<TraceCamera*>(camera)->SetTarget(p_actor);
 
-    m_pCameras[kMoveable]->SetPosition(Vector3(0, 10, -50));
+    mpCameras[kMoveable]->SetPosition(Vector3(0, 10, -50));
+    SetFocusPointOfMovableCamera(p_actor->GetPosition());
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
 void CameraController::SetOrthoPos(Vector3 pos)
 {
-    m_pOrthoView->Set(pos, Vector3(0, 0, 0), Vector3(0, 1, 0));
+    mpOrthoView->Set(pos, Vector3(0, 0, 0), Vector3(0, 1, 0));
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
 void CameraController::SetPositionOfMoveableCamera(const Vector3& pos)
 {
-    m_pCameras[kMoveable]->SetPosition(pos);
+    mpCameras[kMoveable]->SetPosition(pos);
 }
 
 void CameraController::SetFocusPointOfMovableCamera(const Vector3& pos)
 {
-    std::shared_ptr<Camera> camera = m_pCameras.at(kMoveable);
-    std::static_pointer_cast<MainCamera>(camera)->SetFocusPoint(pos);
+    Camera* camera = mpCameras.at(kMoveable).get();
+    static_cast<MainCamera*>(camera)->SetFocusPoint(pos);
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
@@ -290,7 +279,7 @@ void CameraController::RenderUI()
 
         Text("Current State : %s", mCurrentMode == kMoveable ? "Moveable" : "Trace");
 
-        Text("Blending : %d", m_bIsBlended);
+        Text("Blending : %d", mbIsBlended);
 
 
 
@@ -305,7 +294,7 @@ void CameraController::RenderUI()
         SliderFloat3("Camera Up", up.SetArray(), 0.0f, 1.0f);
 
 
-        MyArrayFromVector oPos = MyArrayFromVector(m_pOrthoView->GetPosition());
+        MyArrayFromVector oPos = MyArrayFromVector(mpOrthoView->GetPosition());
         SliderFloat3("Ortho Camera Pos", oPos.SetArray(), -1000.0f, 1000.0f);
 
         SliderFloat("Ortho Width", &mOrthoWidth, 1.0f, 2000.0f);
@@ -316,6 +305,7 @@ void CameraController::RenderUI()
         TreePop();
     }
 
+    // Test View & Projeci
     //Text("view0 : %.2f, %.2f, %.2f, %.2f", mView._11, mView._12, mView, mView._14);
     //Text("view1 : %.2f, %.2f, %.2f, %.2f", mView._21, mView._22, mView, mView._24);
     //Text("view2 : %.2f, %.2f, %.2f, %.2f", mView._31, mView._32, mView, mView._34);
