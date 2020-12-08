@@ -6,7 +6,7 @@ const std::size_t ThreadPool::MAX_NUM_THREADS = std::thread::hardware_concurrenc
 ThreadPool::ThreadPool(std::size_t number_of_threads)
 {
 	// 使用できる分だけスレッドを起動する。
-	for (auto i = 0; i < number_of_threads; ++i)
+	for (auto i = 0u; i < number_of_threads; ++i)
 	{
 		mThreads.emplace_back(std::thread(&ThreadPool::Execute, this));
 	}

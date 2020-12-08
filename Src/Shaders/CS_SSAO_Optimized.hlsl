@@ -20,7 +20,7 @@
 //#define    TEXTURE_SIZE_X g_aTemp[3].x        ///< @brief (CSのみ) テクスチャサイズ
 //#define    TEXTURE_SIZE_Y g_aTemp[3].y        ///< @brief (CSのみ) テクスチャサイズ
 
-static const uint BLOCK_SIZE = 16;
+static const uint BLOCK_SIZE = 32;
 static const float BIAS = 0.001;
 static const float EPSILON = 0.001;
 static const uint MAX_SAMPLES = 16;
@@ -112,7 +112,7 @@ float CalculateAlchemyAO(float2 uv, int2 cacheBlockOffset = int2(0, 0))
     /// ワールド空間でのサンプリング半径から,スクリーンスペース半径への変換係数
     // DEPTH_FACTOR_4 = 1/tan(fov/2)
     const float ry = proj._11 * radius / position.z; // 画面に垂直な円のY軸半径
-    const float2 radiusScale = ry * 0.5f * float2(screenSize.x * screenSize_rcp.y, 1.0f); // 楕円スケール,0.5倍はUV空間へのマップ
+    const float2 radiusScale = ry * 0.5f * float2(screenSize.x / screenSize.y, 1.0f); // 楕円スケール,0.5倍はUV空間へのマップ
 
     // AO値の積分
     float sum = 0.0f;
@@ -132,9 +132,12 @@ float CalculateAlchemyAO(float2 uv, int2 cacheBlockOffset = int2(0, 0))
     return 1.0f - AO;
 }
 
-[numthreads(BLOCK_SIZE, BLOCK_SIZE, 1)]
-void CSmain(uint3 dispatchTid : SV_DispatchThreadID, uint3 groupTid : SV_GroupThreadID, uint3 groupID : SV_GroupID)
-{
+[numthreads(BLOCK_SIZE, BLOCK_SIZE, 1)]        // 1Groupにつき、左から(x)、上から(y)、手前から(z)を用意する。
+void CSmain(
+    uint3 dispatchTid : SV_DispatchThreadID,   // それぞれのThreadについて、ThreadとGroupの両方を考慮したIndexがつけられる。
+    uint3 groupTid : SV_GroupThreadID,         // Group内で左から(x)、上から(y)、手前(z)から何番目のThreadか
+    uint3 groupID : SV_GroupID)                // Group全体の中で左から(x)、上から(y)、手前(z)から何番目のGroupか
+{                                              
     // キャッシュブロックのオフセット
     // 2x2テクセルごとに線形サンプルして,半径64pixel分のサンプルまで稼ぐ
     const int2 cacheBlockOffset = int2(groupID.xy) * BLOCK_SIZE - BLOCK_SIZE * 3 / 2;

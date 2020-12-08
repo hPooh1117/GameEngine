@@ -96,15 +96,15 @@ protected:
 
 	
 public:
-	const std::unique_ptr<Shader>&          GetShaderPtr(UINT shader_id);
-	auto& GetRenderTargetManager() { return mpRenderTargetManager; }
+	Shader*   GetShaderPtr(UINT shader_id);
+	auto&     GetRenderTargetManager() { return mpRenderTargetManager; }
 	
 	//const std::unique_ptr<RenderTarget>& GetRenderTargetPtr() { return mpRenderTargets; }
 	//RenderTarget* GetRenderTargetPtr(UINT id) { if (id < 0 || id >= mpRenderTargetTable.size()) return nullptr; return mpRenderTargetTable[id].get(); }
 
 	bool IsInitialized() { return mbIsInitialized; }
 
-	void SetShader(D3D::DeviceContextPtr& p_imm_context, ShaderID id);
+	void SetShader(D3D::DeviceContextPtr& p_imm_context, UINT id);
 	void CheckActivatedShaders();
 	void ShowShaderList(std::unique_ptr<GraphicsEngine>& p_graphics, const char* current_pass);
 	void ReloadShaderFile(std::unique_ptr<GraphicsEngine>& p_graphics);

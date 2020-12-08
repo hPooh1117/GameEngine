@@ -1,6 +1,9 @@
 #include "UIRenderer.h"
 
+
 #include "GameSystem.h"
+
+#include "./Application/Helper.h"
 
 #include "./Renderer/Sprite.h"
 #include "./Renderer/RenderTarget.h"
@@ -16,7 +19,7 @@ UIRenderer::UIRenderer(D3D::DevicePtr& p_device):
 	mpSpriteFont = std::make_unique<Sprite>(p_device, L"./Data/Fonts/font0.png");
 	mpSprite = std::make_unique<Sprite>(p_device);
 	mCurrentSettings.text = "";
-	mCurrentSettings.pos = Vector2(16, 8);
+	mCurrentSettings.pos = Vector2(16, SCREEN_HEIGHT - 8);
 	mCurrentSettings.size = Vector2(16, 16);
 	mCurrentSettings.color = Vector4(1, 1, 1, 1);
 }
@@ -103,7 +106,10 @@ void UIRenderer::SetText(std::string text)
 {
 	mCurrentSettings.text = text;
 
+
 	mFontDataQueue.emplace_back(mCurrentSettings);
+
+	SetNextSpriteFontSettings(mCurrentSettings.pos - Vector2(0, FONT_SPACE), mCurrentSettings.size, mCurrentSettings.color);
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
@@ -143,7 +149,7 @@ void UIRenderer::ClearFontQueue()
 {
 	mFontDataQueue.clear();
 	mCurrentSettings.text = "";
-	mCurrentSettings.pos = Vector2(16, 8);
+	mCurrentSettings.pos = Vector2(16, SCREEN_HEIGHT - 8);
 	mCurrentSettings.size = Vector2(16, 16);
 	mCurrentSettings.color = Vector4(1, 1, 1, 1);
 

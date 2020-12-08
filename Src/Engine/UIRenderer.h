@@ -23,6 +23,9 @@ struct SpriteFontData
 
 class UIRenderer
 {
+public:
+	static constexpr UINT FONT_SPACE = 16;
+
 private:
 	std::map < std::string, std::shared_ptr<UIClient>> mUIClientsTable;
 	std::unique_ptr<Sprite>                            mpSpriteFont;

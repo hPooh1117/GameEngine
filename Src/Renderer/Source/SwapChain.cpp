@@ -76,9 +76,9 @@ Swapchain::Swapchain(Microsoft::WRL::ComPtr<ID3D11Device>& device, HWND& hwnd)
     D3D11_TEXTURE2D_DESC txDesc = {};
     txDesc.Width = SCREEN_WIDTH;
     txDesc.Height = SCREEN_HEIGHT;
-    txDesc.Format = DXGI_FORMAT_D32_FLOAT;
+    txDesc.Format = DXGI_FORMAT_R32_TYPELESS;
     txDesc.Usage = D3D11_USAGE_DEFAULT;
-    txDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+    txDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
     txDesc.MipLevels = 0;
     txDesc.SampleDesc.Count = 1;
     txDesc.SampleDesc.Quality = 0;
@@ -129,9 +129,9 @@ void Swapchain::ReloadBuffers(D3D::DevicePtr& device, unsigned int width, unsign
     D3D11_TEXTURE2D_DESC txDesc = {};
     txDesc.Width = width;
     txDesc.Height = height;
-    txDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    txDesc.Format = DXGI_FORMAT_R32_TYPELESS;
     txDesc.Usage = D3D11_USAGE_DEFAULT;
-    txDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+    txDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
     txDesc.MipLevels = 1;
     txDesc.SampleDesc.Count = 1;
     txDesc.SampleDesc.Quality = 0;

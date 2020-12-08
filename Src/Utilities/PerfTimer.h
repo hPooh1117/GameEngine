@@ -2,15 +2,17 @@
 #include <chrono>
 
 using GETimer_t = std::chrono::time_point<std::chrono::system_clock>;
-using Duration_t = std::chrono::duration<float>;
+using Duration_t = std::chrono::duration<float, std::milli>;
 
 class PerfTimer final
 {
+public:
+	static constexpr unsigned int AVERAGE_DENOMINATOR = 10;
+
 private:
 	GETimer_t   mBaseTime, mPrevTime, mCurrTime, mStartTime, mStopTime;
 	Duration_t  mPausedTime, mDt;
-	bool        m_bIsStopped;
-
+	bool        mbIsStopped;
 public:
 	PerfTimer();
 	~PerfTimer() = default;

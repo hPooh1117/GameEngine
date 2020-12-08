@@ -28,7 +28,8 @@ SSAOPass::SSAOPass()
 	:mpAOPreparation(std::make_unique<AmbientOcclusion>()),
 	mpBlurPassTargets(std::make_unique<RenderTarget>()),
 	mpBlurPass(std::make_unique<BlurExecuter>()),
-	mbIsUsingCS(false)
+	mbIsUsingCS(false),
+	mbIsUsingAlchemyAO(false)
 {
 }
 
@@ -47,6 +48,8 @@ void SSAOPass::Initialize(D3D::DevicePtr& p_device)
 	AddVertexAndPixelShader(p_device, ShaderID::ESSAOCompute, L"SSAO.hlsl", L"SSAO.hlsl", "VSmain", "PSmain", VEDType::VED_SPRITE);
 	AddVertexAndPixelShader(p_device, ShaderID::ESSAOPixel, L"SSAO.hlsl", L"SSAO.hlsl", "VSmain", "PSmain2", VEDType::VED_SPRITE);
 
+	AddVertexAndPixelShader(p_device, ShaderID::EAlchemyAO, L"SSAO.hlsl", L"SSAO.hlsl", "VSmain", "PSmainAlchemy", VEDType::VED_SPRITE);
+
 	AddVertexAndPixelShader(p_device, ShaderID::EBlur, L"Screen.hlsl", L"Screen.hlsl", "VSmain", "PSmain", VEDType::VED_SPRITE);
 
 
@@ -58,7 +61,7 @@ void SSAOPass::Initialize(D3D::DevicePtr& p_device)
 	mpBlurPass->Initialize(p_device);
 	mpBlurPass->CreateShader(p_device);
 	//mpBlurPass->ChangeSetting(1, 4);
-	mpBlurPass->SetBlurStrength(1);
+	mpBlurPass->SetBlurStrength(0);
 
 	if (mpAOPreparation->Initialize(p_device))
 	{
@@ -82,11 +85,18 @@ void SSAOPass::ExecuteSSAO(std::unique_ptr<GraphicsEngine>& p_graphics, float el
 		mpAOPreparation->Deactivate(p_graphics, 10);
 	}
 
-	mpScreen->RenderScreen(
+	if (mbIsUsingAlchemyAO) 
+		mpScreen->RenderScreen(
 		pImmContext,
-		mpShaderTable.at(mbIsUsingCS ? ShaderID::ESSAOCompute : ShaderID::ESSAOPixel).get(),
+		mpShaderTable.at(mbIsUsingCS ? ShaderID::ESSAOCompute : ShaderID::EAlchemyAO).get(),
 		Vector2(0.5f * SCREEN_WIDTH, 0.5f * SCREEN_HEIGHT),
 		Vector2(SCREEN_WIDTH, SCREEN_HEIGHT));
+	else
+		mpScreen->RenderScreen(
+			pImmContext,
+			mpShaderTable.at(mbIsUsingCS ? ShaderID::ESSAOCompute : ShaderID::ESSAOPixel).get(),
+			Vector2(0.5f * SCREEN_WIDTH, 0.5f * SCREEN_HEIGHT),
+			Vector2(SCREEN_WIDTH, SCREEN_HEIGHT));
 
 
 	GetRenderTargetManager()->Activate(pImmContext, mpDSV, RenderTarget::EThirdResult, GBUFFER_FOR_BLUR_MAX);
@@ -160,6 +170,7 @@ void SSAOPass::RenderUI(bool b_open)
 
 void SSAOPass::RenderUIForSettings()
 {
+	ImGui::Checkbox("AlchemyAO", &mbIsUsingAlchemyAO);
 
 	mpAOPreparation->RenderUI();
 	int blurStrength = mpBlurPass->GetBlurStrength();

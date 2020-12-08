@@ -240,7 +240,7 @@ void GameSystem::RenderUIForSettings(std::unique_ptr<GraphicsEngine>& p_graphics
 	mpPostProcessPass->RenderUIForSettings();
 
 	ImGui::Text("Elapsed Time on Update : %.5f ms", mFrameTimer);
-
+	p_graphics->RenderUI();
 
 	mpUIRenderer->FinishRenderingWindow();
 
@@ -393,6 +393,11 @@ void GameSystem::LoadNextScene(std::unique_ptr<GraphicsEngine>& p_graphics)
 		{
 			std::unique_lock<std::mutex> lck(mLoadingMutex);
 			mpSceneManager->LoadNextScene();
+			Settings::Renderer currentSettings = mpSceneManager->GetNextSceneSettings();
+			mbIsCastingShadow = currentSettings.bCastShadow;
+			mbIsDeffered = currentSettings.bIsDeffered;
+			mbIsSSAO = currentSettings.bEnableAO;
+			mbIsCubeMap = currentSettings.bCubeMap;
 		}
 		{
 			std::unique_lock<std::mutex> lck(mLoadingMutex);

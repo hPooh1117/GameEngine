@@ -234,7 +234,16 @@ void GraphicsEngine::EndRender()
 {
     //EndImGuiRender();
     // Flip
+    mTimer.Start();
     m_pSwapChain->Present(1);
+    mTimer.Stop();
+
+   
+}
+
+void GraphicsEngine::RenderUI()
+{
+    ImGui::Text("Elapsed Time on GPU : %.5f", mTimer.GetDeltaTime());
 }
 
 Microsoft::WRL::ComPtr<ID3D11Device>& GraphicsEngine::GetDevicePtr()

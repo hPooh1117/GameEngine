@@ -1,4 +1,6 @@
 #include "H_ShadowMap.hlsli"
+#include "H_Functions.hlsli"
+#include "H_Light.hlsli"
 
 //--------------------------------------------
 //	テクスチャ
@@ -21,9 +23,24 @@ cbuffer CBPerMatrix : register(b0)
 	row_major float4x4 matWVP;
 	row_major float4x4 world;
 
-	float4 mat_color;
+	float4x4 inv_viewproj;
+	float4x4 inv_view_mat;
+	float4x4 inv_proj_mat;
 
 };
+
+cbuffer CBPerMeshMat : register(b1)
+{
+	float4 mat_color;
+
+	float3 specColor;
+
+	float gMetalness;
+	float gRoughness;
+	float gDiffuse;
+	float gSpecular;
+	int   gTextureConfig;
+}
 
 static const int BLUR_SIZE = 5;
 
@@ -137,12 +154,12 @@ PS_Output PSmain(PS_Input input)
 
 
 	float3 albedo = albedo_texture.Sample(decal_sampler, input.texcoord).xyz;
-	float3 shadow = shadow_texture.Sample(decal_sampler, input.texcoord).xyz;
+	float3 shadow = HasShadowMap(gTextureConfig) > 0 ? shadow_texture.Sample(decal_sampler, input.texcoord).xyz : 1.0;
 	float3 skybox = skybox_texture.Sample(decal_sampler, input.texcoord).xyz;
 
 
 	//output.result = float4(D * result + S * result, 1) * color;
-	output.result = float4((D * result * albedo * shadow + S * result * albedo * shadow + skybox), 1);
+	output.result = float4((D + S) * result * albedo * shadow + skybox * light_color.rgb, 1);
 	output.postEffect = float4(A, 1);
 	return output;
 }

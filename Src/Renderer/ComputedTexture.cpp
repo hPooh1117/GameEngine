@@ -9,7 +9,9 @@ ComputedTexture::ComputedTexture()
 	:mbAlreadyComputed(false),
 	mWidth(0),
 	mHeight(0),
-	mpCS(std::make_unique<Shader>())
+	mpCS(std::make_unique<Shader>()),
+	mCBufData({}),
+	mLevels(0)
 {
 }
 

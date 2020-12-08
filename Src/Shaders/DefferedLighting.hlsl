@@ -164,7 +164,7 @@ PS_Output_Light PSmain(PS_InputD input)
 
 	output.diffuse = float4(D + PD/* + SpotDiffuse*/, 1) * reflect;
 	output.specular = float4(S + PS/* + SpotSpecular*/, 1) * reflect;
-	output.prelighting = float4(output.diffuse.rgb + output.specular.rgb + A * reflect.rgb, 1) * albedo * shadow + skyboxAlbedo * light_color;
+	output.prelighting = float4(output.diffuse.rgb + output.specular.rgb, 1) * albedo * shadow/* * light_color*/;
 	
 
 	//output.prelighting = float4(P, 1);

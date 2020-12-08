@@ -16,18 +16,18 @@ class ComputedTexture
 {
 	struct CBufferForCompute
 	{
-		float param0;
-		float param1;
-		float param2;
-		float param3;
+		float param0 = 0.0f;
+		float param1 = 0.0f;
+		float param2 = 0.0f;
+		float param3 = 0.0f;
 	};
 
 	struct CBufferForComputeInt
 	{
-		UINT param0;
-		UINT param1;
-		UINT param2;
-		UINT param3;
+		UINT param0 = 0;
+		UINT param1 = 0;
+		UINT param2 = 0;
+		UINT param3 = 0;
 	};
 
 	CBufferForCompute mCBufData;

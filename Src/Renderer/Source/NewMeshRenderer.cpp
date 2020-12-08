@@ -152,8 +152,8 @@ void NewMeshRenderer::RenderMesh(D3D::DeviceContextPtr& p_imm_context, float ela
 		// テクスチャ準備
 		for (auto& texData : component->GetTextureTable())
 		{
-			if (texData.filename == L"EMPTY") ENGINE.GetTextureHolderPtr()->Set(p_imm_context, texData.filename, texData.slot, false);
-			else							  ENGINE.GetTextureHolderPtr()->Set(p_imm_context, texData.filename, texData.slot);
+			if (texData.filename == L"EMPTY") ENGINE.GetTextureHolderPtr()->Set(p_imm_context, texData.filename.c_str(), texData.slot, false);
+			else							  ENGINE.GetTextureHolderPtr()->Set(p_imm_context, texData.filename.c_str(), texData.slot);
 			ENGINE.GetTextureHolderPtr()->SetSampler(p_imm_context, texData.slot, SamplerID::EWrap);
 			ENGINE.GetTextureHolderPtr()->SetSampler(p_imm_context, 1, SamplerID::EBorder);
 			ENGINE.GetTextureHolderPtr()->SetSampler(p_imm_context, 2, SamplerID::EClamp);
@@ -196,11 +196,11 @@ UINT NewMeshRenderer::ChooseShaderUsageForMesh(UINT current_pass)
 	switch (current_pass)
 	{
 	case RenderPassID::EShadowPass:
-		return ShaderUsage::EShader;
+		return static_cast<UINT>(ShaderUsage::EShader);
 	case RenderPassID::ECubeMapPass:
-		return ShaderUsage::ECubeMap;
+		return static_cast<UINT>(ShaderUsage::ECubeMap);
 	default:
-		return ShaderUsage::EMain;
+		return static_cast<UINT>(ShaderUsage::EMain);
 	}
 }
 

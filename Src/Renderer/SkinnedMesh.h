@@ -65,6 +65,7 @@ public:
 		bool isSolid = true
 	) override;
 
+	
 	bool AddMotion(std::string& name, const char* filename);
 
 	DirectX::XMMATRIX Lerp(DirectX::XMFLOAT4X4& A, DirectX::XMFLOAT4X4& B, float rate);

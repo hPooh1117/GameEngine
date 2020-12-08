@@ -69,7 +69,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PS", "PS", "{F19D5CD0-2835-
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Deffered Rendering", "Deffered Rendering", "{96A1D2C2-130C-4258-88C5-612681C3846A}"
 	ProjectSection(SolutionItems) = preProject
-		Src\Shaders\DefferedDirectionalLight.hlsl = Src\Shaders\DefferedDirectionalLight.hlsl
 		Src\Shaders\DefferedLighting.hlsl = Src\Shaders\DefferedLighting.hlsl
 		Src\Shaders\DefferedPointLight.hlsl = Src\Shaders\DefferedPointLight.hlsl
 		Src\Shaders\DefferedSkybox.hlsl = Src\Shaders\DefferedSkybox.hlsl
@@ -78,8 +77,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Deffered Rendering", "Deffe
 		Src\Shaders\ToGBufferNormal.hlsl = Src\Shaders\ToGBufferNormal.hlsl
 		Src\Shaders\ToGBufferSea.hlsl = Src\Shaders\ToGBufferSea.hlsl
 		Src\Shaders\ToGBufferShadow.hlsl = Src\Shaders\ToGBufferShadow.hlsl
-		Src\Shaders\ToGBufferSimple.hlsl = Src\Shaders\ToGBufferSimple.hlsl
-		Src\Shaders\ToGBufferSSAO.hlsl = Src\Shaders\ToGBufferSSAO.hlsl
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OldImpl", "OldImpl", "{52C39AF8-709A-4D21-9837-972B6779335D}"
@@ -160,6 +157,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Forward Rendering", "Forwar
 		Src\Shaders\ToonGeo.hlsl = Src\Shaders\ToonGeo.hlsl
 		Src\Shaders\UseCubeMap.hlsl = Src\Shaders\UseCubeMap.hlsl
 	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DirectXTex", "Src\3rdParty\DirectXTex\DirectXTex_Desktop_2019.vcxproj", "{371B9FA9-4C90-4AC6-A123-ACED756D6C77}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -267,6 +266,18 @@ Global
 		{EBD2A057-C1DE-4A2C-8B81-9497E7E0E964}.Release|x64.Build.0 = Release|x64
 		{EBD2A057-C1DE-4A2C-8B81-9497E7E0E964}.Release|x86.ActiveCfg = Release|Win32
 		{EBD2A057-C1DE-4A2C-8B81-9497E7E0E964}.Release|x86.Build.0 = Release|Win32
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Debug|x64.ActiveCfg = Debug|x64
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Debug|x64.Build.0 = Debug|x64
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Debug|x86.ActiveCfg = Debug|Win32
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Debug|x86.Build.0 = Debug|Win32
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Profile|x64.ActiveCfg = Profile|x64
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Profile|x64.Build.0 = Profile|x64
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Profile|x86.ActiveCfg = Profile|Win32
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Profile|x86.Build.0 = Profile|Win32
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Release|x64.ActiveCfg = Release|x64
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Release|x64.Build.0 = Release|x64
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Release|x86.ActiveCfg = Release|Win32
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

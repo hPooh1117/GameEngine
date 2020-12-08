@@ -164,7 +164,6 @@
     <ClInclude Include="..\..\Engine\Camera.h" />
     <ClInclude Include="..\..\Engine\CameraController.h" />
     <ClInclude Include="..\..\Engine\ComputeExecuter.h" />
-    <ClInclude Include="..\..\Engine\CustomLight.h" />
     <ClInclude Include="..\..\Engine\DataStructures.h" />
     <ClInclude Include="..\..\Engine\GameSystem.h" />
     <ClInclude Include="..\..\Engine\Light.h" />
@@ -187,7 +186,6 @@
     <ClCompile Include="..\..\Engine\Source\AudioSystem.cpp" />
     <ClCompile Include="..\..\Engine\Source\CameraController.cpp" />
     <ClCompile Include="..\..\Engine\Source\ComputeExecuter.cpp" />
-    <ClCompile Include="..\..\Engine\Source\CustomLight.cpp" />
     <ClCompile Include="..\..\Engine\Source\GameSystem.cpp" />
     <ClCompile Include="..\..\Engine\Source\LightController.cpp" />
     <ClCompile Include="..\..\Engine\Source\MainCamera.cpp" />

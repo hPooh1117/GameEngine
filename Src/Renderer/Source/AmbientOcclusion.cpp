@@ -172,6 +172,7 @@ void AmbientOcclusion::Activate(std::unique_ptr<GraphicsEngine>& p_graphics, Cam
 	cb.screenSize_rcp.y = 1.0f / cb.screenSize.y;
 	cb.noiseScale.x = mNoiseScale.x;
 	cb.noiseScale.y = mNoiseScale.y;
+	cb.bias = mBias;
 		// TODO cbをシェーダに合わせる
 	memcpy( cb.samplePos, mSamplePos, sizeof(DirectX::XMFLOAT4) * MAX_SAMPLES );
 
@@ -193,7 +194,7 @@ void AmbientOcclusion::ExecuteOcclusion(std::unique_ptr<GraphicsEngine>& p_graph
 		mpSSAOTex->Compute(pImmContext, p_srv, SCREEN_WIDTH / 32, SCREEN_HEIGHT / 16, 1);
 		break;
 	case EAlchemyAO:
-		mpAlchemyAOTex->Compute(pImmContext, p_srv, SCREEN_WIDTH / 16, SCREEN_HEIGHT / 16, 1);
+		mpAlchemyAOTex->Compute(pImmContext, p_srv, SCREEN_WIDTH / 32, SCREEN_HEIGHT / 32, 1);
 		break;
 	}
 }
@@ -219,11 +220,13 @@ void AmbientOcclusion::RenderUI()
 	using namespace ImGui;
 	if (TreeNode("SSAO Settings"))
 	{
+#ifdef _DEBUG
 		static int aoTypeFlag = EOldSSAO;
 		ImGui::RadioButton("SSAO", &aoTypeFlag, EOldSSAO);
 		ImGui::SameLine();
 		ImGui::RadioButton("AlchemyAO", &aoTypeFlag, EAlchemyAO);
 		mAOType = aoTypeFlag;
+#endif // _DEBUG
 
 
 		SliderFloat("Intensity", &mPower, 0.0f, 5.0f);

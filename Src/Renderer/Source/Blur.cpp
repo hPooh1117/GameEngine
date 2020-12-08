@@ -10,7 +10,7 @@
 
 BlurExecuter::BlurExecuter()
 	:mKernelSize(4),
-	mBlurStrength(1)
+	mBlurStrength(0)
 {
 	for (UINT i = 0; i < BLUR_PASS_MAX; ++i)
 	{

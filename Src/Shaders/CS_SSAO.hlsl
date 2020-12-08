@@ -170,7 +170,7 @@ void CSmain(
 	//}
 
 	const float depth = depth_texture[dispatchTid.xy].r;
-	if (depth < 0.01)
+	if (depth < 0.1)
 	{
 		outputTexture[dispatchTid.xy] = float4(1, 1, 1, 1);
 		return;

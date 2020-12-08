@@ -125,6 +125,7 @@ public:
     std::unique_ptr<UIRenderer>&        GetUIRenderer()     { return mpUIRenderer; }
     std::unique_ptr<TextureHolder>&     GetTextureHolderPtr() { return mpTextureHolder; }
     std::unique_ptr<ComputeExecuter>& GetComputeExecuter() { return mpComputeExecuter; }
+    bool IsCastingShadow() { return mbIsCastingShadow; }
     bool IsSSAOActivated() { return mbIsSSAO; }
     bool IsDefferedRendering() { return mbIsDeffered; }
 };

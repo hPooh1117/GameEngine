@@ -158,7 +158,7 @@ void SkinnedMesh::LoadFbxFile(Microsoft::WRL::ComPtr<ID3D11Device>& device, cons
 	std::chrono::system_clock::time_point start, end;
 	start = std::chrono::system_clock::now();
 
-	if (fbxLoader->LoadFbxFile(device, filename, m_meshes))
+	if (fbxLoader->Load(device, filename, m_meshes))
 	{
 		CreateBuffers(device);
 	}
@@ -380,8 +380,10 @@ void SkinnedMesh::Render(
 			imm_context->GSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());
 			imm_context->PSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());
 
-
-			subset.diffuse.texture->Set(imm_context);
+			for (auto& tex : subset.diffuse.textures)
+			{
+				if (tex) tex->Set(imm_context);
+			}
 
 			imm_context->DrawIndexed(subset.indexCount, subset.indexStart, 0);
 		}

@@ -182,6 +182,7 @@
     <ClInclude Include="..\..\Renderer\SubView.h" />
     <ClInclude Include="..\..\Renderer\SwapChain.h" />
     <ClInclude Include="..\..\Renderer\Texture.h" />
+    <ClInclude Include="..\..\Renderer\TextureHelper.h" />
     <ClInclude Include="..\..\Renderer\TextureHolder.h" />
     <ClInclude Include="..\..\Renderer\VertexDecleration.h" />
   </ItemGroup>

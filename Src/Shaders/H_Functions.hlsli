@@ -126,6 +126,22 @@ float3 GetShadow(Texture2D st, SamplerState ss, float3 tex, float3 scolor, float
     return scolor;
 }
 
+float3 GetSoftShadow(Texture2D shadow_tex, SamplerComparisonState ss, float3 tex, float3 shadow_color, float bias)
+{
+    float maxDepthSlope = max(abs(ddx(tex.z)), abs(ddy(tex.z)));
+
+    float slopeScaledBias = 0.01;
+    float depthBiasClamp = 0.1f;
+    float shadowBias = bias + slopeScaledBias * maxDepthSlope;
+    shadowBias = min(shadowBias, depthBiasClamp);
+
+    float d = shadow_tex.SampleCmpLevelZero(ss, tex.xy, tex.z - shadowBias);
+
+    float3 shadowColor = lerp(float3(1, 1, 1), shadow_color, d);
+
+    return shadowColor;
+}
+
 float3 HalfLambert(float3 N, float3 L, float3 C, float3 Kd)
 {
     float D = dot(N, -L);
@@ -145,5 +161,22 @@ float3 FurSpecular(float3 N, float3 L, float3 C, float3 E, float3 K, float Power
     return Sin2 * K * C;
 }
 
+inline float3 ReconstructPosition(in float2 uv, in float z, in float4x4 InvVP)
+{
+    float x = uv.x * 2.0 - 1.0;
+    float y = (1.0 - uv.y) * 2.0 - 1.0;
+    float4 positionP = float4(x, y, z, 1.0);
+    float4 positionV = mul(positionP, InvVP);
+    return positionV.xyz / positionV.w;
+}
+
+// 0 ~ 1‚Ì”ÍˆÍ‚Årandom float value‚ğ•Ô‚·B
+// seed   : •K‚¸‚O‚æ‚è‘å‚«‚¢”‚ğ“ü‚ê‚éB
+inline float Rand(inout float seed, in float2 uv)
+{
+    float result = frac(sin(seed * dot(uv, float2(12.9898, 78.233))) * 43758.5453);
+    seed += 1.0f;
+    return result;
+}
 
 

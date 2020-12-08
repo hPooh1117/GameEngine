@@ -33,7 +33,7 @@ private:
 	std::unique_ptr<ComputedTexture> mpSSAOTex;
 	std::unique_ptr<ComputedTexture> mpAlchemyAOTex;
 
-	DirectX::XMFLOAT4 mSamplePos[MAX_SAMPLES];
+	DirectX::XMFLOAT4 mSamplePos[MAX_SAMPLES] = { {} };
 	
 	D3D::Texture2DPtr        m_pNoiseTexture;
 	D3D::SRVPtr   m_pNoiseResourceView;
@@ -68,6 +68,11 @@ private:
 		DirectX::XMFLOAT2  screenSize_rcp;
 		DirectX::XMFLOAT2  noiseScale;
 		DirectX::XMFLOAT4  samplePos[MAX_SAMPLES];
+
+		float              bias;
+		float dummy = 0;
+		float dummy1 = 0;
+		float dummy2 = 0;
 	};
 
 public:
@@ -78,5 +83,8 @@ public:
 	void Deactivate(std::unique_ptr<GraphicsEngine>& p_graphics, UINT slot);
 
 	virtual void RenderUI() override;
+
+
+
 	~AmbientOcclusion();
 };

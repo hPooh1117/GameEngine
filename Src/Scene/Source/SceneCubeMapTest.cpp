@@ -40,6 +40,8 @@ SceneF::SceneF(SceneManager* manager, D3D::DevicePtr& device) :Scene(manager, de
 
 	ENGINE.GetMeshRenderer()->SetSkybox(SkyboxTextureID::EFootprintCourt);
 
+	ENGINE.GetMeshRenderer()->SetSkybox(SkyboxTextureID::EGray0);
+
 
 	Settings::Renderer renderSettings = {
 	false,   // shadow

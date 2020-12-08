@@ -27,7 +27,9 @@ PostProcessPass::PostProcessPass()
 	mbIsBlurred(true),
 	mbIsDesaturated(true),
 	mpPostProcessTex(std::make_unique<ComputedTexture>()),
-	mpBlurPass(std::make_unique<BlurExecuter>())
+	mpBlurPass(std::make_unique<BlurExecuter>()),
+	mCurrentRenderTarget(RenderTarget::EPostProcess),
+	mbIsPostProcessed(false)
 {
 }
 
@@ -107,7 +109,7 @@ void PostProcessPass::RenderPostProcess(std::unique_ptr<GraphicsEngine>& p_graph
 		if (mbIsBlurred)
 		{
 			mpBlurPass->ActivateBlur(pImmContext, true);
-			mpBlurPass->ExecuteBlur(pImmContext, mpPostProcessTex->GetSRV(), 0);
+			mpBlurPass->ExecuteBlur(pImmContext, mbIsDesaturated ? mpPostProcessTex->GetSRV() : GetRenderTargetManager()->GetShaderResource(mCurrentRenderTarget), 0);
 			mpBlurPass->Deactivate(pImmContext);
 		}
 	}
@@ -123,7 +125,7 @@ void PostProcessPass::RenderPostProcess(std::unique_ptr<GraphicsEngine>& p_graph
 	pImmContext->PSSetConstantBuffers(1, 1, mpConstantBuffer.GetAddressOf());
 
 
-	ShaderID shader = mbIsPostProcessed ? ShaderID::EPostEffect : ShaderID::ESprite;
+	UINT shader = mbIsPostProcessed ? static_cast<UINT>(ShaderID::EPostEffect) : static_cast<UINT>(ShaderID::ESprite);
 	mpScreen->RenderScreen(pImmContext, mpShaderTable.at(shader).get(), Vector2(0.5f * ENGINE.mCurrentWidth, 0.5f * ENGINE.mCurrentHeight), Vector2(static_cast<float>(ENGINE.mCurrentWidth), static_cast<float>(ENGINE.mCurrentHeight)));
 }
 

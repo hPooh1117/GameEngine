@@ -57,7 +57,7 @@ bool TextureHolder::Initialize(D3D::DevicePtr& p_device)
 				D3D11_TEXTURE_ADDRESS_CLAMP,
 				0,
 				16,
-				D3D11_COMPARISON_ALWAYS,
+				D3D11_COMPARISON_LESS_EQUAL,
 				borderColor,
 				0,
 				D3D11_FLOAT32_MAX
@@ -140,7 +140,7 @@ void TextureHolder::ClearTextureTable()
 	mTextureTable.clear();
 }
 
-void TextureHolder::Set(D3D::DeviceContextPtr& p_imm_context, std::wstring filename, unsigned int slot, bool flag)
+void TextureHolder::Set(D3D::DeviceContextPtr& p_imm_context, const wchar_t* filename, unsigned int slot, bool flag)
 {
 	mTextureTable.find(filename)->second->Set(p_imm_context, slot, flag);
 }

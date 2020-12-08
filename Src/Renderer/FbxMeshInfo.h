@@ -3,6 +3,7 @@
 #include <d3d11.h>
 #include <wrl\client.h>
 #include <vector>
+#include <array>
 #include <fbxsdk.h>
 #include <unordered_map>
 #include <map>
@@ -34,9 +35,20 @@ namespace FbxInfo
 
 	struct Material
 	{
+		enum TextureType
+		{
+			EColor,
+			ENormal,
+			EHeight,
+			ERoughness,
+			EMetallic,
+			EAO,
+			TEXTURE_TYPE_MAX,
+		};
+
 		DirectX::XMFLOAT4 color = {1.0f, 1.0f, 1.0f, 1.0f};
-		std::shared_ptr<Texture> texture;
-		std::wstring texture_filename;
+		std::array<std::shared_ptr<Texture>, TEXTURE_TYPE_MAX> textures;
+		std::array<std::wstring, TEXTURE_TYPE_MAX>  texFileTable;
 
 		Material() = default;
 		Material(const Material&) = default;

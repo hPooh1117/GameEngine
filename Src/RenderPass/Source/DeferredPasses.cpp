@@ -58,10 +58,6 @@ void DeferredPass::Initialize(D3D::DevicePtr& p_device)
 	AddVertexAndPixelShader(p_device, ShaderID::EDefferedSkybox, L"EquirectangularToCube.hlsl", L"EquirectangularToCube.hlsl", "VSmainDeffered", "PSmainDeffered", VEDType::VED_DEFAULT);
 	AddVertexAndPixelShader(p_device, ShaderID::EDefferedSkyboxRevised, L"DefferedSkybox.hlsl", L"DefferedSkybox.hlsl", "VSmain", "PSmain", VEDType::VED_DEFAULT);
 
-	//AddVertexAndPixelShader(p_device, ShaderID::EDefferedPhong, L"ToGBufferSimple.hlsl", L"ToGBufferSimple.hlsl", "VSmain", "PSmain", VEDType::VED_DEFAULT);
-	//AddVertexAndPixelShader(p_device, ShaderID::EDefferedPhongForSkinned, L"ToGBufferSimple.hlsl", L"ToGBufferSimple.hlsl", "VSmainS", "PSmain", VEDType::VED_SKINNED_MESH);
-	//AddVertexAndPixelShader(p_device, ShaderID::EDefferedPhongForSkinning, L"ToGBufferSimple.hlsl", L"ToGBufferSimple.hlsl", "VSmainSkinning", "PSmain", VEDType::VED_SKINNED_MESH);
-
 	AddVertexAndPixelShader(p_device, ShaderID::EDefferedShadow, L"ToGBufferShadow.hlsl", L"ToGBufferShadow.hlsl", "VSmain", "PSmain", VEDType::VED_DEFAULT);
 	AddVertexAndPixelShader(p_device, ShaderID::EDefferedShadowForSkinned, L"ToGBufferShadow.hlsl", L"ToGBufferShadow.hlsl", "VSmainS", "PSmain", VEDType::VED_SKINNED_MESH);
 	AddVertexAndPixelShader(p_device, ShaderID::EDefferedShadowForSkinning, L"ToGBufferShadow.hlsl", L"ToGBufferShadow.hlsl", "VSmainSkinning", "PSmain", VEDType::VED_SKINNED_MESH);
@@ -81,14 +77,15 @@ void DeferredPass::Initialize(D3D::DevicePtr& p_device)
 
 void DeferredPass::InitializeGBuffer(D3D::DevicePtr& p_device)
 {
-	GetRenderTargetManager()->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::EColor); // color
-	GetRenderTargetManager()->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::ENormal);  // normal
+	GetRenderTargetManager()->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R8G8B8A8_UNORM, RenderTarget::EColor); // color
+	GetRenderTargetManager()->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R32G32B32A32_FLOAT, RenderTarget::ENormal);  // normal
 	GetRenderTargetManager()->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::EPosition);  // position
-	GetRenderTargetManager()->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::EShadowMap);  // shadow 
+	if (ENGINE.IsCastingShadow()) 
+		GetRenderTargetManager()->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::EShadowMap);  // shadow 
 	GetRenderTargetManager()->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R32G32B32A32_FLOAT, RenderTarget::EDepth);  // depth
 	
-	GetRenderTargetManager()->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::EDiffuseLight);
-	GetRenderTargetManager()->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::ESpecularLight);
+	GetRenderTargetManager()->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R8G8B8A8_UNORM, RenderTarget::EDiffuseLight);
+	GetRenderTargetManager()->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R8G8B8A8_UNORM, RenderTarget::ESpecularLight);
 	GetRenderTargetManager()->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::ESkybox);
 	GetRenderTargetManager()->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::EFirstResult);
 

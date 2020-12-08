@@ -18,6 +18,7 @@ private:
 
 	std::unique_ptr<BlurExecuter> mpBlurPass;
 	bool mbIsUsingCS;
+	bool mbIsUsingAlchemyAO;
 
 public:
 	SSAOPass();

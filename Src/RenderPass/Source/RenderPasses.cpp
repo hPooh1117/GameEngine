@@ -182,7 +182,7 @@ void RenderPass::CheckActivatedShaders()
 	for (auto& shader : mpShaderTable)
 	{
 		isActivated = shader.second->GetIsActivated();
-		Log::Info("ShaderID : %d -> %s", shader.first, isActivated > 0 ? "Activated" : "Useless");
+		Log::Info("ShaderID : %d -> %s", shader.first, isActivated == true ? "Activated" : "Useless");
 	}
 }
 
@@ -226,17 +226,17 @@ void RenderPass::Clear()
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-const std::unique_ptr<Shader>& RenderPass::GetShaderPtr(UINT shader_id)
+Shader* RenderPass::GetShaderPtr(UINT shader_id)
 {
 	auto it = mpShaderTable.find(shader_id);
-	if (it != mpShaderTable.end()) return it->second;
-	return std::unique_ptr<Shader>();
+	if (it != mpShaderTable.end()) return it->second.get();
+	return nullptr;
 }
 
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-void RenderPass::SetShader(D3D::DeviceContextPtr& p_imm_context, ShaderID id)
+void RenderPass::SetShader(D3D::DeviceContextPtr& p_imm_context, UINT id)
 {
 	mpShaderTable.at(id)->ActivateShaders(p_imm_context);
 }

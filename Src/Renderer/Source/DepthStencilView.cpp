@@ -11,7 +11,7 @@ bool DepthStencilView::Create(D3D::DevicePtr& p_device, UINT width, UINT height)
 	texDesc.Height = height;
 	texDesc.MipLevels = 1;
 	texDesc.ArraySize = 1;
-	texDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;;
+	texDesc.Format = DXGI_FORMAT_D32_FLOAT;
 	texDesc.SampleDesc.Count = 1;
 	texDesc.SampleDesc.Quality = 0;
 	texDesc.Usage = D3D11_USAGE_DEFAULT;

@@ -6,6 +6,7 @@
 
 #include "D3D_Helper.h"
 #include "Blender.h"
+#include "./Utilities/PerfTimer.h"
 
 #ifdef _DEBUG
 #pragma comment(lib, "d3d11.lib")
@@ -39,7 +40,7 @@ private:
     D3D_FEATURE_LEVEL           mFeatureLevel;
 
     std::unique_ptr<Swapchain>  m_pSwapChain = nullptr;
-
+    PerfTimer mTimer;
 
     D3D11_VIEWPORT mViewport;
 
@@ -61,6 +62,7 @@ public:
     void EndImGuiRender();
     void EndRender();
 
+    void RenderUI();
 
     D3D::DevicePtr&        GetDevicePtr();
     D3D::DeviceContextPtr& GetImmContextPtr();

@@ -62,7 +62,7 @@ float4 PSmain(PS_Input input) : SV_TARGET
 	
 
 	// ÉKÉìÉ}ï‚ê≥
-	//color = pow(abs(color.rgb), 1 / GAMMA_CORRECTION);
+	color = pow(abs(color.rgb), 1 / GAMMA_CORRECTION);
 
 	float4 result = float4(color, 1.0);
 	//float4 result = float4(color, 1);

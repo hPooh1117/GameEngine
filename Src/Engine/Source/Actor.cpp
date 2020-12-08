@@ -42,18 +42,18 @@ void Actor::Update(float elapsed_time)
 
 void Actor::RenderUI()
 {
-	std::string actorName = "Actor" + std::to_string(mId);
-	if (ImGui::TreeNode(actorName.c_str()))
-	{
-		MyArrayFromVector pos = MyArrayFromVector(mPosition);
-		ImGui::InputFloat3("Pos", pos.SetArray());
-		float scale = mScale.x;
-		ImGui::InputFloat("Scale", &scale);
-		
+	//std::string actorName = "Actor" + std::to_string(mId);
+	//if (ImGui::TreeNode(actorName.c_str()))
+	//{
+	//	MyArrayFromVector pos = MyArrayFromVector(mPosition);
+	//	ImGui::InputFloat3("Pos", pos.SetArray());
+	//	float scale = mScale.x;
+	//	ImGui::InputFloat("Scale", &scale);
+	//	
 
 
-		ImGui::TreePop();
-	}
+	//	ImGui::TreePop();
+	//}
 }
 
 //----------------------------------------------------------------------------------------------------------------------------

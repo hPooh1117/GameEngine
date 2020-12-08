@@ -25,6 +25,7 @@
 #include "./Renderer/Sprite.h"
 #include "./Renderer/GraphicsEngine.h"
 #include "./Renderer/Blender.h"
+#include "./Renderer/NewMeshRenderer.h"
 #include "./Renderer/Shader.h"
 #include "./Renderer/Skybox.h"
 
@@ -111,6 +112,8 @@ SceneD::SceneD(SceneManager* manager, Microsoft::WRL::ComPtr<ID3D11Device>& devi
 		false   // cubemap
 	};
 	ENGINE.SetRendererSettings(renderSettings);
+
+	ENGINE.GetMeshRenderer()->SetSkybox(SkyboxTextureID::EFactoryCatWalk);
 
 }
 
