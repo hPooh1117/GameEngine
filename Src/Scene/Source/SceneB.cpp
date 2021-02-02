@@ -9,7 +9,6 @@
 #include "./Engine/GameSystem.h"
 #include "./Engine/MainCamera.h"
 #include "./Engine/CameraController.h"
-#include "./Engine/PointLight.h"
 #include "./Engine/LightController.h"
 #include "./Engine/Actor.h"
 #include "./Engine/ActorManager.h"

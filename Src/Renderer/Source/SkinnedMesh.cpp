@@ -11,7 +11,6 @@
 
 #include "./Engine/MainCamera.h"
 #include "./Engine/CameraController.h"
-#include "./Engine/Light.h"
 #include "./Engine/GameSystem.h"
 
 #include "./Utilities/misc.h"

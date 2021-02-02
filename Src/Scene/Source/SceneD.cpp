@@ -5,7 +5,6 @@
 #include "./Engine/Actor.h"
 #include "./Engine/ActorManager.h"
 #include "./Engine/CameraController.h"
-#include "./Engine/DirectionalLight.h"
 #include "./Engine/GameSystem.h"
 #include "./Engine/LightController.h"
 #include "./Engine/MainCamera.h"

@@ -3,7 +3,6 @@
 #include <DirectXMath.h>
 #include "Shader.h"
 #include "./Engine/MainCamera.h"
-#include "./Engine/Light.h"
 #include "./Engine/CameraController.h"
 #include "ResourceManager.h"
 

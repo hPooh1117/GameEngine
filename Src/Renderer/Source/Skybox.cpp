@@ -4,7 +4,6 @@
 
 #include "./Engine/MainCamera.h"
 #include "./Engine/CameraController.h"
-#include "./Engine/Light.h"
 
 #include "./Utilities/misc.h"
 #include "./Utilities/ImGuiSelf.h"

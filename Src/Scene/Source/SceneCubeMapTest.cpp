@@ -7,7 +7,6 @@
 #include "./Component/MoveRoundTrip.h"
 
 #include "./Engine/CameraController.h"
-#include "./Engine/DirectionalLight.h"
 #include "./Engine/GameSystem.h"
 #include "./Engine/LightController.h"
 #include "./Engine/Actor.h"
@@ -41,7 +40,6 @@ SceneF::SceneF(SceneManager* manager, Graphics::GraphicsDevice* p_device) :Scene
 
 	ENGINE.GetRenderer()->GetMeshRenderer()->SetSkybox(SkyboxTextureID::EGray0);
 
-	ENGINE.GetMeshRenderer()->SetSkybox(SkyboxTextureID::EGray0);
 
 
 	Settings::Renderer renderSettings = {

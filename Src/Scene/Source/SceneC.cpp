@@ -6,9 +6,6 @@
 
 #include "./Engine/MainCamera.h"
 #include "./Engine/CameraController.h"
-#include "./Engine/PointLight.h"
-#include "./Engine/SpotLight.h"
-#include "./Engine/DirectionalLight.h"
 #include "./Engine/UIRenderer.h"
 #include "./Engine/Actor.h"
 #include "./Engine/ActorManager.h"
