@@ -41,6 +41,8 @@ SceneF::SceneF(SceneManager* manager, Graphics::GraphicsDevice* p_device) :Scene
 
 	ENGINE.GetRenderer()->GetMeshRenderer()->SetSkybox(SkyboxTextureID::EGray0);
 
+	ENGINE.GetMeshRenderer()->SetSkybox(SkyboxTextureID::EGray0);
+
 
 	Settings::Renderer renderSettings = {
 	false,   // shadow

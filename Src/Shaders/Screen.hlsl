@@ -3,7 +3,7 @@
 #include "HF_GlobalVariables.hlsli"
 
 //--------------------------------------------
-//	ƒeƒNƒXƒ`ƒƒ
+//	ï¿½eï¿½Nï¿½Xï¿½`ï¿½ï¿½
 //--------------------------------------------
 Texture2D albedo_texture : register(t0);
 SamplerState decal_sampler : register(s0);
@@ -17,10 +17,23 @@ Texture2D ambient_texture : register(t10);
 Texture2D blurredAO_texture : register(t15);
 
 
+cbuffer CBPerMeshMat : register(b1)
+{
+	float4 mat_color;
+
+	float3 specColor;
+
+	float gMetalness;
+	float gRoughness;
+	float gDiffuse;
+	float gSpecular;
+	int   gTextureConfig;
+}
+
 static const int BLUR_SIZE = 5;
 
 //--------------------------------------------
-//	ƒf[ƒ^ƒŒƒCƒAƒEƒg
+//	ï¿½fï¿½[ï¿½^ï¿½ï¿½ï¿½Cï¿½Aï¿½Eï¿½g
 //--------------------------------------------
 struct VS_Input
 {
@@ -49,7 +62,7 @@ PS_Input VSmain(VS_Input input)
 {
 	PS_Input output = (PS_Input)0;
 	float4 P = float4(input.position, 1);
-	
+
 	output.position = P;
 	output.color = input.color;
 	output.texcoord = input.texcoord;
@@ -65,7 +78,7 @@ PS_Input VSmain(VS_Input input)
 //{
 //	PS_Output output = (PS_Output)0;
 //
-//	
+//
 //	float3 D = diffuse_texture.Sample(decal_sampler, input.texcoord).rgb;
 //	float3 S = specular_texture.Sample(decal_sampler, input.texcoord).rgb;
 //	float3 A = ambient_texture.Sample(decal_sampler, input.texcoord).rgb;
@@ -85,7 +98,7 @@ PS_Input VSmain(VS_Input input)
 //	}
 //	result /= float(BLUR_SIZE * BLUR_SIZE);
 //
-//	
+//
 //
 //
 //	float3 albedo = albedo_texture.Sample(decal_sampler, input.texcoord).xyz;

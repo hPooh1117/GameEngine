@@ -21,6 +21,10 @@
     <Filter Include="ソース ファイル\SHADER INTEROP">
       <UniqueIdentifier>{5aba53ac-86a1-4fb2-9dd3-7239832b0495}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Renderer\VertexDecleration.h">

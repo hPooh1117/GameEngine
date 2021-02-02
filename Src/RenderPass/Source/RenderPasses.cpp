@@ -68,7 +68,7 @@ void RenderPass::AddVertexAndPixelShader(
 {
 	if (mpShaderTable.find(id) != mpShaderTable.end())
 	{
-		// ƒe[ƒuƒ‹ã‚É‚·‚Å‚É‘¶Ý‚µ‚Ä‚¢‚½ê‡‚ÍƒXƒ‹[
+		// ï¿½eï¿½[ï¿½uï¿½ï¿½ï¿½ï¿½ï¿½É‚ï¿½ï¿½Å‚É‘ï¿½ï¿½Ý‚ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ê‡ï¿½ÍƒXï¿½ï¿½ï¿½[
 		Log::Warning("[RENDER PASS] The Shader already exists. ");
 		return;
 	}
@@ -94,7 +94,7 @@ void RenderPass::AddGeometryShader(
 {
 	if (mpShaderTable.find(id) == mpShaderTable.end())
 	{
-		// ƒe[ƒuƒ‹ã‚É“¯‚¶–¼‘O‚Ì’¸“_ƒsƒNƒZƒ‹ƒVƒF[ƒ_‚ª‚È‚¢ê‡AƒXƒ‹[
+		// ï¿½eï¿½[ï¿½uï¿½ï¿½ï¿½ï¿½ï¿½É“ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½Ì’ï¿½ï¿½_ï¿½sï¿½Nï¿½Zï¿½ï¿½ï¿½Vï¿½Fï¿½[ï¿½_ï¿½ï¿½ï¿½È‚ï¿½ï¿½ê‡ï¿½Aï¿½Xï¿½ï¿½ï¿½[
 		Log::Warning("[RENDER PASS] Vertex Shader and Pixel Shader doesn't exist. (%s)", SHADER_NAME_TABLE[id].c_str());
 		return;
 	}
@@ -118,7 +118,7 @@ void RenderPass::AddDomainAndHullShader(
 {
 	if (mpShaderTable.find(id) == mpShaderTable.end())
 	{
-		// ƒe[ƒuƒ‹ã‚É“¯‚¶–¼‘O‚Ì’¸“_ƒsƒNƒZƒ‹ƒVƒF[ƒ_‚ª‚È‚¢ê‡AƒXƒ‹[
+		// ï¿½eï¿½[ï¿½uï¿½ï¿½ï¿½ï¿½ï¿½É“ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½Ì’ï¿½ï¿½_ï¿½sï¿½Nï¿½Zï¿½ï¿½ï¿½Vï¿½Fï¿½[ï¿½_ï¿½ï¿½ï¿½È‚ï¿½ï¿½ê‡ï¿½Aï¿½Xï¿½ï¿½ï¿½[
 		Log::Warning("[RENDER PASS] Vertex Shader and Pixel Shader doesn't exist. (%s)", SHADER_NAME_TABLE[id].c_str());
 		return;
 	}
@@ -233,7 +233,7 @@ Shader* RenderPass::GetShaderPtr(UINT shader_id)
 
 void RenderPass::SetShader(Graphics::GraphicsDevice* device, UINT id)
 {
-	
+
 	mpShaderTable.at(id)->ActivateShaders(device->GetImmContextPtr());
 }
 

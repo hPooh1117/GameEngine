@@ -145,7 +145,7 @@ bool ComputedTexture::CreateTextureArray(D3D::DevicePtr& p_device, UINT width, U
 	t2Desc.SampleDesc.Count = 1;
 	t2Desc.Usage = D3D11_USAGE_DEFAULT;
 	t2Desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS;
-	
+
 
 	if (level == 0)
 	{
@@ -208,7 +208,7 @@ bool ComputedTexture::CreateTextureUAV(D3D::DevicePtr& p_device, UINT mip_slices
 
 	D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
 	uavDesc.Format = desc.Format;
-	if (desc.ArraySize == 1) // Texture2D�̏ꍇ
+	if (desc.ArraySize == 1) // Texture2D�̏ꍇ
 	{
 		uavDesc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2D;
 		uavDesc.Texture2D.MipSlice = mip_slices;

@@ -33,7 +33,7 @@ public:
     static unsigned int mCurrentWidth;
     static unsigned int mCurrentHeight;
 
-private:                              
+private:
     std::unique_ptr<SceneManager>     mpSceneManager;
     std::unique_ptr<PerfTimer>        mpTimer;
     std::shared_ptr<ThreadPool>       mpThreadPool;
@@ -44,7 +44,7 @@ private:
     std::unique_ptr<ActorManager>     mpActorManager;
     std::unique_ptr<CameraController> mpCamera;
     std::unique_ptr<LightController>  mpLight;
-    std::unique_ptr<ComputeExecuter>  mpComputeExecuter; // ƒRƒ“ƒsƒ…[ƒgƒVƒF[ƒ_‚ğ—˜—p‚µ‚½ŒvZ’S“–ƒNƒ‰ƒX
+    std::unique_ptr<ComputeExecuter>  mpComputeExecuter; // ï¿½Rï¿½ï¿½ï¿½sï¿½ï¿½ï¿½[ï¿½gï¿½Vï¿½Fï¿½[ï¿½_ï¿½ğ—˜—pï¿½ï¿½ï¿½ï¿½ï¿½vï¿½Zï¿½Sï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½X
 
 
     bool mbIsCastingShadow;
@@ -91,4 +91,3 @@ public:
 };
 
 #define  ENGINE Singleton<GameSystem>::Get()
- 

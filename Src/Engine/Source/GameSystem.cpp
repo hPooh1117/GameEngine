@@ -147,7 +147,7 @@ void GameSystem::Update(std::unique_ptr<Graphics::GraphicsDevice>& p_graphics, f
 		return;
 	}
 
-	
+
 	mpCamera->Update(elapsed_time);
 	mpLight->Update(elapsed_time);
 #ifdef _DEBUG
@@ -179,7 +179,7 @@ void GameSystem::Render(std::unique_ptr<Graphics::GraphicsDevice>& p_graphics, f
 		return;
 	}
 
-	
+
 	D3D::DeviceContextPtr pImmContext = p_graphics->GetImmContextPtr();
 
 

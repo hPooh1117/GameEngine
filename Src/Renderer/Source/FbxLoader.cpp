@@ -32,7 +32,7 @@ FbxLoader::FbxLoader()
 
 bool FbxLoader::Load(D3D::DevicePtr& device, const char* filename, std::vector<MyFbxMesh>& mesh_container)
 {
-	// ƒVƒŠƒAƒ‹‰»‚³‚ê‚½ƒf[ƒ^‚ª‘¶İ‚·‚ê‚Î“Ç‚İ‚İ
+	// ï¿½Vï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‚½ï¿½fï¿½[ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½İ‚ï¿½ï¿½ï¿½ï¿½Î“Ç‚İï¿½ï¿½ï¿½
 	std::string filename2(filename);
 	unsigned int length = filename2.size();
 	filename2.at(length - 1) = 'A';
@@ -40,7 +40,7 @@ bool FbxLoader::Load(D3D::DevicePtr& device, const char* filename, std::vector<M
 	filename2.at(length - 3) = 'A';
 	if (LoadSerializedMesh(device, filename2, mesh_container)) return true;
 
-	// ƒVƒŠƒAƒ‹‰»‚³‚ê‚½ƒf[ƒ^‚ª‚È‚¯‚ê‚Î.fbx‚ğ“Ç‚İ‚İ
+	// ï¿½Vï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê‚½ï¿½fï¿½[ï¿½^ï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½ï¿½.fbxï¿½ï¿½ï¿½Ç‚İï¿½ï¿½ï¿½
 	LoadFbxFile(device, filename, mesh_container);
 
 	return true;
@@ -53,7 +53,7 @@ bool FbxLoader::LoadFbxFile(
 	const char* fbxfilename,
 	std::vector<MyFbxMesh>& mesh_container)
 {
-	// FBX SDK Manager‚ğ¶¬
+	// FBX SDK Managerï¿½ğ¶ï¿½
 	Log::Info("[FBX] Start up FbxManager.");
 	FbxManager* manager = FbxManager::Create();
 	manager->SetIOSettings(FbxIOSettings::Create(manager, IOSROOT));
@@ -67,7 +67,7 @@ bool FbxLoader::LoadFbxFile(
 	}
 
 
-	// ƒV[ƒ“ƒf[ƒ^‚ğƒCƒ“ƒ|[ƒg
+	// ï¿½Vï¿½[ï¿½ï¿½ï¿½fï¿½[ï¿½^ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½|ï¿½[ï¿½g
 	FbxScene* scene = FbxScene::Create(manager, "");
 	bIsImported = importer->Import(scene);
 	if (!bIsImported)
@@ -78,15 +78,15 @@ bool FbxLoader::LoadFbxFile(
 	Log::Info("[FBX] Created FbxScene");
 
 
-	// ƒ|ƒŠƒSƒ“‚ğOŠpŒ`‚É
+	// ï¿½|ï¿½ï¿½ï¿½Sï¿½ï¿½ï¿½ï¿½ï¿½Oï¿½pï¿½`ï¿½ï¿½
 	TrangulateGeometries(manager, scene);
 
 	std::vector<FbxNode*> fetchedMeshes;
-	// ƒƒbƒVƒ…ƒf[ƒ^‚ğŠÜ‚Şƒm[ƒh‚ğŒŸõ	
+	// ï¿½ï¿½ï¿½bï¿½Vï¿½ï¿½ï¿½fï¿½[ï¿½^ï¿½ï¿½ï¿½Ü‚Şƒmï¿½[ï¿½hï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	SearchMeshNodeRecursively(fetchedMeshes, scene);
 
 
-	// ƒƒbƒVƒ…î•ñ‚ğæ‚èo‚·
+	// ï¿½ï¿½ï¿½bï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½oï¿½ï¿½
 	Log::Info("[FBX] ***** Start Fetching  Meshes (Size : %d) *****", fetchedMeshes.size());
 	m_pTimer->Reset();
 	m_pTimer->Start();
@@ -101,7 +101,7 @@ bool FbxLoader::LoadFbxFile(
 
 		LoadSkins(fbxMesh, mesh);
 
-		// ƒ}ƒeƒŠƒAƒ‹æ‚èo‚µ(CGFX)
+		// ï¿½}ï¿½eï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½oï¿½ï¿½(CGFX)
 		FbxLayerElementMaterial* LEM = fbxMesh->GetElementMaterial();
 		if (LEM != nullptr)
 		{
@@ -113,7 +113,7 @@ bool FbxLoader::LoadFbxFile(
 			LoadCGFX(device, mesh, material, fbxfilename);
 		}
 
-		// ƒ}ƒeƒŠƒAƒ‹æ‚èo‚µ
+		// ï¿½}ï¿½eï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½oï¿½ï¿½
 		mNumberOfMaterials = fbxMesh->GetNode()->GetMaterialCount();
 		mesh.mSubsets.resize(mNumberOfMaterials > 0 ? mNumberOfMaterials : 1);
 		for (auto index = 0u; index < mNumberOfMaterials; ++index)
@@ -121,10 +121,10 @@ bool FbxLoader::LoadFbxFile(
 			Log::Info("[FBX] Loading MATERIAL info ( %d / %d )", index, mNumberOfMaterials);
 			const FbxSurfaceMaterial* surfaceMaterial = fbxMesh->GetNode()->GetMaterial(index);
 
-			// Diffuse‚ÌƒvƒƒpƒeƒB‚ğ’T‚·
+			// Diffuseï¿½Ìƒvï¿½ï¿½ï¿½pï¿½eï¿½Bï¿½ï¿½ï¿½Tï¿½ï¿½
 			const fbxsdk::FbxProperty property = surfaceMaterial->FindProperty(FbxSurfaceMaterial::sDiffuse);
 
-			// Diffuse‚Ìd‚İ (Factor) ‚ğ’T‚·
+			// Diffuseï¿½Ìdï¿½ï¿½ (Factor) ï¿½ï¿½ï¿½Tï¿½ï¿½
 			const FbxProperty factor = surfaceMaterial->FindProperty(FbxSurfaceMaterial::sDiffuseFactor);
 
 
@@ -154,7 +154,7 @@ bool FbxLoader::LoadFbxFile(
 					if (fileTexture)
 					{
 						const char* texture_filename = fileTexture->GetRelativeFileName();
-						
+
 						subset.diffuse.textures[FbxInfo::Material::EColor] = std::make_shared<Texture>();
 
 						if (texture_filename)
@@ -194,7 +194,7 @@ bool FbxLoader::LoadFbxFile(
 
 		if (mNumberOfMaterials > 0)
 		{
-			// Šeƒ}ƒeƒŠƒAƒ‹‚Ìƒ|ƒŠƒSƒ“”æ“¾
+			// ï¿½eï¿½}ï¿½eï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½Ìƒ|ï¿½ï¿½ï¿½Sï¿½ï¿½ï¿½ï¿½ï¿½æ“¾
 			const int numberOfPolygons = fbxMesh->GetPolygonCount();
 			for (int index = 0; index < numberOfPolygons; ++index)
 			{
@@ -202,19 +202,19 @@ bool FbxLoader::LoadFbxFile(
 				mesh.mSubsets.at(materialIndex).indexCount += 3;
 			}
 
-			// ƒIƒtƒZƒbƒg‚ğ‹L˜^
+			// ï¿½Iï¿½tï¿½Zï¿½bï¿½gï¿½ï¿½ï¿½Lï¿½^
 			int offset = 0;
 			for (FbxInfo::Subset& subset : mesh.mSubsets)
 			{
 				subset.indexStart = offset;
 				offset += subset.indexCount;
 
-				// Œã‚Ì’¸“_î•ñ‚Ìæ‚èo‚µ‚Ì‚Ég‚¤’l‚Ì‚½‚ß0ƒNƒŠƒAB
+				// ï¿½ï¿½ï¿½Ì’ï¿½ï¿½_ï¿½ï¿½ï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½ï¿½oï¿½ï¿½ï¿½Ìï¿½ï¿½Égï¿½ï¿½ï¿½lï¿½Ì‚ï¿½ï¿½ï¿½0ï¿½Nï¿½ï¿½ï¿½Aï¿½B
 				subset.indexCount = 0;
 			}
 		}
 
-		// ƒƒbƒVƒ…ƒgƒ‰ƒ“ƒXƒtƒH[ƒ€î•ñ
+		// ï¿½ï¿½ï¿½bï¿½Vï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Xï¿½tï¿½Hï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		FbxMatrix global_transform = fbxMesh->GetNode()->EvaluateGlobalTransform(0);
 		for (auto row = 0; row < 4; row++)
 		{
@@ -225,14 +225,14 @@ bool FbxLoader::LoadFbxFile(
 		}
 
 
-		// ƒƒbƒVƒ…ƒf[ƒ^æ“¾
-		std::vector<FbxInfo::Vertex> vertices;	
-		std::vector<u_int> indices;		
+		// ï¿½ï¿½ï¿½bï¿½Vï¿½ï¿½ï¿½fï¿½[ï¿½^ï¿½æ“¾
+		std::vector<FbxInfo::Vertex> vertices;
+		std::vector<u_int> indices;
 		u_int vertex_count = 0;
 
 
 
-		//@ƒ{[ƒ“‚Ì‰e‹¿“x‚ğæ“¾
+		//ï¿½@ï¿½{ï¿½[ï¿½ï¿½ï¿½Ì‰eï¿½ï¿½ï¿½xï¿½ï¿½ï¿½æ“¾
 		std::vector<BoneInfluencesPerControlPoint> boneInfluences;
 		FetchBoneInfluences(fbxMesh, boneInfluences);
 
@@ -240,7 +240,7 @@ bool FbxLoader::LoadFbxFile(
 		FbxStringList uvNames;
 		fbxMesh->GetUVSetNames(uvNames);
 
-		// ƒRƒ“ƒgƒ[ƒ‹ƒ|ƒCƒ“ƒg‚ğ—˜—p‚µ‚Äƒ|ƒŠƒSƒ“A’¸“_î•ñ‚ğæ“¾‚·‚éB
+		// ï¿½Rï¿½ï¿½ï¿½gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½|ï¿½Cï¿½ï¿½ï¿½gï¿½ğ—˜—pï¿½ï¿½ï¿½Äƒ|ï¿½ï¿½ï¿½Sï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½_ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½æ“¾ï¿½ï¿½ï¿½ï¿½ï¿½B
 		const FbxVector4* arrayOfControlPoints = fbxMesh->GetControlPoints();
 		const int numberOfPolygons = fbxMesh->GetPolygonCount();
 
@@ -294,7 +294,7 @@ bool FbxLoader::LoadFbxFile(
 				if (fbxMesh->GetElementTangentCount())
 				{
 					int currentIndex = indexOfPolygon * 3 + indexOfVertex;
-						
+
 					FbxGeometryElementTangent* tangents = fbxMesh->GetElementTangent(0);
 					if (tangents != nullptr)
 					{
@@ -349,7 +349,7 @@ bool FbxLoader::LoadFbxFile(
 	Log::Info("[FBX] ***** Finish Fetching  Meshes in %.2f s *****", m_pTimer->GetDeltaTime());
 
 
-	// ƒVƒŠƒAƒ‹‰»‚µ‚ÄƒZ[ƒu
+	// ï¿½Vï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÄƒZï¿½[ï¿½u
 	std::string file(fbxfilename);
 	UINT l = file.size();
 	file.at(l - 1) = 'A';
@@ -407,24 +407,24 @@ void FbxLoader::SearchMeshNodeRecursively(std::vector<FbxNode*>& nodes, FbxScene
 void FbxLoader::LoadPosition(FbxMesh* mesh, std::vector<FbxInfo::Vertex>& vertices)
 {
 	int numberOfVertices = mesh->GetPolygonVertexCount();
-	
+
 	int* index = mesh->GetPolygonVertices();
 
 	FbxVector4* source = mesh->GetControlPoints();
 
-	// ƒƒbƒVƒ…‚Ìƒgƒ‰ƒ“ƒXƒtƒH[ƒ€
+	// ï¿½ï¿½ï¿½bï¿½Vï¿½ï¿½ï¿½Ìƒgï¿½ï¿½ï¿½ï¿½ï¿½Xï¿½tï¿½Hï¿½[ï¿½ï¿½
 	FbxVector4 T = mesh->GetNode()->GetGeometricTranslation(FbxNode::eSourcePivot);
 	FbxVector4 R = mesh->GetNode()->GetGeometricRotation(FbxNode::eSourcePivot);
 	FbxVector4 S = mesh->GetNode()->GetGeometricScaling(FbxNode::eSourcePivot);
 	FbxAMatrix TRS = FbxAMatrix(T, R, S);
 
-	// ‘S’¸“_•ÏŠ·
+	// ï¿½Sï¿½ï¿½ï¿½_ï¿½ÏŠï¿½
 	for (auto v = 0; v < mesh->GetControlPointsCount(); ++v)
 	{
 		source[v] = TRS.MultT(source[v]);
 	}
 
-	// ’¸“_À•W“Ç‚İ‚İ
+	// ï¿½ï¿½ï¿½_ï¿½ï¿½ï¿½Wï¿½Ç‚İï¿½ï¿½ï¿½
 	for (auto v = 0; v < numberOfVertices; ++v)
 	{
 		int vindex = index[v];
@@ -502,7 +502,7 @@ void FbxLoader::LoadSkins(FbxMesh* mesh, MyFbxMesh& my_mesh)
 		const int number_of_bones = skin->GetClusterCount();
 		my_mesh.m_bone_data.resize(number_of_bones);
 
-		
+
 
 		for (int index_of_bone = 0; index_of_bone < number_of_bones; ++index_of_bone)
 		{
@@ -547,7 +547,7 @@ void FbxLoader::LoadSkins(FbxMesh* mesh, MyFbxMesh& my_mesh)
 				LoadKeyFrames("default", bone_no, cluster->GetLink(), mesh, my_mesh);
 			}
 
-			
+
 		}
 	}
 
@@ -579,7 +579,7 @@ int FbxLoader::FindBones(std::string& name, MyFbxMesh& my_mesh)
 void FbxLoader::LoadKeyFrames(std::string name, int bone, FbxNode* bone_node, FbxMesh* mesh, MyFbxMesh& my_mesh)
 {
 	FbxInfo::Motion& M = my_mesh.mMotions[name];
-	
+
 	if (M.frameSize <= 0)
 	{
 		return;
@@ -713,7 +713,7 @@ bool FbxLoader::AddMotion(std::string& name, const char* filename, std::vector<M
 
 	FbxArray<FbxString*> names;
 	scene->FillAnimStackNameArray(names);
-	
+
 	int startFrame = 0;
 	int numFrame = 0;
 
@@ -728,9 +728,9 @@ bool FbxLoader::AddMotion(std::string& name, const char* filename, std::vector<M
 	}
 	int number_of_animations = names.Size();
 
-	
 
-	// Fetch node attributes and materials under this node recursively. Currently only mesh.	
+
+	// Fetch node attributes and materials under this node recursively. Currently only mesh.
 	std::vector<FbxNode*> fetched_meshes;
 	std::function<void(FbxNode*)> traverse = [&](FbxNode* node)
 	{
@@ -863,7 +863,7 @@ void FbxLoader::SerializeAndSaveMeshes(const std::string filename, std::vector<M
 				fout.write((char*)&subset.indexStart, sizeof(u_int));
 				fout.write((char*)&subset.indexCount, sizeof(u_int));
 
-				// SerializeAndSaveMeshes the length of texture filename 
+				// SerializeAndSaveMeshes the length of texture filename
 				unsigned int lengthOfName = 0;
 				if (subset.diffuse.texFileTable[FbxInfo::Material::EColor].size())
 				{
@@ -933,7 +933,7 @@ void FbxLoader::SerializeAndSaveMeshes(const std::string filename, std::vector<M
 			unsigned int numberOfKeys = it->second.keys.size();
 
 			fout.write((char*)&numberOfKeys, sizeof(unsigned int));
-			
+
 			if (numberOfKeys)
 			{
 				for (auto& key : it->second.keys)
@@ -986,7 +986,7 @@ void FbxLoader::SerializeAndSaveMotion(const std::string& filename, const std::s
 	Log::Info("[FBX LOADER] Start Saving Mesh");
 	Log::Info("[FBX LOADER] Name : %s", filename);
 
-	
+
 
 	for (auto& mesh : meshes)
 	{
@@ -995,7 +995,7 @@ void FbxLoader::SerializeAndSaveMotion(const std::string& filename, const std::s
 		if (it != mesh.mMotions.end())
 		{
 			FbxInfo::Motion& motion = it->second;
-			
+
 			fout.write((char*)&motion.frameSize, sizeof(unsigned int));
 
 			//fout.write((char*)&motion.SAMPLE_TIME, sizeof(float));
@@ -1109,7 +1109,7 @@ bool FbxLoader::LoadSerializedMesh(Microsoft::WRL::ComPtr<ID3D11Device>& device,
 					subset.diffuse.texFileTable[FbxInfo::Material::EColor].resize(lengthOfName);
 					fin.read((char*)(subset.diffuse.texFileTable[FbxInfo::Material::EColor].data()), sizeof(wchar_t) * lengthOfName);
 
-					// TODO : ƒƒCƒh•¶š—ñ‚Ìˆø”‚ ‚èo—Í‚ª‚Å‚«‚Ä‚¢‚È‚¢B
+					// TODO : ï¿½ï¿½ï¿½Cï¿½hï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ìˆï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½oï¿½Í‚ï¿½ï¿½Å‚ï¿½ï¿½Ä‚ï¿½ï¿½È‚ï¿½ï¿½B
 
 					std::wstring output = L"[INFO]: [FBX][AAA] Complete!! Loaded TEXTURE( Name : " + subset.diffuse.texFileTable[FbxInfo::Material::EColor] + L" )";
 					std::wcout << output << std::endl;
@@ -1155,7 +1155,7 @@ bool FbxLoader::LoadSerializedMesh(Microsoft::WRL::ComPtr<ID3D11Device>& device,
 
 		// fetch only "default" motions
 		unsigned int lengthOfMotionName = 0;
-		
+
 		fin.read((char*)&lengthOfMotionName, sizeof(unsigned int));
 
 		std::string motionName;

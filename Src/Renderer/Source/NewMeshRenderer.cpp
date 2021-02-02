@@ -155,10 +155,10 @@ void NewMeshRenderer::RenderMesh(Graphics::GraphicsDevice* p_device, float elaps
 	auto pImmContext = p_device->GetImmContextPtr();
 	for (auto& mesh : mMeshTable)
 	{
-		// ƒƒbƒVƒ…ƒf[ƒ^ó‚¯æ‚è
+		// ï¿½ï¿½ï¿½bï¿½Vï¿½ï¿½ï¿½fï¿½[ï¿½^ï¿½ó‚¯ï¿½ï¿½ï¿½
 		MeshComponent* component = mMeshDataTable.find(mesh.first)->second;
 
-		// ƒƒbƒVƒ…•`‰æ—pî•ñ‚Ì€”õ
+		// ï¿½ï¿½ï¿½bï¿½Vï¿½ï¿½ï¿½`ï¿½ï¿½ï¿½pï¿½ï¿½ï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½
 		DirectX::XMMATRIX world = component->GetWorldMatrix();
 		bool bIsSolid = component->GetIsSolid();
 		ShaderID id = static_cast<ShaderID>(component->GetShaderID(ChooseShaderUsageForMesh(current_pass_id)));
@@ -179,16 +179,16 @@ void NewMeshRenderer::RenderMesh(Graphics::GraphicsDevice* p_device, float elaps
 		p_device->SetSamplers(Graphics::SS_LINEAR_CLAMP, 1);
 
 		// Set Motion
-		// ƒ‚[ƒVƒ‡ƒ“‚ª•ÏX‚³‚ê‚Ä‚¢‚½‚ç
+		// ï¿½ï¿½ï¿½[ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÏXï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½
 		if (component->GetWasChangedMotion())
 		{
-			// ƒ‚[ƒVƒ‡ƒ“Ä¶
+			// ï¿½ï¿½ï¿½[ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½Äï¿½
 			Mesh* meshptr = mesh.second.release();
 			static_cast<SkinnedMesh*>(meshptr)->Play(component->GetCurrentName(), component->GetAnimeBlendTime());
 			mesh.second.reset(meshptr);
 			component->DeactivateChangedMotion();
 		}
-		// Œ»İ‚ªShadowPass‚È‚çAshadow‚Ì•`‰æ–½—ß‚ğ‘—‚é
+		// ï¿½ï¿½ï¿½İ‚ï¿½ShadowPassï¿½È‚ï¿½ï¿½Ashadowï¿½Ì•`ï¿½æ–½ï¿½ß‚ğ‘—‚ï¿½
 		bool bForShadow = current_pass_id == RenderPassID::EShadowPass ? true : false;
 
 		mesh.second->Render(p_device, elapsed_time, world, ENGINE.GetCameraPtr().get(), nullptr, component->GetMaterialData(), bForShadow, bIsSolid);

@@ -16,7 +16,7 @@ const Vector2 AmbientOcclusion::NOISE_TEX_RESOLUTION = { 8, 8 };
 AmbientOcclusion::AmbientOcclusion()
 	:mNoiseScale(
 		Vector2(
-			static_cast<float>(SCREEN_WIDTH) / NOISE_TEX_RESOLUTION.x, 
+			static_cast<float>(SCREEN_WIDTH) / NOISE_TEX_RESOLUTION.x,
 			static_cast<float>(SCREEN_HEIGHT) / NOISE_TEX_RESOLUTION.y)),
 	mScreenSize(Vector2(static_cast<float>(SCREEN_WIDTH), static_cast<float>(SCREEN_HEIGHT))),
 	mSampleRadius(SAMPLE_RADIUS),
@@ -47,7 +47,7 @@ bool AmbientOcclusion::Initialize(Graphics::GraphicsDevice* device)
 	pDevice->CreateBuffer(&cbDesc, nullptr, m_pCBufferForAO.GetAddressOf());
 
 
-	// SSAO‚ÌŠÂ‹«Õ•ÁŒW”‚ğZo‚·‚é‚½‚ß‚Ég—p‚·‚éƒTƒ“ƒvƒ‹“_ŒQ‚Ì¶¬
+	// SSAOï¿½ÌŠÂ‹ï¿½ï¿½Õ•ï¿½ï¿½Wï¿½ï¿½ï¿½ï¿½ï¿½Zï¿½oï¿½ï¿½ï¿½é‚½ï¿½ß‚Égï¿½pï¿½ï¿½ï¿½ï¿½ï¿½Tï¿½ï¿½ï¿½vï¿½ï¿½ï¿½_ï¿½Qï¿½Ìï¿½ï¿½ï¿½
 	//for (int i = 0; i < MAX_SAMPLES; ++i)
 	//{
 	//	float r = SAMPLE_RADIUS * static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
@@ -158,7 +158,7 @@ void AmbientOcclusion::Activate(Graphics::GraphicsDevice* device, CameraControll
 	cb.noiseScale.x = mNoiseScale.x;
 	cb.noiseScale.y = mNoiseScale.y;
 	cb.bias = mBias;
-		// TODO cb‚ğƒVƒF[ƒ_‚É‡‚í‚¹‚é
+		// TODO cbï¿½ï¿½ï¿½Vï¿½Fï¿½[ï¿½_ï¿½Éï¿½ï¿½í‚¹ï¿½ï¿½
 	memcpy( cb.samplePos, mSamplePos, sizeof(DirectX::XMFLOAT4) * MAX_SAMPLES );
 
 	immContext->UpdateSubresource(m_pCBufferForAO.Get(), 0, nullptr, &cb, 0, 0);

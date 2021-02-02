@@ -86,7 +86,7 @@ void SSAOPass::ExecuteSSAO(Graphics::GraphicsDevice* p_device, float elapsed_tim
 		mpAOPreparation->Deactivate(p_device, 10);
 	}
 
-	if (mbIsUsingAlchemyAO) 
+	if (mbIsUsingAlchemyAO)
 		mpScreen->RenderScreen(
 			p_device,
 		mpShaderTable.at(mbIsUsingCS ? ShaderID::ESSAOCompute : ShaderID::EAlchemyAO).get(),
@@ -151,7 +151,7 @@ void SSAOPass::RenderUIForSettings()
 	ImGui::SliderInt("Blur Level", &blurStrength, 0, 1);
 	mpBlurPass->SetBlurStrength(blurStrength);
 	ImGui::Checkbox("Enable Compute Shader", &mbIsUsingCS);
-	
+
 }
 
 void SSAOPass::RenderUIForAnotherScreen()

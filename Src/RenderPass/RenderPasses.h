@@ -90,19 +90,19 @@ protected:
 		const wchar_t* hs,
 		const char* ds_entry,
 		const char* hs_entry);
-	
+
 	//void CreateRenderTarget(D3D::DevicePtr& p_device, UINT width, UINT height, DXGI_FORMAT format, UINT rt_id);
 	//void CreateCubeRenderTarget(D3D::DevicePtr& p_device, UINT width, UINT height, DXGI_FORMAT format, UINT mip_slice, UINT rt_id);
-	//// minIDˆÈ~‚Ìnum_activate‚Ì”‚¾‚¯RenderTarget‚ğActivate
+	//// minIDï¿½È~ï¿½ï¿½num_activateï¿½Ìï¿½ï¿½ï¿½ï¿½ï¿½RenderTargetï¿½ï¿½Activate
 	//void ActivateRenderTargets(D3D::DeviceContextPtr& p_imm_context, UINT num_activate = 1, UINT min_rt_ID = 0);
-	//// minIDˆÈ~‚Ìnum_activate‚Ì”‚¾‚¯RenderTarget‚ğSRV‚Æ‚µ‚ÄSet
+	//// minIDï¿½È~ï¿½ï¿½num_activateï¿½Ìï¿½ï¿½ï¿½ï¿½ï¿½RenderTargetï¿½ï¿½SRVï¿½Æ‚ï¿½ï¿½ï¿½Set
 	//void SetRenderTargetsForSRV(D3D::DeviceContextPtr& p_imm_context, UINT num_activate = 1, UINT min_rt_ID = 0, UINT slot = 0);
 
-	
+
 public:
 	Shader*   GetShaderPtr(UINT shader_id);
 	auto&     GetRenderTargetManager() { return mpRenderTargetManager; }
-	
+
 	//const std::unique_ptr<RenderTarget>& GetRenderTargetPtr() { return mpRenderTargets; }
 	//RenderTarget* GetRenderTargetPtr(UINT id) { if (id < 0 || id >= mpRenderTargetTable.size()) return nullptr; return mpRenderTargetTable[id].get(); }
 

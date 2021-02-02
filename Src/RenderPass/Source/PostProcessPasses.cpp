@@ -97,9 +97,9 @@ void PostProcessPass::RenderPostProcess(Graphics::GraphicsDevice* p_device, floa
 
 	if (mbIsPostProcessed)
 	{
-		//const D3D::SRVPtr& pSRV = 
+		//const D3D::SRVPtr& pSRV =
 
-		// Compute Shaderˆ—‚ÌÀs
+		// Compute Shaderï¿½ï¿½ï¿½ï¿½ï¿½Ìï¿½ï¿½s
 		if (mbIsDesaturated)
 		{
 			mpCS_PostProcess->ActivateCSShader(pImmContext);
@@ -118,7 +118,7 @@ void PostProcessPass::RenderPostProcess(Graphics::GraphicsDevice* p_device, floa
 	}
 
 
-	// ÅI“I‚ÈƒXƒNƒŠ[ƒ“‚ğÀs
+	// ï¿½ÅIï¿½Iï¿½ÈƒXï¿½Nï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½s
 	CBufferForPostProcess cb = {};
 	cb.correctColor = mCorrectColor;
 	cb.contrast = mContrastLevel;
@@ -201,4 +201,3 @@ void PostProcessPass::ChooseCurrentRenderTarget()
 		mCurrentRenderTarget = mChosenRenderTarget;
 	}
 }
-

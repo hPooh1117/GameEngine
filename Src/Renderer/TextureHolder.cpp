@@ -21,7 +21,7 @@ void TextureHolder::RegisterTextureFromActors(D3D::DevicePtr& p_device, ActorMan
 	{
 		MeshComponent* component = p_actors->GetActor(i)->GetComponent<MeshComponent>();
 		const std::vector<TextureData>& table = component->GetTextureTable();
-		
+
 		for (auto i = 0u; i < table.size(); ++i)
 		{
 			auto it = mTextureTable.find(table[i].filename);

@@ -1,6 +1,6 @@
 #include "SkinnedMesh.h"
 
-#include <functional>  
+#include <functional>
 #include <chrono>
 #include <iostream>
 
@@ -50,7 +50,7 @@ const DirectX::XMFLOAT4X4 SkinnedMesh::COORD_CONVERSION[CG_SOFTWARE_TYPE] =
 };
 
 SkinnedMesh::SkinnedMesh(Graphics::GraphicsDevice* p_device, const char* filename, unsigned int coord_system)
-	:Mesh(), 
+	:Mesh(),
 	mFrameInterpolation(MAX_MOTION_INTERPOLATION),
 	mCoordSystem(coord_system)
 {
@@ -112,7 +112,7 @@ void SkinnedMesh::LoadFbxFile(Graphics::GraphicsDevice* p_device, const char* fi
 	auto& pDevice = p_device->GetDevicePtr();
 
 	std::unique_ptr<FbxLoader> fbxLoader = std::make_unique<FbxLoader>();
-	
+
 	std::chrono::system_clock::time_point start, end;
 	start = std::chrono::system_clock::now();
 
@@ -406,4 +406,3 @@ DirectX::XMMATRIX SkinnedMesh::CalculateMotionMatrix(int frame, int bone_id, MyF
 
 
 //----------------------------------------------------------------------------------------------------------------------------
-

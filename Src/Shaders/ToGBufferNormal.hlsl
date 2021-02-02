@@ -18,7 +18,7 @@ Texture2D shadow_texture : register(t5);
 SamplerState shadow_sampler : register(s5);
 
 //--------------------------------------------
-//	ƒGƒ“ƒgƒŠ[ƒ|ƒCƒ“ƒg
+//	ï¿½Gï¿½ï¿½ï¿½gï¿½ï¿½ï¿½[ï¿½|ï¿½Cï¿½ï¿½ï¿½g
 //--------------------------------------------
 //
 // vertex shader(default)
@@ -37,7 +37,7 @@ PS_InputBumpShadow VSmain(VS_InputB input)
 	float3 B = mul(input.binormal, (float3x3)world);
 	B = normalize(B);
 
-	// Ú‹óŠÔs—ñ
+	// ï¿½Ú‹ï¿½ï¿½Ôsï¿½ï¿½
 	//float3 vy = { 0.0, 1.0, 0.001 };
 	//float3 vz = N;
 	//float3 vx = cross(vy, vz);
@@ -78,7 +78,7 @@ PS_InputBumpShadow VSmainS(VS_InputS input)
 	B = normalize(B);
 
 
-	// Ú‹óŠÔs—ñ
+	// ï¿½Ú‹ï¿½ï¿½Ôsï¿½ï¿½
 	//float3 vy = { 0.0, 1.0, 0.001 };
 	//float3 vz = N;
 	//float3 vx = cross(vy, vz);
@@ -106,7 +106,7 @@ PS_InputBumpShadow VSmainSkinning(VS_InputS input)
 {
 	PS_InputBumpShadow output = (PS_InputBumpShadow)0;
 
-	// ƒXƒLƒjƒ“ƒOˆ—
+	// ï¿½Xï¿½Lï¿½jï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½ï¿½
 	float4 p = { 0, 0, 0, 0 };
 	float4 n = { 0, 0, 0, 0 };
 	int i = 0;
@@ -127,7 +127,7 @@ PS_InputBumpShadow VSmainSkinning(VS_InputS input)
 	float3 B = mul(input.binormal, (float3x3)world);
 	B = normalize(B);
 
-	// Ú‹óŠÔs—ñ
+	// ï¿½Ú‹ï¿½ï¿½Ôsï¿½ï¿½
 	//float3 vy = { 0.0, 1.0, 0.001 };
 	//float3 vz = N;
 	//float3 vx = cross(vy, vz);
@@ -170,10 +170,10 @@ PS_Output_AO PSmain(PS_InputBumpShadow input)
 
 	float3 E = normalize(eye_pos.xyz - input.w_pos);
 
-	// Ú‹óŠÔs—ñ
+	// ï¿½Ú‹ï¿½ï¿½Ôsï¿½ï¿½
 	float3x3 vMat = { {vx}, {vy}, {vz} };
 
-	// Ú‹óŠÔ‚©‚çƒ[ƒ‹ƒh‚Ö•ÏŠ·
+	// ï¿½Ú‹ï¿½ï¿½Ô‚ï¿½ï¿½çƒï¿½[ï¿½ï¿½ï¿½hï¿½Ö•ÏŠï¿½
 	float3 invE = normalize(mul(vMat, E));
 
 	float2 tex = input.texcoord;
@@ -182,11 +182,11 @@ PS_Output_AO PSmain(PS_InputBumpShadow input)
 	tex.x -= invE.x * H * viewOffset;
 	tex.y -= invE.y * H * viewOffset;
 
-	// –@üƒ}ƒbƒv‚©‚ç–@üæ“¾
+	// ï¿½@ï¿½ï¿½ï¿½}ï¿½bï¿½vï¿½ï¿½ï¿½ï¿½ï¿½@ï¿½ï¿½ï¿½æ“¾
 	float3 N = HasNormalMap(gTextureConfig) > 0 ? ApplyNormalMap(vMat, normal_texture, decal_sampler, tex) : vz;
 	//N = N * 2.0 - 1.0;
 
-	// Ú‹óŠÔ‚©‚çƒ[ƒ‹ƒh‚Ö•ÏŠ·
+	// ï¿½Ú‹ï¿½ï¿½Ô‚ï¿½ï¿½çƒï¿½[ï¿½ï¿½ï¿½hï¿½Ö•ÏŠï¿½
 	//N = normalize(mul(vMat, N));
 	//N = normalize(input.v_normal);
 
