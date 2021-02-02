@@ -1,25 +1,4 @@
-//----------------------------------
-// ƒOƒ[ƒoƒ‹•Ï”
-//----------------------------------
-cbuffer CBufferPerMat : register(b0)
-{
-	row_major float4x4 matWVP;
-	row_major float4x4 world;
-};
-
-cbuffer CBufferPerLine : register(b1)
-{
-	float g_thickness;
-	float dummy1;
-	float dummy2;
-	float dummy3;
-}
-
-cbuffer CBufferPerLight : register(b2)
-{
-	float4 mat_color;
-	float4 light_dir;
-}
+#include "HF_GlobalVariables.hlsli"
 
 static const float Pi = 3.141592653589f;
 
@@ -57,7 +36,7 @@ GS_Input VSMainThicker(VS_Input input)
 	GS_Input output = (GS_Input)0;
 	output.position = float4(input.position, 1.0f);
 	output.color = mat_color;
-	output.thickness = g_thickness;
+	output.thickness = param.x;
 	return output;
 }
 
@@ -139,16 +118,6 @@ void GSmainDuplicate(
 		}
 		output.RestartStrip();
 
-		//for (i = 0; i < 2; ++i)
-		//{
-
-		//	PS_Input data;
-		//	float4 position = input[i].position + float4(0, 5.0f * (j - 8) * 0.00625f, 0, 0);
-		//	data.position = mul(position, matWVP);
-		//	data.color = float4(1.0, sign(abs(j - 8)), sign(abs(j - 8)), 0.3);
-		//	output.Append(data);
-		//}
-		//output.RestartStrip();
 	}
 
 	for (j = 0; j < 25; ++j)

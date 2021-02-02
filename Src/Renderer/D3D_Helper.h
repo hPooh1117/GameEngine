@@ -19,6 +19,7 @@ namespace D3D
 	using SamplerStatePtr = Microsoft::WRL::ComPtr<ID3D11SamplerState>;
 	using Texture2DPtr = Microsoft::WRL::ComPtr<ID3D11Texture2D>;
 	using DepthStencilPtr = Microsoft::WRL::ComPtr<ID3D11DepthStencilState>;
+	using RasterizerPtr = Microsoft::WRL::ComPtr<ID3D11RasterizerState>;
 	using SwapChainPtr = Microsoft::WRL::ComPtr<IDXGISwapChain>;
 
 	using BufferPtr = Microsoft::WRL::ComPtr<ID3D11Buffer>;

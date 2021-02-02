@@ -2,7 +2,7 @@ static const float PI = 3.141592;
 static const float TWO_PI = PI * 2.0;
 static const float EPSILON = 0.00001;
 
-static const uint NUM_SAMPLES = 64 * 1024;
+static const uint NUM_SAMPLES = /*64 * */1024;
 static const float INV_NUM_SAMPLES = 1.0 / float(NUM_SAMPLES);
 
 // LookUp Texture

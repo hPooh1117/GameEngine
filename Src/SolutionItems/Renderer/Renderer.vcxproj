@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -40,13 +40,13 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -85,9 +85,17 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)Build\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)Build\Temp\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)Build\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)Build\Temp\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -104,6 +112,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)Src\3rdParty\DirectXTex\Bin\Desktop_2019\Win32\Debug;$(SolutionDir)Src\3rdParty\DirectXTK-master\Bin\Desktop_2019\Win32\Debug;$(SolutionDir)Src\3rdParty\FBX SDK\2016.1.2\lib\vs2015\x86\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <Lib>
+      <AdditionalLibraryDirectories>D:\GameEngine\Src\3rdParty\FBX SDK\2016.1.2\lib\vs2015\x86\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -133,6 +144,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)Src;$(SolutionDir)Src\Renderer;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -147,6 +160,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)Src;$(SolutionDir)Src\Renderer;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -157,23 +172,39 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Renderer\AmbientOcclusion.h" />
+    <ClInclude Include="..\..\Renderer\AODepthPreparation.h" />
     <ClInclude Include="..\..\Renderer\Blender.h" />
     <ClInclude Include="..\..\Renderer\Blur.h" />
     <ClInclude Include="..\..\Renderer\ComputedTexture.h" />
+    <ClInclude Include="..\..\Renderer\ConstantBufferMapping.h" />
     <ClInclude Include="..\..\Renderer\D3D_Helper.h" />
     <ClInclude Include="..\..\Renderer\DepthStencilView.h" />
+    <ClInclude Include="..\..\Renderer\EnumsForAPI.h" />
+    <ClInclude Include="..\..\Renderer\EnumsForRenderer.h" />
     <ClInclude Include="..\..\Renderer\FbxLoader.h" />
     <ClInclude Include="..\..\Renderer\FbxMeshInfo.h" />
+    <ClInclude Include="..\..\Renderer\FbxSdkLoader.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="..\..\Renderer\GeometricPrimitiveSelf.h" />
-    <ClInclude Include="..\..\Renderer\GraphicsEngine.h" />
+    <ClInclude Include="..\..\Renderer\GPUBuffer.h" />
+    <ClInclude Include="..\..\Renderer\GraphicsDevice.h" />
     <ClInclude Include="..\..\Renderer\high_resolution_timer.h" />
     <ClInclude Include="..\..\Renderer\Mesh.h" />
+    <ClInclude Include="..\..\Renderer\MeshLoader.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="..\..\Renderer\NewMeshRenderer.h" />
     <ClInclude Include="..\..\Renderer\Plane.h" />
-    <ClInclude Include="..\..\Renderer\Primitive.h" />
+    <ClInclude Include="..\..\Renderer\PrefilterForPBR.h" />
+    <ClInclude Include="..\..\Renderer\Renderer.h" />
     <ClInclude Include="..\..\Renderer\RenderTarget.h" />
     <ClInclude Include="..\..\Renderer\ResourceManager.h" />
     <ClInclude Include="..\..\Renderer\Shader.h" />
+    <ClInclude Include="..\..\Renderer\ShaderInterop.h" />
+    <ClInclude Include="..\..\Renderer\ShaderInterop_Renderer.h" />
     <ClInclude Include="..\..\Renderer\ShadowMap.h" />
     <ClInclude Include="..\..\Renderer\SkinnedMesh.h" />
     <ClInclude Include="..\..\Renderer\Skybox.h" />
@@ -182,21 +213,28 @@
     <ClInclude Include="..\..\Renderer\SubView.h" />
     <ClInclude Include="..\..\Renderer\SwapChain.h" />
     <ClInclude Include="..\..\Renderer\Texture.h" />
+    <ClInclude Include="..\..\Renderer\TextureHelper.h" />
     <ClInclude Include="..\..\Renderer\TextureHolder.h" />
     <ClInclude Include="..\..\Renderer\VertexDecleration.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Renderer\ComputedTexture.cpp" />
+    <ClCompile Include="..\..\Renderer\PrefilterForPBR.cpp" />
     <ClCompile Include="..\..\Renderer\Source\AmbientOcclusion.cpp" />
+    <ClCompile Include="..\..\Renderer\Source\AODepthPreparation.cpp" />
     <ClCompile Include="..\..\Renderer\Source\Blender.cpp" />
     <ClCompile Include="..\..\Renderer\Source\Blur.cpp" />
     <ClCompile Include="..\..\Renderer\Source\DepthStencilView.cpp" />
     <ClCompile Include="..\..\Renderer\Source\FbxLoader.cpp" />
+    <ClCompile Include="..\..\Renderer\Source\FbxSdkLoader.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\Renderer\Source\GeometricPrimitiveSelf.cpp" />
-    <ClCompile Include="..\..\Renderer\Source\GraphicsEngine.cpp" />
+    <ClCompile Include="..\..\Renderer\Source\GraphicsDevice.cpp" />
     <ClCompile Include="..\..\Renderer\Source\NewMeshRenderer.cpp" />
     <ClCompile Include="..\..\Renderer\Source\Plane.cpp" />
-    <ClCompile Include="..\..\Renderer\Source\Primitive.cpp" />
+    <ClCompile Include="..\..\Renderer\Source\Renderer.cpp" />
     <ClCompile Include="..\..\Renderer\Source\RenderTarget.cpp" />
     <ClCompile Include="..\..\Renderer\Source\ResourceManager.cpp" />
     <ClCompile Include="..\..\Renderer\Source\Shader.cpp" />

@@ -2,7 +2,7 @@
 #include "H_BumpMapping.hlsli"
 #include "H_2DSprite.hlsli"
 #include "H_Functions.hlsli"
-#include "H_PointLight.hlsli"
+#include "HF_GlobalVariables.hlsli"
 #include "H_ShadowMap.hlsli"
 
 Texture2D albedo_texture : register(t0);
@@ -87,7 +87,7 @@ PS_Output_Light PSmain(PS_InputDeffered input)
 	float3 PS = (float3)0;
 
 	[unroll]
-	for (int i = 0; i < POINTMAX; ++i)
+	for (uint i = 0; i < POINTMAX; ++i)
 	{
 		if (point_lights[i].type == 0) continue;
 		PL = P - point_lights[i].pos.xyz;

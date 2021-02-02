@@ -1,7 +1,7 @@
 #include "H_DataFormat.hlsli"
 #include "H_Functions.hlsli"
 //#include "H_SpotLight.hlsli"
-#include "H_Light.hlsli"
+#include "HF_GlobalVariables.hlsli"
 #include "H_BumpMapping.hlsli"
 
 
@@ -222,7 +222,7 @@ float4 PSmain(PS_Input input) : SV_TARGET
 	float3 SpotDiffuse =(float3)0;
 	float3 SpotSpecular = (float3)0;
 
-	for (int i = 0; i < SPOTMAX; ++i)
+	for (uint i = 0; i < SPOTMAX; ++i)
 	{
 		if (spot_lights[i].type == 0.0f) continue;
 
@@ -301,7 +301,7 @@ float4 PSmainBump(PS_InputBump input) : SV_TARGET
 	float3 SpotDiffuse = (float3)0;
 	float3 SpotSpecular = (float3)0;
 
-	for (int i = 0; i < SPOTMAX; ++i)
+	for (uint i = 0; i < SPOTMAX; ++i)
 	{
 		if (spot_lights[i].type == 0.0f) continue;
 

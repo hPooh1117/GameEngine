@@ -1,26 +1,30 @@
 #pragma once
 #include "Mesh.h"
 
-class Texture;
+#include "Texture.h"
+
+
 class Plane final : public Mesh
 {
 private:
-	D3D::BufferPtr m_pVertexBuffer;
-	D3D::BufferPtr m_pIndexBuffer;
+	//D3D::BufferPtr m_pVertexBuffer;
+	//D3D::BufferPtr m_pIndexBuffer;
+	std::unique_ptr<Graphics::GPUBuffer> mpVertexBuffer;
+	std::unique_ptr<Graphics::GPUBuffer> mpIndexBuffer;
 
 	std::unique_ptr<Texture> mpTexture;
 
 public:
-	Plane(D3D::DevicePtr& device, const wchar_t* filename);
+	Plane(Graphics::GraphicsDevice* p_device, const wchar_t* filename);
 
-	virtual void CreateBuffers(D3D::DevicePtr& device) override;
+	virtual void CreateBuffers(Graphics::GraphicsDevice* p_device) override;
 	virtual void Render(
-		D3D::DeviceContextPtr& imm_context,
+		Graphics::GraphicsDevice* p_device,
 		float elapsed_time,
 		const DirectX::XMMATRIX& world,
 		CameraController* camera,
 		Shader* shader,
-		const MaterialData& mat_data,
+		const Material& mat_data,
 		bool isShadow = false,
 		bool isSolid = true
 	) override;
@@ -56,39 +60,41 @@ private:
 private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> mpVertexBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> mpInstanceBuffer;
+	std::unique_ptr<Graphics::GPUBuffer> m_pVertexBuffer;
+	std::unique_ptr<Graphics::GPUBuffer> m_pInstanceBuffer;
 
 	std::unique_ptr<Texture> mpTexture;
 
 public:
 	PlaneBatch(
-		D3D::DevicePtr& device, 
+		Graphics::GraphicsDevice* p_device,
 		const wchar_t* filename, 
 		const int max_instances);
 
-	virtual void CreateBuffers(D3D::DevicePtr& device) override;
+	virtual void CreateBuffers(Graphics::GraphicsDevice* p_device) override;
 
-	void Begin(D3D::DeviceContextPtr& imm_context,
+	void Begin(Graphics::GraphicsDevice* p_device,
 		const std::shared_ptr<Shader>& shader
 		);
 	virtual void Render(
-		D3D::DeviceContextPtr& imm_context,
+		Graphics::GraphicsDevice* p_device,
 		float elapsed_time,
 		const DirectX::XMMATRIX& world,
 		CameraController* camera,
 		Shader* shader,
-		const MaterialData& mat_data,
+		const Material& mat_data,
 		bool isShadow = false,
 		bool isSolid = true
 	) override;
 
 	void Render(
-		D3D::DeviceContextPtr& imm_context,
+		Graphics::GraphicsDevice* p_device,
 		const DirectX::XMMATRIX& world,
 		const std::shared_ptr<CameraController>& camera,
 		const DirectX::XMFLOAT4& mat_color = DirectX::XMFLOAT4(1, 1, 1, 1),
 		bool particle_mode = true
 		);
-	void End(D3D::DeviceContextPtr& imm_context);
+	void End(Graphics::GraphicsDevice* p_device);
 
 	~PlaneBatch();
 };

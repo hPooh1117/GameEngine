@@ -1,10 +1,8 @@
 #include "AmbientOcclusion.h"
 
-#include "GraphicsEngine.h"
 #include "Texture.h"
 #include "ComputedTexture.h"
-#include "Shader.h"
-
+#include "GraphicsDevice.h"
 #include "./Application/Helper.h"
 
 #include "./Engine/MainCamera.h"
@@ -28,13 +26,17 @@ AmbientOcclusion::AmbientOcclusion()
 	mKernelSize(static_cast<float>(MAX_SAMPLES)),
 	mpSSAOTex(std::make_unique<ComputedTexture>()),
 	mpAlchemyAOTex(std::make_unique<ComputedTexture>()),
+	mpCS_SSAO(std::make_unique<Shader>()),
+	mpCS_AlchemyAO(std::make_unique<Shader>()),
 	mKernelSizeRcp(1.0f / mKernelSize),
 	mAOType(EOldSSAO)
 {
 }
 
-bool AmbientOcclusion::Initialize(D3D::DevicePtr& p_device)
+bool AmbientOcclusion::Initialize(Graphics::GraphicsDevice* device)
 {
+	auto pDevice = device->GetDevicePtr();
+
 	D3D11_BUFFER_DESC cbDesc = {};
 	ZeroMemory(&cbDesc, sizeof(D3D11_BUFFER_DESC));
 	cbDesc.ByteWidth = sizeof(CBufferForAO);
@@ -42,7 +44,7 @@ bool AmbientOcclusion::Initialize(D3D::DevicePtr& p_device)
 	cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	cbDesc.CPUAccessFlags = 0;
 
-	p_device->CreateBuffer(&cbDesc, nullptr, m_pCBufferForAO.GetAddressOf());
+	pDevice->CreateBuffer(&cbDesc, nullptr, m_pCBufferForAO.GetAddressOf());
 
 
 	// SSAOの環境遮蔽係数を算出するために使用するサンプル点群の生成
@@ -69,7 +71,7 @@ bool AmbientOcclusion::Initialize(D3D::DevicePtr& p_device)
 		mSamplePos[i].w = 0.0f;
 
 		float scale = static_cast<float>(i) / static_cast<float>(MAX_SAMPLES);
-		float scaleMul(Math::Lerp(0.1f, 1.0f, scale * scale));
+		float scaleMul(MathOp::Lerp(0.1f, 1.0f, scale * scale));
 
 		mSamplePos[i].x *= scaleMul;
 		mSamplePos[i].y *= scaleMul;
@@ -104,57 +106,40 @@ bool AmbientOcclusion::Initialize(D3D::DevicePtr& p_device)
 	descTex.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 	descTex.CPUAccessFlags = 0;
 	descTex.MiscFlags = 0;
-	auto hr = p_device->CreateTexture2D(&descTex, &data, m_pNoiseTexture.GetAddressOf());
+	auto hr = pDevice->CreateTexture2D(&descTex, &data, m_pNoiseTexture.GetAddressOf());
 
 	D3D11_SHADER_RESOURCE_VIEW_DESC descSRV;
 	descSRV.Format = descTex.Format;
 	descSRV.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	descSRV.Texture2D.MostDetailedMip = 0;
 	descSRV.Texture2D.MipLevels = 1;
-	hr = p_device->CreateShaderResourceView(m_pNoiseTexture.Get(), &descSRV, m_pNoiseResourceView.GetAddressOf());
+	hr = pDevice->CreateShaderResourceView(m_pNoiseTexture.Get(), &descSRV, m_pNoiseResourceView.GetAddressOf());
 
-	//-->Create SamplerState
-	FLOAT borderColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	hr = p_device->CreateSamplerState(
-		&CD3D11_SAMPLER_DESC(
-			D3D11_FILTER_MIN_MAG_MIP_POINT,
-			D3D11_TEXTURE_ADDRESS_WRAP,
-			D3D11_TEXTURE_ADDRESS_WRAP,
-			//D3D11_TEXTURE_ADDRESS_WRAP,
-			D3D11_TEXTURE_ADDRESS_WRAP,
-			0,
-			16,
-			D3D11_COMPARISON_ALWAYS,
-			borderColor,
-			0,
-			D3D11_FLOAT32_MAX
-		),
-		m_pWrapSampler.GetAddressOf()
-	);
-	_ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
+	//mpSSAOTex->CreateShader(pDevice, L"./Src/Shaders/CS_SSAO.hlsl", "CSmain");
+	mpSSAOTex->CreateTexture(pDevice, static_cast<UINT>(mScreenSize.x), static_cast<UINT>(mScreenSize.y), DXGI_FORMAT_R16G16B16A16_FLOAT);
+	mpSSAOTex->CreateTextureUAV(pDevice, 0);
+	//mpSSAOTex->CreateSampler(pDevice, D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_CLAMP);
 
-	mpSSAOTex->CreateShader(p_device, L"./Src/Shaders/CS_SSAO.hlsl", "CSmain");
-	mpSSAOTex->CreateTexture(p_device, static_cast<UINT>(mScreenSize.x), static_cast<UINT>(mScreenSize.y), DXGI_FORMAT_R16G16B16A16_FLOAT);
-	mpSSAOTex->CreateTextureUAV(p_device, 0);
-	mpSSAOTex->CreateSampler(p_device, D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_CLAMP);
+	//mpAlchemyAOTex->CreateShader(pDevice, L"./Src/Shaders/CS_SSAO_Optimized.hlsl", "CSmain");
+	mpAlchemyAOTex->CreateTexture(pDevice, static_cast<UINT>(mScreenSize.x), static_cast<UINT>(mScreenSize.y), DXGI_FORMAT_R16G16B16A16_FLOAT);
+	mpAlchemyAOTex->CreateTextureUAV(pDevice, 0);
+	//mpAlchemyAOTex->CreateSampler(pDevice, D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_CLAMP);
 
-	mpAlchemyAOTex->CreateShader(p_device, L"./Src/Shaders/CS_SSAO_Optimized.hlsl", "CSmain");
-	mpAlchemyAOTex->CreateTexture(p_device, static_cast<UINT>(mScreenSize.x), static_cast<UINT>(mScreenSize.y), DXGI_FORMAT_R16G16B16A16_FLOAT);
-	mpAlchemyAOTex->CreateTextureUAV(p_device, 0);
-	mpAlchemyAOTex->CreateSampler(p_device, D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_CLAMP);
+	mpCS_SSAO->CreateComputeShader(pDevice, L"./Src/Shaders/CS_SSAO.hlsl", "CSmain");
+	mpCS_AlchemyAO->CreateComputeShader(pDevice, L"./Src/Shaders/CS_SSAO_Optimized.hlsl", "CSmain");
 
 	return true;
 }
 
-void AmbientOcclusion::Activate(std::unique_ptr<GraphicsEngine>& p_graphics, CameraController* p_camera)
+void AmbientOcclusion::Activate(Graphics::GraphicsDevice* device, CameraController* p_camera)
 {
-	D3D::DeviceContextPtr immContext = p_graphics->GetImmContextPtr();
+	D3D::DeviceContextPtr immContext = device->GetImmContextPtr();
 
 	//immContext->OMSetRenderTargets(1, m_pRTV.GetAddressOf(), m_pDSV.Get());
 	//float clearColor[4] = { 1, 1, 1, 1 };
 	//immContext->ClearRenderTargetView(m_pRTV.Get(), clearColor);
 	//immContext->ClearDepthStencilView(m_pDSV.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-	//p_graphics->SetViewport(SCREEN_WIDTH, SCREEN_HEIGHT);
+	//p_graphics->RSSetViewports(SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	CBufferForAO cb = {};
 	DirectX::XMStoreFloat4x4(&cb.invProj, p_camera->GetInvProjMatrix(immContext));
@@ -172,6 +157,7 @@ void AmbientOcclusion::Activate(std::unique_ptr<GraphicsEngine>& p_graphics, Cam
 	cb.screenSize_rcp.y = 1.0f / cb.screenSize.y;
 	cb.noiseScale.x = mNoiseScale.x;
 	cb.noiseScale.y = mNoiseScale.y;
+	cb.bias = mBias;
 		// TODO cbをシェーダに合わせる
 	memcpy( cb.samplePos, mSamplePos, sizeof(DirectX::XMFLOAT4) * MAX_SAMPLES );
 
@@ -181,26 +167,30 @@ void AmbientOcclusion::Activate(std::unique_ptr<GraphicsEngine>& p_graphics, Cam
 	immContext->CSSetConstantBuffers(5, 1, m_pCBufferForAO.GetAddressOf());
 
 	immContext->PSSetShaderResources(9, 1, m_pNoiseResourceView.GetAddressOf());
-	immContext->PSSetSamplers(9, 1, m_pWrapSampler.GetAddressOf());
+	device->SetSamplers(Graphics::SS_POINT_WRAP, 9);
+
 }
 
-void AmbientOcclusion::ExecuteOcclusion(std::unique_ptr<GraphicsEngine>& p_graphics, D3D::SRVPtr& p_srv)
+void AmbientOcclusion::ExecuteOcclusion(Graphics::GraphicsDevice* p_device, D3D::SRVPtr& p_srv)
 {
-	D3D::DeviceContextPtr& pImmContext = p_graphics->GetImmContextPtr();
+	auto& pImmContext = p_device->GetImmContextPtr();
+
 	switch (mAOType)
 	{
 	case EOldSSAO:
-		mpSSAOTex->Compute(pImmContext, p_srv, SCREEN_WIDTH / 32, SCREEN_HEIGHT / 16, 1);
+		mpCS_SSAO->ActivateCSShader(pImmContext);
+		mpSSAOTex->Compute(p_device, p_srv, SCREEN_WIDTH / 32, SCREEN_HEIGHT / 16, 1);
 		break;
 	case EAlchemyAO:
-		mpAlchemyAOTex->Compute(pImmContext, p_srv, SCREEN_WIDTH / 16, SCREEN_HEIGHT / 16, 1);
+		mpCS_AlchemyAO->ActivateCSShader(pImmContext);
+		mpAlchemyAOTex->Compute(p_device, p_srv, SCREEN_WIDTH / 32, SCREEN_HEIGHT / 32, 1);
 		break;
 	}
 }
 
-void AmbientOcclusion::Deactivate(std::unique_ptr<GraphicsEngine>& p_graphics, UINT slot)
+void AmbientOcclusion::Deactivate(Graphics::GraphicsDevice* device, UINT slot)
 {
-	D3D::DeviceContextPtr& pImmContext = p_graphics->GetImmContextPtr();
+	D3D::DeviceContextPtr& pImmContext = device->GetImmContextPtr();
 
 	switch (mAOType)
 	{
@@ -219,11 +209,13 @@ void AmbientOcclusion::RenderUI()
 	using namespace ImGui;
 	if (TreeNode("SSAO Settings"))
 	{
+#ifdef _DEBUG
 		static int aoTypeFlag = EOldSSAO;
 		ImGui::RadioButton("SSAO", &aoTypeFlag, EOldSSAO);
 		ImGui::SameLine();
 		ImGui::RadioButton("AlchemyAO", &aoTypeFlag, EAlchemyAO);
 		mAOType = aoTypeFlag;
+#endif // _DEBUG
 
 
 		SliderFloat("Intensity", &mPower, 0.0f, 5.0f);

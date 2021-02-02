@@ -1,9 +1,13 @@
 #pragma once
+#include "./Utilities/CommonInclude.h"
 #include "Vector.h"
+#include <string>
+#include <Windows.h>
+#include <vector>
 
 //----------------------------------------------------------------------------------------------------------------------------
 
-namespace Math
+namespace MathOp
 {
 	//----------------------------------------------------------------------------------------------------------------------------
 	// @param float a : •Ï‰»‘O‚Ì’l
@@ -26,6 +30,13 @@ namespace Math
 
 	//----------------------------------------------------------------------------------------------------------------------------
 
+	inline XMMATRIX Lerp(const XMFLOAT4X4& a, const XMFLOAT4X4& b, float t)
+	{
+		return DirectX::XMLoadFloat4x4(&a) * (1.0f - t) + DirectX::XMLoadFloat4x4(&b) * t;
+	}
+
+	//----------------------------------------------------------------------------------------------------------------------------
+
 	inline float* VectorToArray(Vector2& v)
 	{
 		float* arr[2] = { &v.x, &v.y };
@@ -33,8 +44,49 @@ namespace Math
 	}
 
 	//----------------------------------------------------------------------------------------------------------------------------
+}
+
+namespace StringOp
+{
+	void StringConvert(const std::string& from, std::wstring& to);
+
+	void StringConvert(const std::wstring& from, std::string& to);
+
+	int StringConvert(const char* from, wchar_t* to);
+
+	int StringConvert(const wchar_t* from, char* to);
 
 }
+
+namespace FileOp
+{
+	std::string GetApplicationDirectory();
+
+	std::string GetOriginalWorkingDirectory();
+
+	std::string GetWorkingDirectory();
+
+	void SetWorkingDirectory(const std::string& path);
+
+	void SplitPath(const std::string& fullPath, std::string& dir, std::string& filename);
+
+	std::string GetFilenameFromPath(const std::string& fullPath);
+
+	std::string GetDirectoryFromPath(const std::string& fullPath);
+
+	std::string GetExtensionFromFilename(const std::string& filename);
+
+	void RemoveExtensionFromFilename(std::string& filename);
+
+	std::string ExpandPath(const std::string& path);
+
+	bool FileRead(const std::string& filename, std::vector<uint8_t>& data);
+
+	bool FileWrite(const std::string& filename, const uint8_t* data, size_t size);
+
+	bool FileExists(const std::string& filename);
+}
+
 
 //----------------------------------------------------------------------------------------------------------------------------
 

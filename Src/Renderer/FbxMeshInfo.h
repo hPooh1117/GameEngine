@@ -3,11 +3,13 @@
 #include <d3d11.h>
 #include <wrl\client.h>
 #include <vector>
+#include <array>
 #include <fbxsdk.h>
 #include <unordered_map>
 #include <map>
 #include <memory>
 #include "Texture.h"
+#include "GraphicsDevice.h"
 
 namespace FbxInfo
 {
@@ -34,9 +36,20 @@ namespace FbxInfo
 
 	struct Material
 	{
+		enum TextureType
+		{
+			EColor,
+			ENormal,
+			EHeight,
+			ERoughness,
+			EMetallic,
+			EAO,
+			TEXTURE_TYPE_MAX,
+		};
+
 		DirectX::XMFLOAT4 color = {1.0f, 1.0f, 1.0f, 1.0f};
-		std::shared_ptr<Texture> texture;
-		std::wstring texture_filename;
+		std::array<std::shared_ptr<Texture>, TEXTURE_TYPE_MAX> textures;
+		std::array<std::wstring, TEXTURE_TYPE_MAX>  texFileTable;
 
 		Material() = default;
 		Material(const Material&) = default;
@@ -139,11 +152,18 @@ public:
 	int m_start_frame = 0;
 
 
-	Microsoft::WRL::ComPtr<ID3D11Buffer> m_pVertexBuffer = nullptr;
-	Microsoft::WRL::ComPtr<ID3D11Buffer> m_pIndexBuffer  = nullptr;
+	//Microsoft::WRL::ComPtr<ID3D11Buffer> m_pVertexBuffer = nullptr;
+	//Microsoft::WRL::ComPtr<ID3D11Buffer> m_pIndexBuffer  = nullptr;
+	std::unique_ptr<Graphics::GPUBuffer> mpVertexBuffer;
+	std::unique_ptr<Graphics::GPUBuffer> mpIndexBuffer;
 
-	MyFbxMesh() = default;
-	MyFbxMesh(const MyFbxMesh& other) = default;
-	MyFbxMesh& operator=(const MyFbxMesh& other) = default;
-	
+	MyFbxMesh()
+		:mpVertexBuffer(std::make_unique<Graphics::GPUBuffer>()),
+		mpIndexBuffer(std::make_unique<Graphics::GPUBuffer>())
+	{
+
+	}
+	//MyFbxMesh(const MyFbxMesh& other) = default;
+	//MyFbxMesh& operator=(const MyFbxMesh& other) = default;
+	//
 };

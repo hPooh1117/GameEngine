@@ -3,29 +3,29 @@
 //--------------------------------------------
 //	グローバル変数
 //--------------------------------------------
-cbuffer CBPerMatrix : register(b0)
-{
-	row_major float4x4 matWVP;
-	row_major float4x4 world;
-
-	float4x4 inv_viewproj;
-	float4x4 inv_view_mat;
-	float4x4 inv_proj_mat;
-
-};
-
-cbuffer CBPerMeshMat : register(b1)
-{
-	float4 mat_color;
-
-	float3 specColor;
-
-	float gMetalness;
-	float gRoughness;
-	float gDiffuse;
-	float gSpecular;
-	int   gTextureConfig;
-}
+//cbuffer CBPerMatrix : register(b0)
+//{
+//	row_major float4x4 matWVP;
+//	row_major float4x4 world;
+//
+//	float4x4 inv_viewproj;
+//	float4x4 inv_view_mat;
+//	float4x4 inv_proj_mat;
+//
+//};
+//
+//cbuffer CBPerMeshMat : register(b1)
+//{
+//	float4 mat_color;
+//
+//	float3 specColor;
+//
+//	float gMetalness;
+//	float gRoughness;
+//	float gDiffuse;
+//	float gSpecular;
+//	int   gTextureConfig;
+//}
 
 //--------------------------------------------
 //	データーフォーマット

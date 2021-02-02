@@ -5,13 +5,6 @@
 #include <memory>
 #include <vector>
 
-#ifdef _DEBUG
-#pragma comment(lib, "DirectXTex.lib")
-#pragma comment(lib, "DirectXTK.lib")
-#else
-#pragma comment(lib, "DirectXTex.lib")
-#pragma comment(lib, "DirectXTK.lib")
-#endif
 
 #include "D3D_Helper.h"
 

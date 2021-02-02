@@ -4,7 +4,6 @@
 
 #include "./Renderer/Blur.h"
 #include "./Renderer/DepthStencilView.h"
-#include "./Renderer/GraphicsEngine.h"
 #include "./Renderer/NewMeshRenderer.h"
 #include "./Renderer/Shader.h"
 #include "./Renderer/Sprite.h"
@@ -27,14 +26,17 @@ PostProcessPass::PostProcessPass()
 	mbIsBlurred(true),
 	mbIsDesaturated(true),
 	mpPostProcessTex(std::make_unique<ComputedTexture>()),
-	mpBlurPass(std::make_unique<BlurExecuter>())
+	mpBlurPass(std::make_unique<BlurExecuter>()),
+	mCurrentRenderTarget(RenderTarget::EPostProcess),
+	mbIsPostProcessed(false),
+	mpCS_PostProcess(std::make_unique<Shader>())
 {
 }
 
-void PostProcessPass::Initialize(D3D::DevicePtr& device)
+void PostProcessPass::Initialize(Graphics::GraphicsDevice* p_device)
 {
-
-	GetRenderTargetManager()->Create(device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::EPostProcess);
+	auto& pDevice = p_device->GetDevicePtr();
+	GetRenderTargetManager()->Create(pDevice, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::EPostProcess);
 
 	if (!ENGINE.IsDefferedRendering()) mChosenRenderTarget = RenderTarget::EForward;
 	else
@@ -54,38 +56,39 @@ void PostProcessPass::Initialize(D3D::DevicePtr& device)
 	cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	cbDesc.CPUAccessFlags = 0;
 
-	device->CreateBuffer(&cbDesc, nullptr, mpConstantBuffer.GetAddressOf());
+	pDevice->CreateBuffer(&cbDesc, nullptr, mpConstantBuffer.GetAddressOf());
 
-	mpPostProcessTex->CreateShader(device, L"./Src/Shaders/CS_Desaturate.hlsl", "CSmain");
-	mpPostProcessTex->CreateTexture(device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT);
-	mpPostProcessTex->CreateTextureUAV(device, 0);
-	mpPostProcessTex->CreateSampler(device, D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_CLAMP);
+	mpCS_PostProcess->CreateComputeShader(pDevice, L"./Src/Shaders/CS_Desaturate.hlsl", "CSmain");
 
-	mpBlurPass->Initialize(device);
-	mpBlurPass->CreateShader(device);
+	//mpPostProcessTex->CreateShader(pDevice, L"./Src/Shaders/CS_Desaturate.hlsl", "CSmain");
+	mpPostProcessTex->CreateTexture(pDevice, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT);
+	mpPostProcessTex->CreateTextureUAV(pDevice, 0);
+
+	mpBlurPass->Initialize(pDevice);
+	mpBlurPass->CreateShader(pDevice);
 	//mpBlurPass->ChangeSetting(1, 4);
 
 
 
-	InitializeCommonShader(device);
+	InitializeCommonShader(p_device);
 
-	mpScreen = std::make_unique<Sprite>(device);
+	mpScreen = std::make_unique<Sprite>(p_device);
 
-	AddVertexAndPixelShader(device, ShaderID::EPostEffect, L"PostEffect.hlsl", L"PostEffect.hlsl", "VSmain", "PSmain", VEDType::VED_SPRITE);
+	AddVertexAndPixelShader(p_device, ShaderID::EPostEffect, L"PostEffect.hlsl", L"PostEffect.hlsl", "VSmain", "PSmain", VEDType::VED_SPRITE);
 
 
-	mpDSV->Create(device, SCREEN_WIDTH, SCREEN_HEIGHT);
+	mpDSV->Create(pDevice, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 
 
 	mbIsInitialized = true;
 }
 
-void PostProcessPass::RenderPostProcess(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time)
+void PostProcessPass::RenderPostProcess(Graphics::GraphicsDevice* p_device, float elapsed_time)
 {
 	if (!mbIsDrawing) return;
 
-	D3D::DeviceContextPtr& pImmContext = p_graphics->GetImmContextPtr();
+	D3D::DeviceContextPtr& pImmContext = p_device->GetImmContextPtr();
 
 
 	ChooseCurrentRenderTarget();
@@ -99,15 +102,17 @@ void PostProcessPass::RenderPostProcess(std::unique_ptr<GraphicsEngine>& p_graph
 		// Compute Shaderˆ—‚ÌŽÀs
 		if (mbIsDesaturated)
 		{
+			mpCS_PostProcess->ActivateCSShader(pImmContext);
+			p_device->SetSamplers(Graphics::SS_LINEAR_CLAMP, 0);
 			mpPostProcessTex->SetCBuffer(pImmContext, static_cast<float>(SCREEN_WIDTH), static_cast<float>(SCREEN_HEIGHT));
-			mpPostProcessTex->Compute(pImmContext, GetRenderTargetManager()->GetShaderResource(mCurrentRenderTarget), SCREEN_WIDTH / 32, SCREEN_HEIGHT / 16, 1);
+			mpPostProcessTex->Compute(p_device, GetRenderTargetManager()->GetShaderResource(mCurrentRenderTarget), SCREEN_WIDTH / 32, SCREEN_HEIGHT / 16, 1);
 			mpPostProcessTex->Set(pImmContext, 0);
 		}
 
 		if (mbIsBlurred)
 		{
 			mpBlurPass->ActivateBlur(pImmContext, true);
-			mpBlurPass->ExecuteBlur(pImmContext, mpPostProcessTex->GetSRV(), 0);
+			mpBlurPass->ExecuteBlur(p_device, mbIsDesaturated ? mpPostProcessTex->GetSRV() : GetRenderTargetManager()->GetShaderResource(mCurrentRenderTarget), 0);
 			mpBlurPass->Deactivate(pImmContext);
 		}
 	}
@@ -123,8 +128,8 @@ void PostProcessPass::RenderPostProcess(std::unique_ptr<GraphicsEngine>& p_graph
 	pImmContext->PSSetConstantBuffers(1, 1, mpConstantBuffer.GetAddressOf());
 
 
-	ShaderID shader = mbIsPostProcessed ? ShaderID::EPostEffect : ShaderID::ESprite;
-	mpScreen->RenderScreen(pImmContext, mpShaderTable.at(shader).get(), Vector2(0.5f * ENGINE.mCurrentWidth, 0.5f * ENGINE.mCurrentHeight), Vector2(static_cast<float>(ENGINE.mCurrentWidth), static_cast<float>(ENGINE.mCurrentHeight)));
+	UINT shader = mbIsPostProcessed ? static_cast<UINT>(ShaderID::EPostEffect) : static_cast<UINT>(ShaderID::ESprite);
+	mpScreen->RenderScreen(p_device, mpShaderTable.at(shader).get(), Vector2(0.5f * ENGINE.mCurrentWidth, 0.5f * ENGINE.mCurrentHeight), Vector2(static_cast<float>(ENGINE.mCurrentWidth), static_cast<float>(ENGINE.mCurrentHeight)));
 }
 
 void PostProcessPass::RenderUI()

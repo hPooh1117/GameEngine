@@ -109,10 +109,10 @@ public:
 	static Quaternion Lerp(const Quaternion& a, const Quaternion& b, float t)
 	{
 		Quaternion result;
-		result.x = Math::Lerp(a.x, b.x, t);
-		result.y = Math::Lerp(a.y, b.y, t);
-		result.z = Math::Lerp(a.z, b.z, t);
-		result.w = Math::Lerp(a.w, b.w, t);
+		result.x = MathOp::Lerp(a.x, b.x, t);
+		result.y = MathOp::Lerp(a.y, b.y, t);
+		result.z = MathOp::Lerp(a.z, b.z, t);
+		result.w = MathOp::Lerp(a.w, b.w, t);
 		result.Normalize();
 		return result;
 	}

@@ -93,7 +93,7 @@ cbuffer CBPerMatrix : register(b0)
 
 };
 
-cbuffer CBPerMeshMat : register(b1)
+cbuffer CBPerMaterial : register(b1)
 {
 	float4 mat_color;
 

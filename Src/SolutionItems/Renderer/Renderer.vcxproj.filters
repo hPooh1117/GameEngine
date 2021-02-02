@@ -5,173 +5,223 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Source Files">
+    <Filter Include="ソース ファイル">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    <Filter Include="ソース ファイル\API">
+      <UniqueIdentifier>{55af956d-5dfe-4513-b220-e1dc6b75f5d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\SETTINGS">
+      <UniqueIdentifier>{21d76c44-de71-4234-ab98-c1d46cf963a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MESHES">
+      <UniqueIdentifier>{63bde610-b129-4d2e-a411-295610d2d2c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\SHADER INTEROP">
+      <UniqueIdentifier>{5aba53ac-86a1-4fb2-9dd3-7239832b0495}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Renderer\Blender.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Renderer\D3D_Helper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Renderer\FbxLoader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Renderer\FbxMeshInfo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Renderer\GeometricPrimitiveSelf.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Renderer\GraphicsEngine.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Renderer\high_resolution_timer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Renderer\Mesh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Renderer\Plane.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Renderer\ResourceManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Renderer\Shader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Renderer\ShadowMap.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Renderer\SkinnedMesh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Renderer\Skybox.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Renderer\Sprite.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Renderer\StaticMesh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Renderer\SwapChain.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Renderer\Texture.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Renderer\VertexDecleration.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Renderer\Primitive.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Renderer\NewMeshRenderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Renderer\TextureHolder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Renderer\RenderTarget.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Renderer\DepthStencilView.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Renderer\AmbientOcclusion.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Renderer\SubView.h">
-      <Filter>Header Files</Filter>
+      <Filter>ソース ファイル</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Renderer\ComputedTexture.h">
-      <Filter>Header Files</Filter>
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\FbxLoader.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\FbxMeshInfo.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\high_resolution_timer.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\NewMeshRenderer.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\ResourceManager.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\Shader.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\SubView.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\Texture.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\TextureHelper.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\TextureHolder.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\D3D_Helper.h">
+      <Filter>ソース ファイル\API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\AmbientOcclusion.h">
+      <Filter>ソース ファイル\SETTINGS</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Renderer\Blur.h">
-      <Filter>Header Files</Filter>
+      <Filter>ソース ファイル\SETTINGS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\GeometricPrimitiveSelf.h">
+      <Filter>ソース ファイル\MESHES</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\Mesh.h">
+      <Filter>ソース ファイル\MESHES</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\SkinnedMesh.h">
+      <Filter>ソース ファイル\MESHES</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\Skybox.h">
+      <Filter>ソース ファイル\MESHES</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\Sprite.h">
+      <Filter>ソース ファイル\MESHES</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\StaticMesh.h">
+      <Filter>ソース ファイル\MESHES</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\Plane.h">
+      <Filter>ソース ファイル\MESHES</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\Blender.h">
+      <Filter>ソース ファイル\API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\DepthStencilView.h">
+      <Filter>ソース ファイル\API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\RenderTarget.h">
+      <Filter>ソース ファイル\API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\SwapChain.h">
+      <Filter>ソース ファイル\API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\ShadowMap.h">
+      <Filter>ソース ファイル\SETTINGS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\GraphicsDevice.h">
+      <Filter>ソース ファイル\API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\Renderer.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\AODepthPreparation.h">
+      <Filter>ソース ファイル\SETTINGS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\PrefilterForPBR.h">
+      <Filter>ソース ファイル\SETTINGS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\ConstantBufferMapping.h">
+      <Filter>ソース ファイル\SHADER INTEROP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\ShaderInterop.h">
+      <Filter>ソース ファイル\SHADER INTEROP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\EnumsForAPI.h">
+      <Filter>ソース ファイル\API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\EnumsForRenderer.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\GPUBuffer.h">
+      <Filter>ソース ファイル\API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\ShaderInterop_Renderer.h">
+      <Filter>ソース ファイル\SHADER INTEROP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\MeshLoader.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Renderer\FbxSdkLoader.h">
+      <Filter>ソース ファイル</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Renderer\Source\Blender.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Renderer\Source\FbxLoader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Renderer\Source\GeometricPrimitiveSelf.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Renderer\Source\GraphicsEngine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Renderer\Source\Plane.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Renderer\Source\ResourceManager.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Renderer\Source\Shader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Renderer\Source\ShadowMap.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Renderer\Source\SkinnedMesh.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Renderer\Source\Skybox.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Renderer\Source\Sprite.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Renderer\Source\StaticMesh.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Renderer\Source\SwapChain.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Renderer\Source\Texture.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Renderer\Source\VertexDecleration.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Renderer\Source\Primitive.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Renderer\Source\NewMeshRenderer.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Renderer\TextureHolder.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Renderer\Source\DepthStencilView.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Renderer\Source\RenderTarget.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Renderer\Source\AmbientOcclusion.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Renderer\SubView.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Renderer\ComputedTexture.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Renderer\Source\AmbientOcclusion.cpp">
+      <Filter>ソース ファイル\SETTINGS</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Renderer\Source\Blur.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>ソース ファイル\SETTINGS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Renderer\Source\GeometricPrimitiveSelf.cpp">
+      <Filter>ソース ファイル\MESHES</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Renderer\Source\SkinnedMesh.cpp">
+      <Filter>ソース ファイル\MESHES</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Renderer\Source\Skybox.cpp">
+      <Filter>ソース ファイル\MESHES</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Renderer\Source\Sprite.cpp">
+      <Filter>ソース ファイル\MESHES</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Renderer\Source\StaticMesh.cpp">
+      <Filter>ソース ファイル\MESHES</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Renderer\Source\Plane.cpp">
+      <Filter>ソース ファイル\MESHES</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Renderer\Source\Blender.cpp">
+      <Filter>ソース ファイル\API</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Renderer\Source\DepthStencilView.cpp">
+      <Filter>ソース ファイル\API</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Renderer\Source\RenderTarget.cpp">
+      <Filter>ソース ファイル\API</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Renderer\Source\SwapChain.cpp">
+      <Filter>ソース ファイル\API</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Renderer\Source\ShadowMap.cpp">
+      <Filter>ソース ファイル\SETTINGS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Renderer\Source\Renderer.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Renderer\Source\AODepthPreparation.cpp">
+      <Filter>ソース ファイル\SETTINGS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Renderer\PrefilterForPBR.cpp">
+      <Filter>ソース ファイル\SETTINGS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Renderer\Source\GraphicsDevice.cpp">
+      <Filter>ソース ファイル\API</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Renderer\Source\FbxSdkLoader.cpp">
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

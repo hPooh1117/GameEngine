@@ -19,17 +19,16 @@
 #include "./Engine/Settings.h"
 
 #include "./Renderer/Shader.h"
-#include "./Renderer/GraphicsEngine.h"
 #include "./Renderer/Blender.h"
 #include "./Renderer/ShadowMap.h"
-#include "./Renderer/MultiRenderTarget.h"
+#include "./Renderer/Renderer.h"
 #include "./Renderer/Sprite.h"
 #include "./Renderer/Skybox.h"
 
 
 using namespace DirectX;
 
-SceneB::SceneB(SceneManager * manager, Microsoft::WRL::ComPtr<ID3D11Device>& device):Scene(manager, device)
+SceneB::SceneB(SceneManager * manager, Graphics::GraphicsDevice* p_device):Scene(manager, p_device)
 {
     mNextScene = SceneID::SCENE_C;
 
@@ -85,6 +84,7 @@ SceneB::SceneB(SceneManager * manager, Microsoft::WRL::ComPtr<ID3D11Device>& dev
     //pField->GetComponent<MeshComponent>()->RegisterAdditionalShader(ShaderID::EToShadow, ShaderUsage::EShader);
     ENGINE.GetActorManagerPtr()->AddActor(pField, count++);
 
+
     ENGINE.GetCameraPtr()->SetTarget(pPlayer);
     ENGINE.GetCameraPtr()->SetPositionOfMoveableCamera(Vector3(0.0f, 10.0f, -60.0f));
 
@@ -111,7 +111,7 @@ void SceneB::Update(float elapsed_time)
     float halfC = cosf(angle + XM_PI * 0.25f) * a;
     float astS = sinf(angle + XM_PI * -0.25f) * a;
     float astC = cosf(angle + XM_PI * -0.25f) * a;
-    float range = Math::Lerp(5.0f, 20.0f, abs(sinf(angle)));
+    float range = MathOp::Lerp(5.0f, 20.0f, abs(sinf(angle)));
     Vector4 R(0.9f, 0.20f, 0.05f, 1.0f);
     Vector4 G(0.2f, 0.99f, 0.3f, 1.0f);
     Vector4 B(0.1f, 0.4f, 0.99f, 1.0f);
@@ -141,29 +141,24 @@ void SceneB::Update(float elapsed_time)
         s *= 1.5f; astS *= 1.5f; halfS *= 1.5f;
         c *= 1.5f; astC *= 1.5f; halfC *= 1.5f;
     }
-
-
-    //ENGINE.GetLightPtr()->SetSpotData(0, Vector3(-5, 5, -5), Vector4(0.9f, 0.2f, 0.2f, 1.0f), Vector3(1.0f, -0.2f, 0.0f), 50.0f, 0.99f, 0.8f);
-    //ENGINE.GetLightPtr()->SetSpotData(1, Vector3(-5, 5, 5), Vector4(0.2f, 0.2f, 0.9f, 1.0f), Vector3(-1.0f, -0.2f, 0.0f), 50.0f, 0.99f, 0.8f);
-    //ENGINE.GetLightPtr()->SetSpotData(2, Vector3(5, 5, -5), Vector4(0.2f, 0.9f, 0.2f, 1.0f), Vector3(0.0f, -0.2f, 1.0f), 50.0f, 0.99f, 0.8f);
-    //ENGINE.GetLightPtr()->SetSpotData(3, Vector3(5, 5, 5), Vector4(0.7f, 0.7f, 0.7f, 1.0f), Vector3(0.0f, -0.2f, -1.0f), 50.0f, 0.99f, 0.8f);
 }
 
-void SceneB::PreCompute(std::unique_ptr<GraphicsEngine>& p_graphics)
+void SceneB::PreCompute(Graphics::GraphicsDevice* p_graphics)
 {
 }
 
-void SceneB::Render(std::unique_ptr<GraphicsEngine>& p_graphics,
+void SceneB::Render(Graphics::GraphicsDevice* p_graphics,
     float elapsed_time)
 {
 }
 
 void SceneB::RenderUI()
 {
+    auto* ui = ENGINE.GetRenderer()->GetUIRenderer();
     Actor* player = ENGINE.GetActorManagerPtr()->GetActor(0);
-    ENGINE.GetUIRenderer()->SetNextWindowSettings(Vector2(0, SCREEN_HEIGHT - 200), Vector2(300, 200));
-    ENGINE.GetUIRenderer()->SetNextUIConfig(false);
-    ENGINE.GetUIRenderer()->BeginRenderingNewWindow("Motion");
+    ui->SetNextWindowSettings(Vector2(0, SCREEN_HEIGHT - 200), Vector2(300, 200));
+    ui->SetNextUIConfig(false);
+    ui->BeginRenderingNewWindow("Motion");
     if (ImGui::Button("Idle"))    player->GetComponent<MeshComponent>()->Play("Idle");
     if (ImGui::Button("Walking")) player->GetComponent<MeshComponent>()->Play("Walking");
     if (ImGui::Button("Running")) player->GetComponent<MeshComponent>()->Play("Running");
@@ -172,7 +167,7 @@ void SceneB::RenderUI()
 
 
 
-    ENGINE.GetUIRenderer()->FinishRenderingWindow();
+    ui->FinishRenderingWindow();
 
 }
 

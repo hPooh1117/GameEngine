@@ -6,13 +6,13 @@
 
 #include "./Renderer/Blender.h"
 #include "./Renderer/DepthStencilView.h"
-#include "./Renderer/GraphicsEngine.h"
 #include "./Renderer/Mesh.h"
 #include "./Renderer/NewMeshRenderer.h"
 #include "./Renderer/Shader.h"
 #include "./Renderer/ShadowMap.h"
 #include "./Renderer/Skybox.h"
 #include "./Renderer/Texture.h"
+#include "./Renderer/Renderer.h"
 #include "./Renderer/RenderTarget.h"
 #include "./Renderer/VertexDecleration.h"
 #include "./Renderer/SubView.h"
@@ -28,14 +28,15 @@ MakeCubeMapPass::MakeCubeMapPass() :
 {
 }
 
-void MakeCubeMapPass::Initialize(D3D::DevicePtr& device)
+void MakeCubeMapPass::Initialize(Graphics::GraphicsDevice* device)
 {
-	GetRenderTargetManager()->CreateCube(device, CUBE_MAP_WIDTH, CUBE_MAP_HEIGHT, DXGI_FORMAT_R8G8B8A8_UNORM, 1, RenderTarget::ECubemap);
+	auto pDevice = device->GetDevicePtr();
+	GetRenderTargetManager()->CreateCube(pDevice, CUBE_MAP_WIDTH, CUBE_MAP_HEIGHT, DXGI_FORMAT_R8G8B8A8_UNORM, 1, RenderTarget::ECubemap);
 	//CreateCubeRenderTarget(device, CUBE_MAP_WIDTH, CUBE_MAP_HEIGHT, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, 1, RenderTarget::ECubemap);
 
 	if (mbIsInitialized) return;
 
-	mpDSV->CreateCubeDepthStencil(device, CUBE_MAP_WIDTH, CUBE_MAP_HEIGHT);
+	mpDSV->CreateCubeDepthStencil(pDevice, CUBE_MAP_WIDTH, CUBE_MAP_HEIGHT);
 
 	D3D11_BUFFER_DESC cbDesc = {};
 	ZeroMemory(&cbDesc, sizeof(D3D11_BUFFER_DESC));
@@ -44,7 +45,7 @@ void MakeCubeMapPass::Initialize(D3D::DevicePtr& device)
 	cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	cbDesc.CPUAccessFlags = 0;
 
-	device->CreateBuffer(&cbDesc, nullptr, mpCBufferForView.GetAddressOf());
+	pDevice->CreateBuffer(&cbDesc, nullptr, mpCBufferForView.GetAddressOf());
 
 
 	InitializeCommonShader(device);
@@ -57,15 +58,15 @@ void MakeCubeMapPass::Initialize(D3D::DevicePtr& device)
 	mbIsInitialized = true;
 }
 
-void MakeCubeMapPass::MakeCubeMap(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time)
+void MakeCubeMapPass::MakeCubeMap(Graphics::GraphicsDevice* device, float elapsed_time)
 {
-	D3D::DeviceContextPtr pImmContext = p_graphics->GetImmContextPtr();
+	D3D::DeviceContextPtr pImmContext = device->GetImmContextPtr();
 
 	GetRenderTargetManager()->Activate(pImmContext, mpDSV, RenderTarget::ECubemap, 1);
 
-	p_graphics->SetDepthStencil(GraphicsEngine::DS_TRUE);
+	device->OMSetDepthStencilState(Graphics::DS_TRUE);
 
-	p_graphics->SetViewport(CUBE_MAP_WIDTH, CUBE_MAP_HEIGHT);
+	device->RSSetViewports(CUBE_MAP_WIDTH, CUBE_MAP_HEIGHT);
 
 	// コンスタントバッファでキューブの面それぞれの視点を送る
 	CBufferForView cb;
@@ -104,10 +105,10 @@ void MakeCubeMapPass::MakeCubeMap(std::unique_ptr<GraphicsEngine>& p_graphics, f
 	pImmContext->GSSetConstantBuffers(3, 1, mpCBufferForView.GetAddressOf());
 	pImmContext->PSSetConstantBuffers(3, 1, mpCBufferForView.GetAddressOf());
 
-	ENGINE.GetMeshRenderer()->Render(p_graphics, elapsed_time, RenderPassID::ECubeMapPass);
+	ENGINE.GetRenderer()->GetMeshRenderer()->Render(device, elapsed_time, RenderPassID::ECubeMapPass);
 
 
-	p_graphics->ActivateBackBuffer();
+	device->ActivateBackBuffer();
 
 	GetRenderTargetManager()->Deactivate(pImmContext, RenderTarget::ECubemap, 1, 9);
 }

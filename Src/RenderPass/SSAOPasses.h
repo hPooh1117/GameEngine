@@ -1,7 +1,6 @@
 #pragma once
 #include "RenderPasses.h"
 
-class GraphicsEngine;
 class Sprite;
 class AmbientOcclusion;
 class BlurExecuter;
@@ -18,14 +17,15 @@ private:
 
 	std::unique_ptr<BlurExecuter> mpBlurPass;
 	bool mbIsUsingCS;
+	bool mbIsUsingAlchemyAO;
 
 public:
 	SSAOPass();
 	~SSAOPass() = default;
 
-	virtual void Initialize(D3D::DevicePtr& p_device) override;
+	virtual void Initialize(Graphics::GraphicsDevice* device) override;
 
-	void ExecuteSSAO(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time);
+	void ExecuteSSAO(Graphics::GraphicsDevice* device, float elapsed_time);
 
 	void RenderUI(bool b_open);
 	void RenderUIForSettings();

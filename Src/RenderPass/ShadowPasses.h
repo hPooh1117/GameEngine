@@ -1,8 +1,8 @@
 #pragma once
 #include "RenderPasses.h"
+#include "./Renderer/ShadowMap.h"
 
-class GraphicsEngine;
-class ShadowMap;
+//class ShadowMap;
 
 class ShadowPass :
     public RenderPass
@@ -14,9 +14,9 @@ public:
     ShadowPass() : RenderPass() {};
     virtual ~ShadowPass() = default;
 
-    virtual void Initialize(D3D::DevicePtr& device) override;
+    virtual void Initialize(Graphics::GraphicsDevice* device) override;
 
-    void RenderShadow(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time);
+    void RenderShadow(Graphics::GraphicsDevice* device, float elapsed_time);
     void RenderUI(bool b_open);
 };
 

@@ -1,7 +1,7 @@
 #pragma once
 #include "Scene.h"
-
-class GraphicsEngine;
+#include "./Renderer/PrefilterForPBR.h"
+class GraphicsDevice;
 class ComputedTexture;
 class Texture;
 
@@ -9,13 +9,13 @@ class SceneTest :
     public Scene
 {
 public:
-    SceneTest(SceneManager* p_manager, Microsoft::WRL::ComPtr<ID3D11Device>& p_device);
+    SceneTest(SceneManager* p_manager, Graphics::GraphicsDevice* p_device);
 
     virtual void InitializeScene() override;
     virtual void Update(float elapsed_time) override;
-    virtual void PreCompute(std::unique_ptr<GraphicsEngine>& p_graphics) override;
+    virtual void PreCompute(Graphics::GraphicsDevice* p_graphics) override;
 
-    virtual void Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time) override;
+    virtual void Render(Graphics::GraphicsDevice* p_graphics, float elapsed_time) override;
     virtual void RenderUI() override;
 
     ~SceneTest();
@@ -37,7 +37,7 @@ private:
         ACTOR_SIZE_MAX,
     };
 
-
+    std::unique_ptr<PrefilterForPBR> mpPrefilter;
     std::unique_ptr<ComputedTexture> mpIrradianceTex;
     std::unique_ptr<ComputedTexture> mpSpecularMapTex;
     std::unique_ptr<ComputedTexture> mpEnvironmentTex;

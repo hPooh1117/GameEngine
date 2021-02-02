@@ -1,7 +1,7 @@
 #include "H_ToGBuffer.hlsli"
 #include "H_DataFormat.hlsli"
 #include "H_BumpMapping.hlsli"
-#include "H_DirectionalLight.hlsli"
+#include "HF_GlobalVariables.hlsli"
 #include "H_ShadowMap.hlsli"
 #include "H_Functions.hlsli"
 

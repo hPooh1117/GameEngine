@@ -3,19 +3,9 @@
 
 #include "D3D_Helper.h"
 #include "VertexDecleration.h"
-
-enum ShaderType
-{
-    ENoneShader,
-    EVertexShader,
-    EPixelShader,
-    EHullShader,
-    EDomainShader,
-    EGeometryShader,
-    EComputeShader,
-    
-    SHADER_TYPE_MAX,
-};
+#include "./Utilities/CommonInclude.h"
+#include "ShaderInterop.h"
+#include "EnumsForRenderer.h"
 
 struct ShaderMacro
 {
@@ -32,7 +22,7 @@ struct ShaderStageDesc
 class Shader
 {
 private:
-    static const char* SHADER_MODEL_TABLE[SHADER_TYPE_MAX];
+    static const char* SHADER_MODEL_TABLE[Graphics::SHADER_STAGE_MAX];
 
     D3D::VSPtr              mpVS = nullptr;
     D3D::HSPtr              mpHS = nullptr;
@@ -98,19 +88,11 @@ public:
         const std::wstring& hlsl,
         const char* func,
         const VEDType& ved_type = VEDType::VED_NONE);
-    //bool CreateShader(
-    //    D3D::DevicePtr& device,
-    //    UINT shader_type,
-    //    const std::wstring& hlsl,
-    //    const std::string& func);
 
+    // ランタイム中にリロード
     bool ReloadShader(
         D3D::DevicePtr& device,
         const std::wstring& hlsl);
-    //void ReloadShader(
-    //    D3D::DevicePtr& device,
-    //    const std::wstring& hlsl_name,
-    //    UINT shader_type);
 
 private:
     void CreateVertexShader(D3D::DevicePtr& device,   D3D::BlobPtr& blob);

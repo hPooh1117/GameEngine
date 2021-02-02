@@ -35,7 +35,7 @@ Primitive::Primitive(Microsoft::WRL::ComPtr<ID3D11Device>& device)
     srData.SysMemPitch = 0;
     srData.SysMemSlicePitch = 0;
 
-    hr = device->CreateBuffer(&vbDesc, &srData, mVertexBuffer.GetAddressOf());
+    hr = device->CreateBuffer(&vbDesc, &srData, mpVertexBuffer.GetAddressOf());
     _ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
 
@@ -125,11 +125,11 @@ void Primitive::Render(
 
     D3D11_MAPPED_SUBRESOURCE mrData = {};
 
-    imm_context->Map(mVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, NULL, &mrData);
+    imm_context->Map(mpVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, NULL, &mrData);
     memcpy(mrData.pData, vertices, sizeof(vertices));
-    imm_context->Unmap(mVertexBuffer.Get(), 0);
+    imm_context->Unmap(mpVertexBuffer.Get(), 0);
 
-    imm_context->IASetVertexBuffers(0, 1, mVertexBuffer.GetAddressOf(), &stride, &offset);
+    imm_context->IASetVertexBuffers(0, 1, mpVertexBuffer.GetAddressOf(), &stride, &offset);
     imm_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
     imm_context->RSSetState(mRasterizerState.Get());
 
@@ -166,7 +166,7 @@ PrimitiveBatch::PrimitiveBatch(Microsoft::WRL::ComPtr<ID3D11Device>& device, UIN
     srData.SysMemPitch = 0;
     srData.SysMemSlicePitch = 0;
 
-    hr = device->CreateBuffer(&vbDesc, &srData, mVertexBuffer.GetAddressOf());
+    hr = device->CreateBuffer(&vbDesc, &srData, mpVertexBuffer.GetAddressOf());
     _ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
     D3D11_INPUT_ELEMENT_DESC layouts[] = {
@@ -252,7 +252,7 @@ void PrimitiveBatch::Begin(Microsoft::WRL::ComPtr<ID3D11DeviceContext>& imm_cont
     UINT strides[2] = { sizeof(Vertex), sizeof(Instance) };
     UINT offsets[2] = { 0,0 };
 
-    ID3D11Buffer* vbs[2] = { mVertexBuffer.Get(), mInstanceBuffer.Get() };
+    ID3D11Buffer* vbs[2] = { mpVertexBuffer.Get(), mInstanceBuffer.Get() };
     imm_context->IASetVertexBuffers(0, 2, vbs, strides, offsets);
     imm_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
     imm_context->IASetInputLayout(mInputLayout.Get());

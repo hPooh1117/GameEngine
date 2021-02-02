@@ -1,10 +1,9 @@
 #pragma once
 #include "RenderPasses.h"
 #include "./Renderer/D3D_Helper.h"
-
+#include "./Renderer/Shader.h"
 #include "./Utilities/Vector.h"
 
-class GraphicsEngine;
 class Sprite;
 class ComputedTexture;
 class BlurExecuter;
@@ -38,15 +37,16 @@ private:
 	};
 
 	std::unique_ptr<ComputedTexture> mpPostProcessTex;
+	std::unique_ptr<Shader>       mpCS_PostProcess;
 	std::unique_ptr<BlurExecuter> mpBlurPass;
 
 public:
 	PostProcessPass();
 	virtual ~PostProcessPass() = default;
 
-	virtual void Initialize(D3D::DevicePtr& device) override;
+	virtual void Initialize(Graphics::GraphicsDevice* device) override;
 
-	void RenderPostProcess(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time);
+	void RenderPostProcess(Graphics::GraphicsDevice* device, float elapsed_time);
 	void RenderUI();
 	void RenderUIForSettings();
 	void SetPostProcessed(bool flag) { mbIsPostProcessed = flag; }

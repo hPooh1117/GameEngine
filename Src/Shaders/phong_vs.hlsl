@@ -1,5 +1,5 @@
 #include "H_DataFormat.hlsli"
-#include "H_DirectionalLight.hlsli"
+#include "HF_GlobalVariables.hlsli"
 
 //--------------------------------------------
 //	エントリーポイント

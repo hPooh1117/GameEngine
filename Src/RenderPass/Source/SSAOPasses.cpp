@@ -8,7 +8,6 @@
 #include "./Renderer/Blur.h"
 #include "./Renderer/ComputedTexture.h"
 #include "./Renderer/DepthStencilView.h"
-#include "./Renderer/GraphicsEngine.h"
 #include "./Renderer/NewMeshRenderer.h"
 #include "./Renderer/RenderTarget.h"
 #include "./Renderer/Shader.h"
@@ -28,16 +27,19 @@ SSAOPass::SSAOPass()
 	:mpAOPreparation(std::make_unique<AmbientOcclusion>()),
 	mpBlurPassTargets(std::make_unique<RenderTarget>()),
 	mpBlurPass(std::make_unique<BlurExecuter>()),
-	mbIsUsingCS(false)
+	mbIsUsingCS(true),
+	mbIsUsingAlchemyAO(false)
 {
 }
 
-void SSAOPass::Initialize(D3D::DevicePtr& p_device)
+void SSAOPass::Initialize(Graphics::GraphicsDevice* p_device)
 {
-	GetRenderTargetManager()->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::ESecondResult);
-	GetRenderTargetManager()->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::ESSAO);
-	GetRenderTargetManager()->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::EThirdResult);
-	GetRenderTargetManager()->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::EBlurredAO);
+	auto pDevice = p_device->GetDevicePtr();
+
+	GetRenderTargetManager()->Create(pDevice, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::ESecondResult);
+	GetRenderTargetManager()->Create(pDevice, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::ESSAO);
+	GetRenderTargetManager()->Create(pDevice, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::EThirdResult);
+	GetRenderTargetManager()->Create(pDevice, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::EBlurredAO);
 
 
 	if (mbIsInitialized) return;
@@ -47,18 +49,20 @@ void SSAOPass::Initialize(D3D::DevicePtr& p_device)
 	AddVertexAndPixelShader(p_device, ShaderID::ESSAOCompute, L"SSAO.hlsl", L"SSAO.hlsl", "VSmain", "PSmain", VEDType::VED_SPRITE);
 	AddVertexAndPixelShader(p_device, ShaderID::ESSAOPixel, L"SSAO.hlsl", L"SSAO.hlsl", "VSmain", "PSmain2", VEDType::VED_SPRITE);
 
+	AddVertexAndPixelShader(p_device, ShaderID::EAlchemyAO, L"SSAO.hlsl", L"SSAO.hlsl", "VSmain", "PSmainAlchemy", VEDType::VED_SPRITE);
+
 	AddVertexAndPixelShader(p_device, ShaderID::EBlur, L"Screen.hlsl", L"Screen.hlsl", "VSmain", "PSmain", VEDType::VED_SPRITE);
 
 
 	mpScreen = std::make_unique<Sprite>(p_device);
 
-	mpDSV->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT);
+	mpDSV->Create(pDevice, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 
-	mpBlurPass->Initialize(p_device);
-	mpBlurPass->CreateShader(p_device);
+	mpBlurPass->Initialize(pDevice);
+	mpBlurPass->CreateShader(pDevice);
 	//mpBlurPass->ChangeSetting(1, 4);
-	mpBlurPass->SetBlurStrength(1);
+	mpBlurPass->SetBlurStrength(0);
 
 	if (mpAOPreparation->Initialize(p_device))
 	{
@@ -68,25 +72,32 @@ void SSAOPass::Initialize(D3D::DevicePtr& p_device)
 	mbIsInitialized = true;
 }
 
-void SSAOPass::ExecuteSSAO(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time)
+void SSAOPass::ExecuteSSAO(Graphics::GraphicsDevice* p_device, float elapsed_time)
 {
 
-	D3D::DeviceContextPtr& pImmContext = p_graphics->GetImmContextPtr();
+	D3D::DeviceContextPtr& pImmContext = p_device->GetImmContextPtr();
 
 	GetRenderTargetManager()->Activate(pImmContext, mpDSV, RenderTarget::ESecondResult, GBUFFER_FOR_AO_MAX);
 
-	mpAOPreparation->Activate(p_graphics, ENGINE.GetCameraPtr().get());
+	mpAOPreparation->Activate(p_device, ENGINE.GetCameraPtr().get());
 	if (mbIsUsingCS)
 	{
-		mpAOPreparation->ExecuteOcclusion(p_graphics, GetRenderTargetManager()->GetShaderResource(RenderTarget::EDepth));
-		mpAOPreparation->Deactivate(p_graphics, 10);
+		mpAOPreparation->ExecuteOcclusion(p_device, GetRenderTargetManager()->GetShaderResource(RenderTarget::EDepth));
+		mpAOPreparation->Deactivate(p_device, 10);
 	}
 
-	mpScreen->RenderScreen(
-		pImmContext,
-		mpShaderTable.at(mbIsUsingCS ? ShaderID::ESSAOCompute : ShaderID::ESSAOPixel).get(),
+	if (mbIsUsingAlchemyAO) 
+		mpScreen->RenderScreen(
+			p_device,
+		mpShaderTable.at(mbIsUsingCS ? ShaderID::ESSAOCompute : ShaderID::EAlchemyAO).get(),
 		Vector2(0.5f * SCREEN_WIDTH, 0.5f * SCREEN_HEIGHT),
 		Vector2(SCREEN_WIDTH, SCREEN_HEIGHT));
+	else
+		mpScreen->RenderScreen(
+			p_device,
+			mpShaderTable.at(mbIsUsingCS ? ShaderID::ESSAOCompute : ShaderID::ESSAOPixel).get(),
+			Vector2(0.5f * SCREEN_WIDTH, 0.5f * SCREEN_HEIGHT),
+			Vector2(SCREEN_WIDTH, SCREEN_HEIGHT));
 
 
 	GetRenderTargetManager()->Activate(pImmContext, mpDSV, RenderTarget::EThirdResult, GBUFFER_FOR_BLUR_MAX);
@@ -94,15 +105,15 @@ void SSAOPass::ExecuteSSAO(std::unique_ptr<GraphicsEngine>& p_graphics, float el
 
 
 	mpBlurPass->ActivateBlur(pImmContext, true);
-	mpBlurPass->ExecuteBlur(pImmContext, GetRenderTargetManager()->GetShaderResource(RenderTarget::ESSAO), 15);
+	mpBlurPass->ExecuteBlur(p_device, GetRenderTargetManager()->GetShaderResource(RenderTarget::ESSAO), 15);
 	mpBlurPass->Deactivate(pImmContext);
 	GetRenderTargetManager()->Deactivate(pImmContext, RenderTarget::EColor, DeferredPass::GEOMETRY_BUFFER_SIZE);
 
-	mpScreen->RenderScreen(pImmContext, mpShaderTable.at(ShaderID::EBlur).get(), Vector2(0.5f * SCREEN_WIDTH, 0.5f * SCREEN_HEIGHT), Vector2(SCREEN_WIDTH, SCREEN_HEIGHT));
+	mpScreen->RenderScreen(p_device, mpShaderTable.at(ShaderID::EBlur).get(), Vector2(0.5f * SCREEN_WIDTH, 0.5f * SCREEN_HEIGHT), Vector2(SCREEN_WIDTH, SCREEN_HEIGHT));
 
-	p_graphics->SetDepthStencil(GraphicsEngine::DS_TRUE);
+	p_device->OMSetDepthStencilState(Graphics::DS_TRUE);
 
-	p_graphics->ActivateBackBuffer();
+	p_device->ActivateBackBuffer();
 
 	GetRenderTargetManager()->Deactivate(pImmContext, RenderTarget::EThirdResult, GBUFFER_FOR_BLUR_MAX);
 
@@ -129,37 +140,11 @@ void SSAOPass::RenderUI(bool b_open)
 			ImGui::TreePop();
 		}
 	}
-	//for (auto i = 0u; i < mpBlurPassTargets->GetSize(); ++i)
-	//{
-	//	if (ImGui::TreeNode(DeferredPass::GBUFFER_NAME[i + GBufferID::ESecondaryResult]))
-	//	{
-	//		if (ImGui::ImageButton((void*)mpBlurPassTargets->GetShaderResource(i).Get(), ImVec2(320, 180)))
-	//		{
-	//			mCurrentScreenNum = i + GBufferID::ESecondaryResult;
-	//			mbIsOpen2ndScreen = true;
-	//		}
-	//		ImGui::TreePop();
-	//	}
-	//}
-	//auto i = 0;
-	//auto it = GetRenderTargetTable().find(RenderTarget::ESecondResult);
-	//while (it != GetRenderTargetTable().end())
-	//{
-	//	if (ImGui::TreeNode(DeferredPass::GBUFFER_NAME[i + GBufferID::EResult]))
-	//	{
-	//		if (ImGui::ImageButton((void*)it->second->GetShaderResource().Get(), ImVec2(320, 180)))
-	//		{
-	//			mCurrentScreenNum = i + RenderTarget::ESecondResult;
-	//			mbIsOpen2ndScreen = true;
-	//		}
-	//		ImGui::TreePop();
-	//	}
-	//	++i;
-	//}
 }
 
 void SSAOPass::RenderUIForSettings()
 {
+	//ImGui::Checkbox("AlchemyAO", &mbIsUsingAlchemyAO);
 
 	mpAOPreparation->RenderUI();
 	int blurStrength = mpBlurPass->GetBlurStrength();

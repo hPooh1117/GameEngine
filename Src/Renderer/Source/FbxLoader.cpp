@@ -10,6 +10,7 @@
 
 #include "./Utilities/Log.h"
 #include "./Utilities/PerfTimer.h"
+#include "./Utilities/Util.h"
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
@@ -29,18 +30,29 @@ FbxLoader::FbxLoader()
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-bool FbxLoader::LoadFbxFile(
-	Microsoft::WRL::ComPtr<ID3D11Device>& device,
-	const char* fbxfilename,
-	std::vector<MyFbxMesh>& mesh_container)
+bool FbxLoader::Load(D3D::DevicePtr& device, const char* filename, std::vector<MyFbxMesh>& mesh_container)
 {
-	std::string filename2(fbxfilename);
+	// シリアル化されたデータが存在すれば読み込み
+	std::string filename2(filename);
 	unsigned int length = filename2.size();
 	filename2.at(length - 1) = 'A';
 	filename2.at(length - 2) = 'A';
 	filename2.at(length - 3) = 'A';
 	if (LoadSerializedMesh(device, filename2, mesh_container)) return true;
 
+	// シリアル化されたデータがなければ.fbxを読み込み
+	LoadFbxFile(device, filename, mesh_container);
+
+	return true;
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------
+
+bool FbxLoader::LoadFbxFile(
+	Microsoft::WRL::ComPtr<ID3D11Device>& device,
+	const char* fbxfilename,
+	std::vector<MyFbxMesh>& mesh_container)
+{
 	// FBX SDK Managerを生成
 	Log::Info("[FBX] Start up FbxManager.");
 	FbxManager* manager = FbxManager::Create();
@@ -54,6 +66,7 @@ bool FbxLoader::LoadFbxFile(
 		return false;
 	}
 
+
 	// シーンデータをインポート
 	FbxScene* scene = FbxScene::Create(manager, "");
 	bIsImported = importer->Import(scene);
@@ -64,38 +77,14 @@ bool FbxLoader::LoadFbxFile(
 	}
 	Log::Info("[FBX] Created FbxScene");
 
-	// ポリゴンを三角形に
-	fbxsdk::FbxGeometryConverter geometryConverter(manager);
-	geometryConverter.Triangulate(scene, true);
-	Log::Info("[FBX] Finish Triangulated.");
 
-	// メッシュデータを含むノードを検索	
+	// ポリゴンを三角形に
+	TrangulateGeometries(manager, scene);
+
 	std::vector<FbxNode*> fetchedMeshes;
-	std::function<void(FbxNode*)> traverse = [&](FbxNode* node)
-	{
-		if (node)
-		{
-			FbxNodeAttribute* fbxNodeAttribute = node->GetNodeAttribute();
-			if (fbxNodeAttribute)
-			{
-				switch (fbxNodeAttribute->GetAttributeType())
-				{
-				case FbxNodeAttribute::eMesh:
-					fetchedMeshes.push_back(node);
-					break;
-				}
-			}
-			for (int i = 0; i < node->GetChildCount(); i++)
-			{
-				traverse(node->GetChild(i));
-			}
-		}
-	};
-	Log::Info("[FBX] ***** Start searching the node of Meshes *****", m_pTimer->GetDeltaTime());
-	m_pTimer->Start();
-	traverse(scene->GetRootNode());
-	m_pTimer->Stop();
-	Log::Info("[FBX] ***** Found the node of Meshes in %.2f   *****\n", m_pTimer->GetDeltaTime());
+	// メッシュデータを含むノードを検索	
+	SearchMeshNodeRecursively(fetchedMeshes, scene);
+
 
 	// メッシュ情報を取り出す
 	Log::Info("[FBX] ***** Start Fetching  Meshes (Size : %d) *****", fetchedMeshes.size());
@@ -110,29 +99,32 @@ bool FbxLoader::LoadFbxFile(
 		MyFbxMesh& mesh = mesh_container.at(i);
 
 
-		LoadBones(fbxMesh, mesh);
+		LoadSkins(fbxMesh, mesh);
 
 		// マテリアル取り出し(CGFX)
-		//FbxLayerElementMaterial* LEM = fbxMesh->GetElementMaterial();
-		//if (LEM != nullptr)
-		//{
-		//	int materialIndex = LEM->GetIndexArray().GetAt(0);
-		//	FbxSurfaceMaterial* material = fbxMesh->GetNode()->GetSrcObject<FbxSurfaceMaterial>(materialIndex);
-		//	const FbxProperty property = material->FindProperty(FbxSurfaceMaterial::sDiffuse);
+		FbxLayerElementMaterial* LEM = fbxMesh->GetElementMaterial();
+		if (LEM != nullptr)
+		{
+			int materialIndex = LEM->GetIndexArray().GetAt(0);
+			FbxSurfaceMaterial* material = fbxMesh->GetNode()->GetSrcObject<FbxSurfaceMaterial>(materialIndex);
+			const FbxProperty property = material->FindProperty(FbxSurfaceMaterial::sDiffuse);
 
-		//	Log::Info("[FBX] Loading CGFX file.");
-		//	LoadCGFX(device, mesh, material, fbxfilename);
-		//}
+			Log::Info("[FBX] Loading CGFX file.");
+			LoadCGFX(device, mesh, material, fbxfilename);
+		}
 
 		// マテリアル取り出し
-		const int  numberOfMaterials = fbxMesh->GetNode()->GetMaterialCount();
-		mesh.mSubsets.resize(numberOfMaterials > 0 ? numberOfMaterials : 1);
-		for (auto index = 0; index < numberOfMaterials; ++index)
+		mNumberOfMaterials = fbxMesh->GetNode()->GetMaterialCount();
+		mesh.mSubsets.resize(mNumberOfMaterials > 0 ? mNumberOfMaterials : 1);
+		for (auto index = 0u; index < mNumberOfMaterials; ++index)
 		{
-			Log::Info("[FBX] Loading MATERIAL info ( %d / %d )", index, numberOfMaterials);
+			Log::Info("[FBX] Loading MATERIAL info ( %d / %d )", index, mNumberOfMaterials);
 			const FbxSurfaceMaterial* surfaceMaterial = fbxMesh->GetNode()->GetMaterial(index);
 
+			// Diffuseのプロパティを探す
 			const fbxsdk::FbxProperty property = surfaceMaterial->FindProperty(FbxSurfaceMaterial::sDiffuse);
+
+			// Diffuseの重み (Factor) を探す
 			const FbxProperty factor = surfaceMaterial->FindProperty(FbxSurfaceMaterial::sDiffuseFactor);
 
 
@@ -163,23 +155,23 @@ bool FbxLoader::LoadFbxFile(
 					{
 						const char* texture_filename = fileTexture->GetRelativeFileName();
 						
-						subset.diffuse.texture = std::make_shared<Texture>();
+						subset.diffuse.textures[FbxInfo::Material::EColor] = std::make_shared<Texture>();
 
 						if (texture_filename)
 						{
 							wchar_t fbxUnicode[256];
-							MultiByteToWideChar(CP_ACP, 0, fbxfilename, strlen(fbxfilename) + 1, fbxUnicode, 1024);
-							wchar_t textureUnicode[256];
-							MultiByteToWideChar(CP_ACP, 0, fileTexture->GetFileName(), strlen(fileTexture->GetFileName()) + 1, textureUnicode, 1024);
-							ResourceManager::CreateFilenameToRefer(textureUnicode, fbxUnicode, textureUnicode);
+							StringOp::StringConvert(fbxfilename, fbxUnicode);
+							wchar_t texture[256];
+							StringOp::StringConvert(fileTexture->GetFileName(), texture);
+							ResourceManager::CreateFilenameToRefer(texture, fbxUnicode, texture);
 
-							subset.diffuse.texture_filename = textureUnicode;
-							subset.diffuse.texture->Load(device, subset.diffuse.texture_filename.c_str());
+							subset.diffuse.texFileTable[FbxInfo::Material::EColor] = texture;
+							subset.diffuse.textures[FbxInfo::Material::EColor]->Load(device, subset.diffuse.texFileTable[FbxInfo::Material::EColor].c_str());
 						}
 						else
 						{
 							Log::Info("[FBX] Doesn't exist Texture File Name. Start creating DUMMY.");
-							subset.diffuse.texture->Load(device);
+							subset.diffuse.textures[FbxInfo::Material::EColor]->Load(device);
 						}
 					}
 				}
@@ -190,20 +182,19 @@ bool FbxLoader::LoadFbxFile(
 
 		for (auto& subset : mesh.mSubsets)
 		{
-			if (!subset.diffuse.texture)
+			if (!subset.diffuse.textures[FbxInfo::Material::EColor])
 			{
 				Log::Info("[FBX] Couldn't create Texture. Start creating DUMMY.");
-				subset.diffuse.texture = std::make_shared<Texture>();
-				subset.diffuse.texture->Load(device);
+				subset.diffuse.textures[FbxInfo::Material::EColor] = std::make_shared<Texture>();
+				subset.diffuse.textures[FbxInfo::Material::EColor]->Load(device);
 			}
 		}
 
 
 
-		// Count the faces of each material
-		if (numberOfMaterials > 0)
+		if (mNumberOfMaterials > 0)
 		{
-			// count the faces of each material
+			// 各マテリアルのポリゴン数取得
 			const int numberOfPolygons = fbxMesh->GetPolygonCount();
 			for (int index = 0; index < numberOfPolygons; ++index)
 			{
@@ -211,19 +202,19 @@ bool FbxLoader::LoadFbxFile(
 				mesh.mSubsets.at(materialIndex).indexCount += 3;
 			}
 
-			// record the offset (how many vertex)
+			// オフセットを記録
 			int offset = 0;
 			for (FbxInfo::Subset& subset : mesh.mSubsets)
 			{
 				subset.indexStart = offset;
 				offset += subset.indexCount;
 
-				// this will be used as counter in the following procedures. reset to zero
+				// 後の頂点情報の取り出しの時に使う値のため0クリア。
 				subset.indexCount = 0;
 			}
 		}
 
-		// Fetch mesh transform data
+		// メッシュトランスフォーム情報
 		FbxMatrix global_transform = fbxMesh->GetNode()->EvaluateGlobalTransform(0);
 		for (auto row = 0; row < 4; row++)
 		{
@@ -234,22 +225,22 @@ bool FbxLoader::LoadFbxFile(
 		}
 
 
-		// Fetch mesh data
-		std::vector<FbxInfo::Vertex> vertices;	// Vertex buffer
-		std::vector<u_int> indices;		// Index buffer
+		// メッシュデータ取得
+		std::vector<FbxInfo::Vertex> vertices;	
+		std::vector<u_int> indices;		
 		u_int vertex_count = 0;
 
 
 
-		//Unit21
-		std::vector<BoneInfluencesPerControlPoint> bone_influences;
-		FetchBoneInfluences(fbxMesh, bone_influences);
+		//　ボーンの影響度を取得
+		std::vector<BoneInfluencesPerControlPoint> boneInfluences;
+		FetchBoneInfluences(fbxMesh, boneInfluences);
 
 
 		FbxStringList uvNames;
 		fbxMesh->GetUVSetNames(uvNames);
 
-		// TODO : 命名規則に従う
+		// コントロールポイントを利用してポリゴン、頂点情報を取得する。
 		const FbxVector4* arrayOfControlPoints = fbxMesh->GetControlPoints();
 		const int numberOfPolygons = fbxMesh->GetPolygonCount();
 
@@ -262,7 +253,7 @@ bool FbxLoader::LoadFbxFile(
 
 			// the material for current face
 			int indexOfMaterial = 0;
-			if (numberOfMaterials > 0)
+			if (mNumberOfMaterials > 0)
 			{
 				indexOfMaterial = fbxMesh->GetElementMaterial()->GetIndexArray().GetAt(indexOfPolygon);
 			}
@@ -328,7 +319,7 @@ bool FbxLoader::LoadFbxFile(
 				}
 
 				vertices.push_back(vertex);
-				indices.push_back(vertex_count);
+				//indices.push_back(vertex_count);
 				indices.at(indexOffset + indexOfVertex) = static_cast<u_int>(vertex_count);
 				vertex_count += 1;
 
@@ -337,11 +328,11 @@ bool FbxLoader::LoadFbxFile(
 				int vertexid = vertices.size() - 1;
 				if (indexOfControlPoint > 0)
 				{
-					auto vector_size = bone_influences.at(indexOfControlPoint).size();
+					auto vector_size = boneInfluences.at(indexOfControlPoint).size();
 					for (auto i = 0u; i < vector_size; ++i)
 					{
-						vertices[vertexid].bone_indices[i] = bone_influences.at(indexOfControlPoint).at(i).index;
-						vertices[vertexid].bone_weights[i] = bone_influences.at(indexOfControlPoint).at(i).weight;
+						vertices[vertexid].bone_indices[i] = boneInfluences.at(indexOfControlPoint).at(i).index;
+						vertices[vertexid].bone_weights[i] = boneInfluences.at(indexOfControlPoint).at(i).weight;
 
 					}
 				}
@@ -352,20 +343,64 @@ bool FbxLoader::LoadFbxFile(
 
 		mesh.mVertices = vertices;
 		mesh.mIndices = indices;
+		mNumberOfVertices += vertices.size();
 	}
 	m_pTimer->Stop();
 	Log::Info("[FBX] ***** Finish Fetching  Meshes in %.2f s *****", m_pTimer->GetDeltaTime());
 
 
-	//mModelTable.emplace(fbxfilename, mesh_container);
-
-	SerializeAndSaveMeshes(filename2, mesh_container);
+	// シリアル化してセーブ
+	std::string file(fbxfilename);
+	UINT l = file.size();
+	file.at(l - 1) = 'A';
+	file.at(l - 2) = 'A';
+	file.at(l - 3) = 'A';
+	SerializeAndSaveMeshes(file, mesh_container);
 
 	manager->Destroy();
 	return true;
 }
 
+//--------------------------------------------------------------------------------------------------------------------------------
 
+void FbxLoader::TrangulateGeometries(FbxManager* manager, FbxScene* scene)
+{
+	fbxsdk::FbxGeometryConverter geometryConverter(manager);
+	geometryConverter.Triangulate(scene, true);
+	Log::Info("[FBX] Finish Triangulated.");
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------
+
+void FbxLoader::SearchMeshNodeRecursively(std::vector<FbxNode*>& nodes, FbxScene* scene)
+{
+	std::function<void(FbxNode*)> traverse = [&](FbxNode* node)
+	{
+		if (node)
+		{
+			FbxNodeAttribute* fbxNodeAttribute = node->GetNodeAttribute();
+			if (fbxNodeAttribute)
+			{
+				switch (fbxNodeAttribute->GetAttributeType())
+				{
+				case FbxNodeAttribute::eMesh:
+					nodes.push_back(node);
+					break;
+				}
+			}
+			for (int i = 0; i < node->GetChildCount(); i++)
+			{
+				traverse(node->GetChild(i));
+			}
+		}
+	};
+	Log::Info("[FBX] ***** Start searching the node of Meshes *****", m_pTimer->GetDeltaTime());
+	m_pTimer->Start();
+	traverse(scene->GetRootNode());
+	m_pTimer->Stop();
+	Log::Info("[FBX] ***** Found the node of Meshes in %.2f   *****\n", m_pTimer->GetDeltaTime());
+
+}
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
@@ -428,7 +463,7 @@ void FbxLoader::LoadVertexColor(FbxMesh* mesh)
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-void FbxLoader::LoadBones(FbxMesh* mesh, MyFbxMesh& my_mesh)
+void FbxLoader::LoadSkins(FbxMesh* mesh, MyFbxMesh& my_mesh)
 {
 	// Get the list of all the animation stack.
 	FbxArray<FbxString*> array_of_animation_stack_names;
@@ -628,15 +663,15 @@ void FbxLoader::LoadCGFX(
 						Log::Info("[FBX LOADER] Fetched Texture ( Name : %s )", texName);
 
 						wchar_t fbx_unicode[256];
-						MultiByteToWideChar(CP_ACP, 0, filename.c_str(), strlen(filename.c_str()) + 1, fbx_unicode, 1024);
+						MultiByteToWideChar(CP_ACP, 0, filename.c_str(), strlen(filename.c_str()) + 1, fbx_unicode, 2048);
 						wchar_t texture_unicode[256];
-						MultiByteToWideChar(CP_ACP, 0, tex->GetFileName(), strlen(tex->GetFileName()) + 1, texture_unicode, 1024);
+						MultiByteToWideChar(CP_ACP, 0, tex->GetFileName(), strlen(tex->GetFileName()) + 1, texture_unicode, 2048);
 						ResourceManager::CreateFilenameToRefer(texture_unicode, fbx_unicode, texture_unicode);
 
-						subset.diffuse.texture_filename = texture_unicode;
+						subset.diffuse.texFileTable[FbxInfo::Material::EColor] = texture_unicode;
 
-						subset.diffuse.texture = std::make_shared<Texture>();
-						subset.diffuse.texture->Load(device, subset.diffuse.texture_filename.c_str());
+						subset.diffuse.textures[FbxInfo::Material::EColor] = std::make_shared<Texture>();
+						subset.diffuse.textures[FbxInfo::Material::EColor]->Load(device, subset.diffuse.texFileTable[FbxInfo::Material::EColor].c_str());
 					}
 
 				}
@@ -830,18 +865,18 @@ void FbxLoader::SerializeAndSaveMeshes(const std::string filename, std::vector<M
 
 				// SerializeAndSaveMeshes the length of texture filename 
 				unsigned int lengthOfName = 0;
-				if (subset.diffuse.texture_filename.size())
+				if (subset.diffuse.texFileTable[FbxInfo::Material::EColor].size())
 				{
-					lengthOfName = subset.diffuse.texture_filename.size();
+					lengthOfName = subset.diffuse.texFileTable[FbxInfo::Material::EColor].size();
 				}
 				fout.write((char*)&lengthOfName, sizeof(unsigned int));
 
 				// SerializeAndSaveMeshes the texture file name
 				if (lengthOfName)
 				{
-					fout.write((char*)(subset.diffuse.texture_filename.data()), (sizeof(wchar_t)) * lengthOfName);
+					fout.write((char*)(subset.diffuse.texFileTable[FbxInfo::Material::EColor].data()), (sizeof(wchar_t)) * lengthOfName);
 
-					Log::Info("[FBX LOADER] Save Complete!! TEXTURE (Name : %s)", subset.diffuse.texture_filename);
+					Log::Info("[FBX LOADER] Save Complete!! TEXTURE (Name : %s)", subset.diffuse.texFileTable[FbxInfo::Material::EColor]);
 				}
 
 				// SerializeAndSaveMeshes the color information
@@ -1067,25 +1102,25 @@ bool FbxLoader::LoadSerializedMesh(Microsoft::WRL::ComPtr<ID3D11Device>& device,
 				unsigned int lengthOfName;
 				fin.read((char*)&lengthOfName, sizeof(unsigned int));
 
-				subset.diffuse.texture = std::make_shared<Texture>();
+				subset.diffuse.textures[FbxInfo::Material::EColor] = std::make_shared<Texture>();
 				// fetch the texture file name
 				if (lengthOfName)
 				{
-					subset.diffuse.texture_filename.resize(lengthOfName);
-					fin.read((char*)(subset.diffuse.texture_filename.data()), sizeof(wchar_t) * lengthOfName);
+					subset.diffuse.texFileTable[FbxInfo::Material::EColor].resize(lengthOfName);
+					fin.read((char*)(subset.diffuse.texFileTable[FbxInfo::Material::EColor].data()), sizeof(wchar_t) * lengthOfName);
 
 					// TODO : ワイド文字列の引数あり出力ができていない。
 
-					std::wstring output = L"[INFO]: [FBX][AAA] Complete!! Loaded TEXTURE( Name : " + subset.diffuse.texture_filename + L" )";
+					std::wstring output = L"[INFO]: [FBX][AAA] Complete!! Loaded TEXTURE( Name : " + subset.diffuse.texFileTable[FbxInfo::Material::EColor] + L" )";
 					std::wcout << output << std::endl;
 					OutputDebugString(output.c_str());
 					//Log::InfoW(L"[FBX LOADER] Complete Loading!! TEXTURE( Name : %ws )", subset.diffuse.texture_filename);
 
-					subset.diffuse.texture->Load(device, subset.diffuse.texture_filename.c_str());
+					subset.diffuse.textures[FbxInfo::Material::EColor]->Load(device, subset.diffuse.texFileTable[FbxInfo::Material::EColor].c_str());
 				}
 				else
 				{
-					subset.diffuse.texture->Load(device);
+					subset.diffuse.textures[FbxInfo::Material::EColor]->Load(device);
 
 				}
 				// fetch the color information

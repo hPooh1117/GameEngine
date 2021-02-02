@@ -12,7 +12,7 @@ private:
     Microsoft::WRL::ComPtr<ID3D11VertexShader>       mVertexShader;
     Microsoft::WRL::ComPtr<ID3D11PixelShader>        mPixelShader;
     Microsoft::WRL::ComPtr<ID3D11InputLayout>        mInputLayout;
-    Microsoft::WRL::ComPtr<ID3D11Buffer>             mVertexBuffer;
+    Microsoft::WRL::ComPtr<ID3D11Buffer>             mpVertexBuffer;
     Microsoft::WRL::ComPtr<ID3D11RasterizerState>    mRasterizerState;
     Microsoft::WRL::ComPtr<ID3D11DepthStencilState>  mDepthStencilState;
 
@@ -47,7 +47,7 @@ private:
     Microsoft::WRL::ComPtr<ID3D11VertexShader>       mVertexShader;
     Microsoft::WRL::ComPtr<ID3D11PixelShader>        mPixelShader;
     Microsoft::WRL::ComPtr<ID3D11InputLayout>        mInputLayout;
-    Microsoft::WRL::ComPtr<ID3D11Buffer>             mVertexBuffer;
+    Microsoft::WRL::ComPtr<ID3D11Buffer>             mpVertexBuffer;
     Microsoft::WRL::ComPtr<ID3D11RasterizerState>    mRasterizerState;
     Microsoft::WRL::ComPtr<ID3D11DepthStencilState>  mDepthStencilState;
 

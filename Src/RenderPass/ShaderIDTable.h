@@ -60,6 +60,7 @@ enum ShaderID : unsigned int
 	ESSAOCompute,
 	ESSAOPixel,
 	EBlur,
+	EAlchemyAO,
 
 	// PostProcessPasses
 	EPostEffect,

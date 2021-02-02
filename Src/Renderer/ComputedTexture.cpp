@@ -9,21 +9,22 @@ ComputedTexture::ComputedTexture()
 	:mbAlreadyComputed(false),
 	mWidth(0),
 	mHeight(0),
-	mpCS(std::make_unique<Shader>())
+	mCBufData({}),
+	mLevels(0)
 {
 }
 
-bool ComputedTexture::CreateShader(D3D::DevicePtr& p_device, const wchar_t* file, const char* func)
-{
-	mpCS->CreateComputeShader(p_device, file, func);
-	return true;
-}
-
-bool ComputedTexture::CreateShader(D3D::DevicePtr& p_device, const wchar_t* file, const char* func, const std::vector<ShaderMacro>& shader_macro)
-{
-	mpCS->CreateComputeShader(p_device, file, func, shader_macro);
-	return true;
-}
+//bool ComputedTexture::CreateShader(D3D::DevicePtr& p_device, const wchar_t* file, const char* func)
+//{
+//	mpCS->CreateComputeShader(p_device, file, func);
+//	return true;
+//}
+//
+//bool ComputedTexture::CreateShader(D3D::DevicePtr& p_device, const wchar_t* file, const char* func, const std::vector<ShaderMacro>& shader_macro)
+//{
+//	mpCS->CreateComputeShader(p_device, file, func, shader_macro);
+//	return true;
+//}
 
 bool ComputedTexture::CreateTexture(D3D::DevicePtr& p_device, UINT width, UINT height, DXGI_FORMAT format, UINT level)
 {
@@ -125,6 +126,60 @@ bool ComputedTexture::CreateTextureCube(D3D::DevicePtr& p_device, UINT width, UI
 	return true;
 }
 
+bool ComputedTexture::CreateTextureArray(D3D::DevicePtr& p_device, UINT width, UINT height, UINT arrayCount, DXGI_FORMAT format, UINT level)
+{
+	auto result = S_OK;
+
+	mWidth = width;
+	mHeight = height;
+	mLevels = level > 0 ? level : NumMipLevels(width, height);
+
+
+	D3D11_TEXTURE2D_DESC t2Desc;
+	ZeroMemory(&t2Desc, sizeof(t2Desc));
+	t2Desc.Width = width;
+	t2Desc.Height = height;
+	t2Desc.MipLevels = level;
+	t2Desc.ArraySize = arrayCount;
+	t2Desc.Format = format;
+	t2Desc.SampleDesc.Count = 1;
+	t2Desc.Usage = D3D11_USAGE_DEFAULT;
+	t2Desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS;
+	
+
+	if (level == 0)
+	{
+		t2Desc.BindFlags |= D3D11_BIND_RENDER_TARGET;
+		t2Desc.MiscFlags |= D3D11_RESOURCE_MISC_GENERATE_MIPS;
+	}
+
+	p_device->CreateTexture2D(&t2Desc, nullptr, mpTexture.GetAddressOf());
+	if (FAILED(result))
+	{
+		Log::Error("[COMPUTED TEXTURE] Couldn't create texture 2d.");
+		return false;
+	}
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+	ZeroMemory(&srvDesc, sizeof(srvDesc));
+	srvDesc.Format = format;
+	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
+	srvDesc.Texture2DArray.ArraySize = arrayCount;
+	srvDesc.Texture2DArray.FirstArraySlice = 0;
+	srvDesc.Texture2DArray.MipLevels = -1;
+	srvDesc.Texture2DArray.MostDetailedMip = 0;
+
+	p_device->CreateShaderResourceView(mpTexture.Get(), &srvDesc, mpSRV.GetAddressOf());
+	if (FAILED(result))
+	{
+		Log::Error("[COMPUTED TEXTURE] Couldn't create shader resource view.");
+		return false;
+	}
+
+	return true;
+
+}
+
 bool ComputedTexture::CreateTexture(std::unique_ptr<Texture>& p_tex, DXGI_FORMAT format, UINT level)
 {
 	if (mpTexture)
@@ -197,26 +252,26 @@ bool ComputedTexture::CreateTextureUAV(D3D::DevicePtr& p_device, UINT mip_slices
 	return true;
 }
 
-bool ComputedTexture::CreateSampler(D3D::DevicePtr& p_device, D3D11_FILTER filter, D3D11_TEXTURE_ADDRESS_MODE address_mode)
-{
-	D3D11_SAMPLER_DESC sDesc;
-	ZeroMemory(&sDesc, sizeof(sDesc));
-	sDesc.Filter = filter;
-	sDesc.AddressU = address_mode;
-	sDesc.AddressV = address_mode;
-	sDesc.AddressW = address_mode;
-	sDesc.MaxAnisotropy = (filter == D3D11_FILTER_ANISOTROPIC) ? D3D11_REQ_MAXANISOTROPY : 1;
-	sDesc.MinLOD = 0;
-	sDesc.MaxLOD = D3D11_FLOAT32_MAX;
-
-	auto result = p_device->CreateSamplerState(&sDesc, mpSampler.GetAddressOf());
-	if (FAILED(result))
-	{
-		Log::Error("[COMPUTED TEXTURE] Couldn't create sampler state.");
-		return false;
-	}
-	return true;
-}
+//bool ComputedTexture::CreateSampler(D3D::DevicePtr& p_device, D3D11_FILTER filter, D3D11_TEXTURE_ADDRESS_MODE address_mode)
+//{
+//	D3D11_SAMPLER_DESC sDesc;
+//	ZeroMemory(&sDesc, sizeof(sDesc));
+//	sDesc.Filter = filter;
+//	sDesc.AddressU = address_mode;
+//	sDesc.AddressV = address_mode;
+//	sDesc.AddressW = address_mode;
+//	sDesc.MaxAnisotropy = (filter == D3D11_FILTER_ANISOTROPIC) ? D3D11_REQ_MAXANISOTROPY : 1;
+//	sDesc.MinLOD = 0;
+//	sDesc.MaxLOD = D3D11_FLOAT32_MAX;
+//
+//	auto result = p_device->CreateSamplerState(&sDesc, mpSampler.GetAddressOf());
+//	if (FAILED(result))
+//	{
+//		Log::Error("[COMPUTED TEXTURE] Couldn't create sampler state.");
+//		return false;
+//	}
+//	return true;
+//}
 
 void ComputedTexture::SetCBuffer(D3D::DeviceContextPtr& p_imm_context, float param0, float param1, float param2, float param3)
 {
@@ -242,78 +297,79 @@ void ComputedTexture::SetCBuffer(D3D::DeviceContextPtr& p_imm_context, UINT para
 	p_imm_context->CSSetConstantBuffers(0, 1, mpCBuffer.GetAddressOf());
 }
 
-void ComputedTexture::Compute(D3D::DeviceContextPtr& p_imm_context, const D3D::SRVPtr& p_srv, UINT zValue)
+void ComputedTexture::Compute(Graphics::GraphicsDevice* p_device, const D3D::SRVPtr& p_srv, UINT zValue)
 {
 	ID3D11UnorderedAccessView* nullUAV[1] = { nullptr };
+	auto& ImmContext = p_device->GetImmContextPtr();
 
-	mpCS->ActivateCSShader(p_imm_context);
-	p_imm_context->CSSetShaderResources(0, 1, p_srv.GetAddressOf());
-	p_imm_context->CSSetSamplers(0, 1, mpSampler.GetAddressOf());
-	p_imm_context->CSSetUnorderedAccessViews(0, 1, mpUAV.GetAddressOf(), nullptr);
-	p_imm_context->Dispatch(mWidth / 32, mHeight / 32, zValue);
-	p_imm_context->CSSetUnorderedAccessViews(0, 1, nullUAV, nullptr);
+	//mpCS->ActivateCSShader(ImmContext);
+	ImmContext->CSSetShaderResources(0, 1, p_srv.GetAddressOf());
+	ImmContext->CSSetUnorderedAccessViews(0, 1, mpUAV.GetAddressOf(), nullptr);
+	ImmContext->Dispatch(mWidth / 32, mHeight / 32, zValue);
+	ImmContext->CSSetUnorderedAccessViews(0, 1, nullUAV, nullptr);
 }
 
-void ComputedTexture::Compute(D3D::DeviceContextPtr& p_imm_context, UINT zValue)
+void ComputedTexture::Compute(Graphics::GraphicsDevice* p_device, UINT zValue)
 {
 	ID3D11UnorderedAccessView* nullUAV[1] = { nullptr };
+	auto& ImmContext = p_device->GetImmContextPtr();
 
-	mpCS->ActivateCSShader(p_imm_context);
-	p_imm_context->CSSetShaderResources(0, 1, mpSRV.GetAddressOf());
-	p_imm_context->CSSetSamplers(0, 1, mpSampler.GetAddressOf());
-	p_imm_context->CSSetUnorderedAccessViews(0, 1, mpUAV.GetAddressOf(), nullptr);
-	p_imm_context->Dispatch(mWidth / 32, mHeight / 32, zValue);
-	p_imm_context->CSSetUnorderedAccessViews(0, 1, nullUAV, nullptr);
-
-}
-
-void ComputedTexture::Compute(D3D::DeviceContextPtr& p_imm_context, const D3D::SRVPtr& p_srv, UINT xValue, UINT yValue, UINT zValue)
-{
-	ID3D11UnorderedAccessView* nullUAV[1] = { nullptr };
-
-	mpCS->ActivateCSShader(p_imm_context);
-	p_imm_context->CSSetShaderResources(0, 1, p_srv.GetAddressOf());
-	p_imm_context->CSSetSamplers(0, 1, mpSampler.GetAddressOf());
-	p_imm_context->CSSetUnorderedAccessViews(0, 1, mpUAV.GetAddressOf(), nullptr);
-	p_imm_context->Dispatch(xValue, yValue, zValue);
-	p_imm_context->CSSetUnorderedAccessViews(0, 1, nullUAV, nullptr);
+	//mpCS->ActivateCSShader(ImmContext);
+	ImmContext->CSSetShaderResources(0, 1, mpSRV.GetAddressOf());
+	ImmContext->CSSetUnorderedAccessViews(0, 1, mpUAV.GetAddressOf(), nullptr);
+	ImmContext->Dispatch(mWidth / 32, mHeight / 32, zValue);
+	ImmContext->CSSetUnorderedAccessViews(0, 1, nullUAV, nullptr);
 
 }
 
-void ComputedTexture::Compute(D3D::DeviceContextPtr& p_imm_context, UINT xValue, UINT yValue, UINT zValue)
+void ComputedTexture::Compute(Graphics::GraphicsDevice* p_device, const D3D::SRVPtr& p_srv, UINT xValue, UINT yValue, UINT zValue)
 {
 	ID3D11UnorderedAccessView* nullUAV[1] = { nullptr };
+	auto& ImmContext = p_device->GetImmContextPtr();
 
-	mpCS->ActivateCSShader(p_imm_context);
-	p_imm_context->CSSetShaderResources(0, 1, mpSRV.GetAddressOf());
-	p_imm_context->CSSetSamplers(0, 1, mpSampler.GetAddressOf());
-	p_imm_context->CSSetUnorderedAccessViews(0, 1, mpUAV.GetAddressOf(), nullptr);
-	p_imm_context->Dispatch(xValue, yValue, zValue);
-	p_imm_context->CSSetUnorderedAccessViews(0, 1, nullUAV, nullptr);
+	//mpCS->ActivateCSShader(ImmContext);
+	ImmContext->CSSetShaderResources(0, 1, p_srv.GetAddressOf());
+	ImmContext->CSSetUnorderedAccessViews(0, 1, mpUAV.GetAddressOf(), nullptr);
+	ImmContext->Dispatch(xValue, yValue, zValue);
+	ImmContext->CSSetUnorderedAccessViews(0, 1, nullUAV, nullptr);
 
 }
 
-void ComputedTexture::ComputeUsingCurrentSetView(D3D::DeviceContextPtr& p_imm_context, UINT xValue, UINT yValue, UINT zValue)
+void ComputedTexture::Compute(Graphics::GraphicsDevice* p_device, UINT xValue, UINT yValue, UINT zValue)
 {
 	ID3D11UnorderedAccessView* nullUAV[1] = { nullptr };
+	auto& ImmContext = p_device->GetImmContextPtr();
 
-	mpCS->ActivateCSShader(p_imm_context);
-	p_imm_context->CSSetSamplers(0, 1, mpSampler.GetAddressOf());
-	p_imm_context->CSSetUnorderedAccessViews(0, 1, mpUAV.GetAddressOf(), nullptr);
-	p_imm_context->Dispatch(xValue, yValue, zValue);
-	p_imm_context->CSSetUnorderedAccessViews(0, 1, nullUAV, nullptr);
+	//mpCS->ActivateCSShader(ImmContext);
+	ImmContext->CSSetShaderResources(0, 1, mpSRV.GetAddressOf());
+	ImmContext->CSSetUnorderedAccessViews(0, 1, mpUAV.GetAddressOf(), nullptr);
+	ImmContext->Dispatch(xValue, yValue, zValue);
+	ImmContext->CSSetUnorderedAccessViews(0, 1, nullUAV, nullptr);
+
 }
 
-void ComputedTexture::ComputeUsingCurrentSetView(D3D::DeviceContextPtr& p_imm_context, UINT zValue)
-{
-	ID3D11UnorderedAccessView* nullUAV[1] = { nullptr };
-
-	mpCS->ActivateCSShader(p_imm_context);
-	p_imm_context->CSSetSamplers(0, 1, mpSampler.GetAddressOf());
-	p_imm_context->CSSetUnorderedAccessViews(0, 1, mpUAV.GetAddressOf(), nullptr);
-	p_imm_context->Dispatch(mWidth/32, mHeight/32, zValue);
-	p_imm_context->CSSetUnorderedAccessViews(0, 1, nullUAV, nullptr);
-}
+//void ComputedTexture::ComputeUsingCurrentSetView(Graphics::GraphicsDevice* p_device, UINT xValue, UINT yValue, UINT zValue)
+//{
+//	ID3D11UnorderedAccessView* nullUAV[1] = { nullptr };
+//	auto& ImmContext = p_device->GetImmContextPtr();
+//
+//	mpCS->ActivateCSShader(ImmContext);
+//	ImmContext->CSSetUnorderedAccessViews(0, 1, mpUAV.GetAddressOf(), nullptr);
+//	ImmContext->Dispatch(xValue, yValue, zValue);
+//	ImmContext->CSSetUnorderedAccessViews(0, 1, nullUAV, nullptr);
+//}
+//
+//void ComputedTexture::ComputeUsingCurrentSetView(Graphics::GraphicsDevice* p_device, UINT zValue)
+//{
+//	ID3D11UnorderedAccessView* nullUAV[1] = { nullptr };
+//	auto& ImmContext = p_device->GetImmContextPtr();
+//
+//	mpCS->ActivateCSShader(ImmContext);
+//	//ImmContext->CSSetSamplers(0, 1, mpSampler.GetAddressOf());
+//	ImmContext->CSSetUnorderedAccessViews(0, 1, mpUAV.GetAddressOf(), nullptr);
+//	ImmContext->Dispatch(mWidth/32, mHeight/32, zValue);
+//	ImmContext->CSSetUnorderedAccessViews(0, 1, nullUAV, nullptr);
+//}
 
 UINT ComputedTexture::NumMipLevels(UINT width, UINT height)
 {

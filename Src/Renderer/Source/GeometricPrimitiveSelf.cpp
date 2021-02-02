@@ -19,16 +19,30 @@ using namespace DirectX;
 //
 //******************************************************************************
 GeometricPrimitiveSelf::GeometricPrimitiveSelf(
-    D3D::DevicePtr& device,
-    D3D11_PRIMITIVE_TOPOLOGY topology
-    ) : Mesh()
+    Graphics::GraphicsDevice* p_device,
+    D3D11_PRIMITIVE_TOPOLOGY topology) 
+    : Mesh(),
+    mpVertexBuffer(new Graphics::GPUBuffer()),
+    mpIndexBuffer(new Graphics::GPUBuffer())
 {
     HRESULT hr = S_OK;
+    auto& pDevice = p_device->GetDevicePtr();
 
-    mTopologyType = topology;
+    //mTopologyType = topology;
+    
+
+    //Graphics::GPUBufferDesc desc = {};
+    //desc.ByteWidth = sizeof(CBufferForMesh);
+    //desc.BindFlags = Graphics::BindFlagID::BIND_CONSTANT_BUFFER;
+    //desc.Usage = Graphics::UsageID::USAGE_DEFAULT;
+    //desc.CPUAccessFlags = 0;
+    //desc.MiscFlags = 0;
+    //desc.StructureByteStride = 0;
+
+    //p_device->CreateBuffer(&desc, nullptr, )
 
     //--> Create Constant Buffer
-    hr = device->CreateBuffer(
+    hr = pDevice->CreateBuffer(
         &CD3D11_BUFFER_DESC(
             sizeof(CBufferForMesh),
             D3D11_BIND_CONSTANT_BUFFER,
@@ -42,7 +56,7 @@ GeometricPrimitiveSelf::GeometricPrimitiveSelf(
         );
     _ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
-    hr = device->CreateBuffer(
+    hr = pDevice->CreateBuffer(
         &CD3D11_BUFFER_DESC(
             sizeof(CBufferForMaterial),
             D3D11_BIND_CONSTANT_BUFFER,
@@ -52,47 +66,47 @@ GeometricPrimitiveSelf::GeometricPrimitiveSelf(
             0
         ),
         nullptr,
-        m_pConstantBufferMaterial.GetAddressOf()
+        mpConstantBufferMaterial.GetAddressOf()
     );
     _ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
 
 
 
-    //-->Create RasterizerState
-    hr = device->CreateRasterizerState(
-        &CD3D11_RASTERIZER_DESC(
-            D3D11_FILL_WIREFRAME,     // D3D11_FILL_MODE FillMode;
-            D3D11_CULL_BACK,          // D3D11_CULL_MODE CullMode;
-            FALSE,                    // BOOL FrontCounterClockwise;
-            0,                        // INT DepthBias;
-            0.0f,                     // FLOAT DepthBiasClamp;
-            0.0f,                     // FLOAT SlopeScaledDepthBias;
-            TRUE,                     // BOOL DepthClipEnable;
-            FALSE,                    // BOOL ScissorEnable;
-            FALSE,                    // BOOL MultisampleEnable;
-            FALSE                      // BOOL AntialiasedLineEnable;
-            ),
-        m_pRasterizerWire.GetAddressOf()
-        );
-    _ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
+    ////-->Create RasterizerState
+    //hr = pDevice->CreateRasterizerState(
+    //    &CD3D11_RASTERIZER_DESC(
+    //        D3D11_FILL_WIREFRAME,     // D3D11_FILL_MODE FillMode;
+    //        D3D11_CULL_BACK,          // D3D11_CULL_MODE CullMode;
+    //        FALSE,                    // BOOL FrontCounterClockwise;
+    //        0,                        // INT DepthBias;
+    //        0.0f,                     // FLOAT DepthBiasClamp;
+    //        0.0f,                     // FLOAT SlopeScaledDepthBias;
+    //        TRUE,                     // BOOL DepthClipEnable;
+    //        FALSE,                    // BOOL ScissorEnable;
+    //        FALSE,                    // BOOL MultisampleEnable;
+    //        FALSE                      // BOOL AntialiasedLineEnable;
+    //        ),
+    //    m_pRasterizerWire.GetAddressOf()
+    //    );
+    //_ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
-    hr = device->CreateRasterizerState(
-        &CD3D11_RASTERIZER_DESC(
-            D3D11_FILL_SOLID,         // D3D11_FILL_MODE FillMode;
-            D3D11_CULL_BACK,          // D3D11_CULL_MODE CullMode;
-            FALSE,                    // BOOL FrontCounterClockwise;
-            0,                        // INT DepthBias;
-            0.0f,                     // FLOAT DepthBiasClamp;
-            0.0f,                     // FLOAT SlopeScaledDepthBias;
-            TRUE,                    // BOOL DepthClipEnable;
-            FALSE,                    // BOOL ScissorEnable;
-            FALSE,                    // BOOL MultisampleEnable;
-            FALSE                      // BOOL AntialiasedLineEnable;
-            ),
-        m_pRasterizerSolid.GetAddressOf()
-        );
-    _ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
+    //hr = pDevice->CreateRasterizerState(
+    //    &CD3D11_RASTERIZER_DESC(
+    //        D3D11_FILL_SOLID,         // D3D11_FILL_MODE FillMode;
+    //        D3D11_CULL_BACK,          // D3D11_CULL_MODE CullMode;
+    //        FALSE,                    // BOOL FrontCounterClockwise;
+    //        0,                        // INT DepthBias;
+    //        0.0f,                     // FLOAT DepthBiasClamp;
+    //        0.0f,                     // FLOAT SlopeScaledDepthBias;
+    //        TRUE,                    // BOOL DepthClipEnable;
+    //        FALSE,                    // BOOL ScissorEnable;
+    //        FALSE,                    // BOOL MultisampleEnable;
+    //        FALSE                      // BOOL AntialiasedLineEnable;
+    //        ),
+    //    m_pRasterizerSolid.GetAddressOf()
+    //    );
+    //_ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
 
 }
@@ -103,84 +117,111 @@ GeometricPrimitiveSelf::~GeometricPrimitiveSelf()
 
 
 
-void GeometricPrimitiveSelf::CreateBuffers(D3D::DevicePtr& device)
+void GeometricPrimitiveSelf::CreateBuffers(Graphics::GraphicsDevice* p_device)
 {
     HRESULT hr = S_OK;
-
+    auto pDevice = p_device->GetDevicePtr();
     //--> Create Vertex Buffer
-    D3D11_SUBRESOURCE_DATA vSrData = {};
-    vSrData.pSysMem = mVertices.data();
-    vSrData.SysMemPitch = 0;
-    vSrData.SysMemSlicePitch = 0;
+    //D3D11_SUBRESOURCE_DATA vSrData = {};
+    //vSrData.pSysMem = mVertices.data();
+    //vSrData.SysMemPitch = 0;
+    //vSrData.SysMemSlicePitch = 0;
 
-    //hr = pDev->CreateBuffer(&vertBufDesc, &vSrData, mVertexBuffer.GetAddressOf());
-    //_ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
-    hr = device->CreateBuffer(
-        &CD3D11_BUFFER_DESC(
-            sizeof(Vertex) * mVertices.size(),
-            D3D11_BIND_VERTEX_BUFFER,
-            D3D11_USAGE_IMMUTABLE,
-            0,
-            0,
-            0
-        ),
-        &vSrData,
-        m_pVertexBuffer.GetAddressOf()
-    );
-    _ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
-
-
-
-    D3D11_SUBRESOURCE_DATA iSrData = {};
-    iSrData.pSysMem = mIndices.data();
-    iSrData.SysMemPitch = 0;
-    iSrData.SysMemSlicePitch = 0;
-
-    //hr = pDev->CreateBuffer(&idxBuffDesc, &iSrData, mIndexBuffer.GetAddressOf());
+    ////hr = pDev->CreateBuffer(&vertBufDesc, &vSrData, mpVertexBuffer.GetAddressOf());
+    ////_ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
+    //hr = pDevice->CreateBuffer(
+    //    &CD3D11_BUFFER_DESC(
+    //        sizeof(Vertex) * mVertices.size(),
+    //        D3D11_BIND_VERTEX_BUFFER,
+    //        D3D11_USAGE_IMMUTABLE,
+    //        0,
+    //        0,
+    //        0
+    //    ),
+    //    &vSrData,
+    //    m_pVertexBuffer.GetAddressOf()
+    //);
     //_ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
-    hr = device->CreateBuffer(
-        &CD3D11_BUFFER_DESC(
-            sizeof(u_int) * mIndices.size(),
-            D3D11_BIND_INDEX_BUFFER,
-            D3D11_USAGE_IMMUTABLE,
-            0,
-            0,
-            0
-        ),
-        &iSrData,
-        m_pIndexBuffer.GetAddressOf()
-    );
-    _ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
+    //
 
+
+    //D3D11_SUBRESOURCE_DATA iSrData = {};
+    //iSrData.pSysMem = mIndices.data();
+    //iSrData.SysMemPitch = 0;
+    //iSrData.SysMemSlicePitch = 0;
+
+    ////hr = pDev->CreateBuffer(&idxBuffDesc, &iSrData, mpIndexBuffer.GetAddressOf());
+    ////_ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
+
+    //hr = pDevice->CreateBuffer(
+    //    &CD3D11_BUFFER_DESC(
+    //        sizeof(u_int) * mIndices.size(),
+    //        D3D11_BIND_INDEX_BUFFER,
+    //        D3D11_USAGE_IMMUTABLE,
+    //        0,
+    //        0,
+    //        0
+    //    ),
+    //    &iSrData,
+    //    m_pIndexBuffer.GetAddressOf()
+    //);
+    //_ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
+
+    Graphics::GPUBufferDesc desc = {};
+    desc.ByteWidth = sizeof(Vertex) * mVertices.size();
+    desc.BindFlags = Graphics::BIND_VERTEX_BUFFER;
+    desc.Usage = Graphics::USAGE_IMMUTABLE;
+    desc.CPUAccessFlags = 0;
+    desc.MiscFlags = 0;
+    desc.StructureByteStride = 0;
+
+    Graphics::SubresourceData data = {};
+    data.pSysMem = mVertices.data();
+    data.SysMemPitch = 0;
+    data.SysMemSlicePitch = 0;
+
+    p_device->CreateBuffer(&desc, &data, mpVertexBuffer.get());
+
+    desc.ByteWidth = sizeof(uint32_t) * mIndices.size();
+    desc.BindFlags = Graphics::BIND_INDEX_BUFFER;
+    data.pSysMem = mIndices.data();
+
+    p_device->CreateBuffer(&desc, &data, mpIndexBuffer.get());
+    
 }
 
 
 
 void GeometricPrimitiveSelf::Render(
-    D3D::DeviceContextPtr& imm_context,
+    Graphics::GraphicsDevice* p_device,
     float elapsed_time,
     const DirectX::XMMATRIX& world,
     CameraController* camera,
     Shader* shader,
-    const MaterialData& mat_data,
+    const Material& mat_data,
     bool isShadow,
     bool isSolid
 )
 {
     HRESULT hr = S_OK;
+    auto& ImmContext = p_device->GetImmContextPtr();
+    
 
-    if (shader != nullptr) shader->ActivateShaders(imm_context);
+    if (shader != nullptr) shader->ActivateShaders(ImmContext);
 
-    SetRenderState(imm_context);
+    isSolid ? p_device->RSSetState(Graphics::RS_BACK)
+        : p_device->RSSetState(Graphics::RS_WIRE_BACK);
+
+    SetRenderState(p_device);
 
 
-    CBufferForMesh meshData = {};
-    DirectX::XMStoreFloat4x4(&meshData.world, world);
-    DirectX::XMStoreFloat4x4(&meshData.WVP, world * (isShadow ? camera->GetOrthoView() * camera->GetOrthoProj(imm_context) : camera->GetViewMatrix() * camera->GetProjMatrix(imm_context)));
-    DirectX::XMStoreFloat4x4(&meshData.invViewProj, camera->GetInvProjViewMatrix(imm_context));
-    DirectX::XMStoreFloat4x4(&meshData.invView, camera->GetInvViewMatrix());
-    DirectX::XMStoreFloat4x4(&meshData.invProj, camera->GetInvProjMatrix(imm_context));
+    
+    DirectX::XMStoreFloat4x4(&mMeshData.world, world);
+    DirectX::XMStoreFloat4x4(&mMeshData.WVP, world * (isShadow ? camera->GetOrthoView() * camera->GetOrthoProj(ImmContext) : camera->GetViewMatrix() * camera->GetProjMatrix(ImmContext)));
+    DirectX::XMStoreFloat4x4(&mMeshData.invViewProj, camera->GetInvProjViewMatrix(ImmContext));
+    DirectX::XMStoreFloat4x4(&mMeshData.invView, camera->GetInvViewMatrix());
+    DirectX::XMStoreFloat4x4(&mMeshData.invProj, camera->GetInvProjMatrix(ImmContext));
 
     CBufferForMaterial matData = {};
     matData.mat_color = mat_data.mat_color;
@@ -191,33 +232,32 @@ void GeometricPrimitiveSelf::Render(
     matData.diffuse = mat_data.diffuse;
     matData.specular = mat_data.specular;
 
-    imm_context->UpdateSubresource(mpConstantBufferMesh.Get(), 0, nullptr, &meshData, 0, 0);
-    imm_context->VSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
-    imm_context->HSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
-    imm_context->DSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
-    imm_context->GSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
-    imm_context->PSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
+    ImmContext->UpdateSubresource(mpConstantBufferMesh.Get(), 0, nullptr, &mMeshData, 0, 0);
+    ImmContext->VSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
+    ImmContext->HSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
+    ImmContext->DSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
+    ImmContext->GSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
+    ImmContext->PSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
 
-    imm_context->UpdateSubresource(m_pConstantBufferMaterial.Get(), 0, nullptr, &matData, 0, 0);
-    imm_context->VSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());
-    imm_context->HSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());
-    imm_context->DSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());
-    imm_context->GSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());
-    imm_context->PSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());
+    ImmContext->UpdateSubresource(mpConstantBufferMaterial.Get(), 0, nullptr, &matData, 0, 0);
+    ImmContext->VSSetConstantBuffers(1, 1, mpConstantBufferMaterial.GetAddressOf());
+    ImmContext->HSSetConstantBuffers(1, 1, mpConstantBufferMaterial.GetAddressOf());
+    ImmContext->DSSetConstantBuffers(1, 1, mpConstantBufferMaterial.GetAddressOf());
+    ImmContext->GSSetConstantBuffers(1, 1, mpConstantBufferMaterial.GetAddressOf());
+    ImmContext->PSSetConstantBuffers(1, 1, mpConstantBufferMaterial.GetAddressOf());
 
 
-    UINT stride = sizeof(Vertex);
-    UINT offset = 0;
-    imm_context->IASetVertexBuffers(0, 1, m_pVertexBuffer.GetAddressOf(), &stride, &offset);
-    imm_context->IASetIndexBuffer(m_pIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-    imm_context->IASetPrimitiveTopology(mTopologyType);
+    uint32_t stride = sizeof(Vertex);
+    uint32_t offset = 0;
 
-    isSolid ? imm_context->RSSetState(m_pRasterizerSolid.Get())
-            : imm_context->RSSetState(m_pRasterizerWire.Get());
+    Graphics::GPUBuffer* vb = mpVertexBuffer.get();
+    p_device->BindVertexBuffer(&vb, 0, 1, &stride, &offset);
+    p_device->BindIndexBuffer(mpIndexBuffer.get(), Graphics::IndexBufferFormat::INDEXFORMAT_32BIT, 0);
+    p_device->BindPrimitiveTopology(mToplogyID);
 
-    D3D11_BUFFER_DESC bufDesc = {};
-    m_pIndexBuffer->GetDesc(&bufDesc);
-    imm_context->DrawIndexed(bufDesc.ByteWidth / sizeof(WORD), 0, 0);
+
+    
+    p_device->DrawIndexed(mpIndexBuffer->desc.ByteWidth / sizeof(uint32_t), 0, 0);
 }
 
 //******************************************************************************
@@ -225,16 +265,17 @@ void GeometricPrimitiveSelf::Render(
 //      BasicLine
 //
 //******************************************************************************
-BasicLine::BasicLine(D3D::DevicePtr& device)
-    :GeometricPrimitiveSelf(device, D3D11_PRIMITIVE_TOPOLOGY_LINELIST)
+BasicLine::BasicLine(Graphics::GraphicsDevice* p_device)
+    :GeometricPrimitiveSelf(p_device, D3D11_PRIMITIVE_TOPOLOGY_LINELIST)
 {
+    auto& pDevice = p_device->GetDevicePtr();
 
     Vertex vertices[] =
     {
         { XMFLOAT3(-0.5, +0.0, +0.0), XMFLOAT3(+0.0f, +0.0f, +1.0f), XMFLOAT2(0, 0), XMFLOAT4(1, 1, 1, 1)},
         { XMFLOAT3(+0.5, +0.0, +0.0), XMFLOAT3(+0.0f, +0.0f, +1.0f), XMFLOAT2(0, 0), XMFLOAT4(1, 1, 1, 1)},
     };
-    WORD indices[] =
+    uint32_t indices[] =
     {
         0 , 1
     };
@@ -249,11 +290,11 @@ BasicLine::BasicLine(D3D::DevicePtr& device)
     }
 
 
-    CreateBuffers(device/*, vertices, indices, ARRAYSIZE(vertices), ARRAYSIZE(indices)*/);
+    CreateBuffers(p_device/*, vertices, indices, ARRAYSIZE(vertices), ARRAYSIZE(indices)*/);
 
 
     //--> Create Constant Buffer
-    auto hr = device->CreateBuffer(
+    auto hr = pDevice->CreateBuffer(
         &CD3D11_BUFFER_DESC(
             sizeof(CBufferForMesh),
             D3D11_BIND_CONSTANT_BUFFER,
@@ -267,32 +308,30 @@ BasicLine::BasicLine(D3D::DevicePtr& device)
     );
     _ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
-    if (m_pRasterizerSolid) m_pRasterizerSolid.Reset();
-    hr = device->CreateRasterizerState(
-        &CD3D11_RASTERIZER_DESC(
-            D3D11_FILL_SOLID,         // D3D11_FILL_MODE FillMode;
-            D3D11_CULL_NONE,          // D3D11_CULL_MODE CullMode;
-            FALSE,                    // BOOL FrontCounterClockwise;
-            0,                        // INT DepthBias;
-            0.0f,                     // FLOAT DepthBiasClamp;
-            0.0f,                     // FLOAT SlopeScaledDepthBias;
-            TRUE,                    // BOOL DepthClipEnable;
-            FALSE,                    // BOOL ScissorEnable;
-            FALSE,                    // BOOL MultisampleEnable;
-            FALSE                     // BOOL AntialiasedLineEnable;
-        ),
-        m_pRasterizerSolid.GetAddressOf()
-    );
-    _ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
+    //if (m_pRasterizerSolid) m_pRasterizerSolid.Reset();
+    //hr = pDevice->CreateRasterizerState(
+    //    &CD3D11_RASTERIZER_DESC(
+    //        D3D11_FILL_SOLID,         // D3D11_FILL_MODE FillMode;
+    //        D3D11_CULL_NONE,          // D3D11_CULL_MODE CullMode;
+    //        FALSE,                    // BOOL FrontCounterClockwise;
+    //        0,                        // INT DepthBias;
+    //        0.0f,                     // FLOAT DepthBiasClamp;
+    //        0.0f,                     // FLOAT SlopeScaledDepthBias;
+    //        TRUE,                    // BOOL DepthClipEnable;
+    //        FALSE,                    // BOOL ScissorEnable;
+    //        FALSE,                    // BOOL MultisampleEnable;
+    //        FALSE                     // BOOL AntialiasedLineEnable;
+    //    ),
+    //    m_pRasterizerSolid.GetAddressOf()
+    //);
+    //_ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
 }
 
-void BasicLine::SetRenderState(D3D::DeviceContextPtr& imm_context)
+void BasicLine::SetRenderState(Graphics::GraphicsDevice* p_device)
 {
-    CBufferForLine data;
-    data.param.x = 4;
-    imm_context->UpdateSubresource(mConstantBufferForLine.Get(), 0, nullptr, &data, 0, 0);
-    imm_context->VSSetConstantBuffers(1, 1, mConstantBufferForLine.GetAddressOf());
+    mMeshData.param.x = 4;
+    p_device->RSSetState(Graphics::RS_DOUBLESIDED);
 }
 
 
@@ -302,8 +341,8 @@ void BasicLine::SetRenderState(D3D::DeviceContextPtr& imm_context)
 //
 //******************************************************************************
 BasicCube::BasicCube(
-    D3D::DevicePtr& device)
-    :GeometricPrimitiveSelf(device)
+    Graphics::GraphicsDevice* p_device)
+    :GeometricPrimitiveSelf(p_device)
 {
    
 
@@ -354,7 +393,7 @@ BasicCube::BasicCube(
 
 
     // Set Info of Index
-    u_int indices[] = {
+    uint32_t indices[] = {
         0, 1, 2,     1,  3, 2,
         4, 6, 5,     5,  6, 7,
         8, 9, 10,    9, 11, 10,
@@ -369,7 +408,7 @@ BasicCube::BasicCube(
         mIndices.emplace_back(index);
     }
 
-    CreateBuffers(device/*, vertices, indices, ARRAYSIZE(vertices), ARRAYSIZE(indices)*/);
+    CreateBuffers(p_device/*, vertices, indices, ARRAYSIZE(vertices), ARRAYSIZE(indices)*/);
 
 }
 
@@ -382,9 +421,9 @@ BasicCube::BasicCube(
 //
 //******************************************************************************
 BasicCylinder::BasicCylinder(
-    D3D::DevicePtr& device,
+    Graphics::GraphicsDevice* p_device,
     unsigned int slices) 
-    :GeometricPrimitiveSelf(device)
+    :GeometricPrimitiveSelf(p_device)
 {
     //std::vector<Vertex> vertices;
     //std::vector<WORD> indices;
@@ -393,7 +432,7 @@ BasicCylinder::BasicCylinder(
     float r = 0.5f;
 
     Vertex vertex;
-    u_int base_index = 0;
+    uint32_t base_index = 0;
 
     // top cap centre
     vertex.position = DirectX::XMFLOAT3(0.0f, +0.5f, 0.0f);
@@ -404,7 +443,7 @@ BasicCylinder::BasicCylinder(
     //vertex.binormal = DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f);
     mVertices.emplace_back(vertex);
     // top cap ring
-    for (u_int i = 0; i < slices; ++i)
+    for (uint32_t i = 0; i < slices; ++i)
     {
         float x = r * cosf(i*d);
         float z = r * sinf(i*d);
@@ -419,7 +458,7 @@ BasicCylinder::BasicCylinder(
         mVertices.emplace_back(vertex);
     }
     base_index = 0;
-    for (u_int i = 0; i < slices - 1; ++i)
+    for (uint32_t i = 0; i < slices - 1; ++i)
     {
         mIndices.emplace_back(base_index + 0);
         mIndices.emplace_back(base_index + i + 2);
@@ -439,7 +478,7 @@ BasicCylinder::BasicCylinder(
 
     mVertices.emplace_back(vertex);
     // bottom cap ring
-    for (u_int i = 0; i < slices; ++i)
+    for (uint32_t i = 0; i < slices; ++i)
     {
         float x = r * cosf(i*d);
         float z = r * sinf(i*d);
@@ -455,7 +494,7 @@ BasicCylinder::BasicCylinder(
         mVertices.emplace_back(vertex);
     }
     base_index = slices + 1;
-    for (u_int i = 0; i < slices - 1; ++i)
+    for (uint32_t i = 0; i < slices - 1; ++i)
     {
         mIndices.emplace_back(base_index + 0);
         mIndices.emplace_back(base_index + i + 1);
@@ -466,7 +505,7 @@ BasicCylinder::BasicCylinder(
     mIndices.emplace_back(base_index + (0) + 1);
 
     // side rectangle
-    for (u_int i = 0; i < slices; ++i)
+    for (uint32_t i = 0; i < slices; ++i)
     {
         float x = r * cosf(i*d);
         float z = r * sinf(i*d);
@@ -494,7 +533,7 @@ BasicCylinder::BasicCylinder(
         mVertices.emplace_back(vertex);
     }
     base_index = slices * 2 + 2;
-    for (u_int i = 0; i < slices - 1; ++i)
+    for (uint32_t i = 0; i < slices - 1; ++i)
     {
         mIndices.emplace_back(base_index + i * 2 + 0);
         mIndices.emplace_back(base_index + i * 2 + 2);
@@ -513,7 +552,7 @@ BasicCylinder::BasicCylinder(
     mIndices.emplace_back(base_index + (0) * 2 + 1);
 
 
-    CreateBuffers(device/*, vertices.data(), indices.data(), vertices.size(), indices.size()*/);
+    CreateBuffers(p_device);
 
 
 }
@@ -526,11 +565,11 @@ BasicCylinder::BasicCylinder(
 //
 //******************************************************************************
 BasicSphere::BasicSphere(
-    D3D::DevicePtr& device,
+    Graphics::GraphicsDevice* p_device,
     unsigned int slices, 
     unsigned int stacks,
     float radius)
-    :GeometricPrimitiveSelf(device/*, D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST*/)
+    :GeometricPrimitiveSelf(p_device)
 {
     //std::vector<Vertex> vertices;
     //std::vector<WORD> indices;
@@ -576,12 +615,12 @@ BasicSphere::BasicSphere(
     float theta_step = 2.0f*DirectX::XM_PI / slices;
 
     // Compute vertices for each stack ring (do not count the poles as rings).
-    for (u_int i = 1; i <= stacks - 1; ++i)
+    for (uint32_t i = 1; i <= stacks - 1; ++i)
     {
         float phi = i * phi_step;
 
         // Vertices of ring.
-        for (u_int j = 0; j <= slices; ++j)
+        for (uint32_t j = 0; j <= slices; ++j)
         {
             float theta = j*theta_step;
 
@@ -622,7 +661,7 @@ BasicSphere::BasicSphere(
     // Compute indices for top stack.  The top stack was written first to the vertex buffer
     // and connects the top pole to the first ring.
     //
-    for (u_int i = 1; i <= slices + 1; ++i)
+    for (uint32_t i = 1; i <= slices + 1; ++i)
     {
         mIndices.emplace_back(0);
         mIndices.emplace_back(i + 1);
@@ -635,11 +674,11 @@ BasicSphere::BasicSphere(
 
     // Offset the indices to the index of the first vertex in the first ring.
     // This is just skipping the top pole vertex.
-    u_int base_index = 1;
-    u_int ring_vertex_count = slices + 2;
-    for (u_int i = 0; i < stacks - 2; ++i)
+    uint32_t base_index = 1;
+    uint32_t ring_vertex_count = slices + 2;
+    for (uint32_t i = 0; i < stacks - 2; ++i)
     {
-        for (u_int j = 0; j < slices + 1; ++j)
+        for (uint32_t j = 0; j < slices + 1; ++j)
         {
             mIndices.emplace_back(base_index + i*ring_vertex_count + j);
             mIndices.emplace_back(base_index + i*ring_vertex_count + j + 1);
@@ -657,19 +696,19 @@ BasicSphere::BasicSphere(
     //
 
     // South pole vertex was added last.
-    u_int south_pole_index = (u_int)mVertices.size() - 1;
+    uint32_t south_pole_index = (uint32_t)mVertices.size() - 1;
 
     // Offset the indices to the index of the first vertex in the last ring.
     base_index = south_pole_index - ring_vertex_count;
 
-    for (u_int i = 0; i < slices + 1; ++i)
+    for (uint32_t i = 0; i < slices + 1; ++i)
     {
         mIndices.emplace_back(south_pole_index);
         mIndices.emplace_back(base_index + i);
         mIndices.emplace_back(base_index + i + 1);
     }
 
-    CreateBuffers(device/*, vertices.data(), indices.data(), vertices.size(), indices.size()*/);
+    CreateBuffers(p_device);
 }
 
 
@@ -682,12 +721,12 @@ BasicSphere::BasicSphere(
 //
 //******************************************************************************
 BasicCapsule::BasicCapsule(
-    D3D::DevicePtr& device,
+    Graphics::GraphicsDevice* p_device,
     unsigned int slices, 
     unsigned int stacks, 
     float radius,
     float height)
-    :GeometricPrimitiveSelf(device)
+    :GeometricPrimitiveSelf(p_device)
 {
     //std::vector<Vertex> vertices;
     //std::vector<WORD> indices;
@@ -710,7 +749,7 @@ BasicCapsule::BasicCapsule(
     float theta_step = 2.0f * DirectX::XM_PI / slices;
 
     // Compute vertices for each stack ring (do not count the poles as rings).
-    for (u_int i = 1; i <= stacks * 2 - 1; ++i)
+    for (uint32_t i = 1; i <= stacks * 2 - 1; ++i)
     {
         float phi = i * phi_step;
         Vertex v;
@@ -719,7 +758,7 @@ BasicCapsule::BasicCapsule(
         if (i <= stacks)
         {
             // Vertices of ring.
-            for (u_int j = 0; j <= slices; ++j)
+            for (uint32_t j = 0; j <= slices; ++j)
             {
                 float theta = j * theta_step;
 
@@ -741,7 +780,7 @@ BasicCapsule::BasicCapsule(
         if (i >= stacks)
         {
             // Vertices of ring.
-            for (u_int j = 0; j <= slices; ++j)
+            for (uint32_t j = 0; j <= slices; ++j)
             {
                 float theta = j * theta_step;
 
@@ -771,7 +810,7 @@ BasicCapsule::BasicCapsule(
     // Compute indices for top stack.  The top stack was written first to the vertex buffer
     // and connects the top pole to the first ring.
     //
-    for (u_int i = 1; i <= slices; ++i)
+    for (uint32_t i = 1; i <= slices; ++i)
     {
         mIndices.emplace_back(0);
         mIndices.emplace_back(i + 1);
@@ -784,11 +823,11 @@ BasicCapsule::BasicCapsule(
 
     // Offset the indices to the index of the first vertex in the first ring.
     // This is just skipping the top pole vertex.
-    u_int base_index = 1;
-    u_int ring_vertex_count = slices + 1;
-    for (u_int i = 0; i < stacks * 2 - 1; ++i)
+    uint32_t base_index = 1;
+    uint32_t ring_vertex_count = slices + 1;
+    for (uint32_t i = 0; i < stacks * 2 - 1; ++i)
     {
-        for (u_int j = 0; j < slices; ++j)
+        for (uint32_t j = 0; j < slices; ++j)
         {
             mIndices.emplace_back(base_index + i * ring_vertex_count + j);
             mIndices.emplace_back(base_index + i * ring_vertex_count + j + 1);
@@ -806,19 +845,19 @@ BasicCapsule::BasicCapsule(
     //
 
     // South pole vertex was added last.
-    u_int south_pole_index = (u_int)mVertices.size() - 1;
+    uint32_t south_pole_index = (uint32_t)mVertices.size() - 1;
 
     // Offset the indices to the index of the first vertex in the last ring.
     base_index = south_pole_index - ring_vertex_count;
 
-    for (u_int i = 0; i < slices; ++i)
+    for (uint32_t i = 0; i < slices; ++i)
     {
         mIndices.emplace_back(south_pole_index);
         mIndices.emplace_back(base_index + i);
         mIndices.emplace_back(base_index + i + 1);
     }
 
-    CreateBuffers(device/*, vertices.data(), indices.data(), vertices.size(), indices.size()*/);
+    CreateBuffers(p_device);
 
 }
 

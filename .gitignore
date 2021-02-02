@@ -1,4 +1,8 @@
-/.vs/GameEngine/v16/
+/.vs/
 /Build/
 /Data/
 /Src/3rdParty/
+/Reference/
+imgui.ini
+*.db
+.vs/GameEngine/v16/.suo

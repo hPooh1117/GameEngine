@@ -1,4 +1,4 @@
-#include "H_Light.hlsli"
+#include "HF_GlobalVariables.hlsli"
 #include "H_Functions.hlsli"
 
 struct VS_Input
@@ -47,43 +47,8 @@ struct PS_Input
 	uint  RTIndex : SV_RenderTargetArrayIndex;
 };
 
-//----------------------------------
-// ÉOÉçÅ[ÉoÉãïœêî
-//----------------------------------
-#define MAX_BONES 150
-cbuffer CBPerMatrix : register(b0)
-{
-	row_major float4x4 matWVP;
-	row_major float4x4 world;
 
 
-	row_major float4x4 inv_projview;
-
-};
-
-cbuffer CBPerMeshMat : register(b1)
-{
-	float4 mat_color;
-
-	float3 specColor;
-
-	float gMetalness;
-	float gRoughness;
-	float gDiffuse;
-	float gSpecular;
-	int   gTextureConfig;
-}
-
-cbuffer CBPerBone : register(b4)
-{
-	row_major float4x4 bone_transforms[MAX_BONES];
-}
-
-cbuffer CBufferForCubemap : register(b3)
-{
-	row_major float4x4 view[6];
-	row_major float4x4 proj;
-};
 
 Texture2D diffuse_texture : register(t0);
 SamplerState decal_sampler : register(s0);

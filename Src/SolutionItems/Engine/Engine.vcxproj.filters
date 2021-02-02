@@ -5,128 +5,168 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="ヘッダー ファイル">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    <Filter Include="ソース ファイル\CAMERA">
+      <UniqueIdentifier>{1a0db055-06f1-4310-ab6f-569b13149b86}</UniqueIdentifier>
     </Filter>
-    <Filter Include="リソース ファイル">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="ソース ファイル\LIGHT">
+      <UniqueIdentifier>{103ecd56-e35c-4cdf-b780-9b5f93d084c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\UI">
+      <UniqueIdentifier>{66576f8e-cb18-451b-b997-8e59ebb8d048}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\PARTICLE">
+      <UniqueIdentifier>{1c071dcb-ce8d-4bc3-a346-f5d40bf7e984}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\OBJECT SYSTEM">
+      <UniqueIdentifier>{8a1b9a64-a8df-4cc6-900e-88ee2ec85712}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\SYSTEM">
+      <UniqueIdentifier>{bfb88139-a26b-4f9c-96ba-1abc588300c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\ECS%28NOT IMPLEMENTED%29">
+      <UniqueIdentifier>{9d8d7100-94bc-43ca-ad10-1f6d9ec04453}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Engine\Actor.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Engine\ActorManager.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Engine\AudioSystem.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Engine\Camera.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Engine\CameraController.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Engine\CustomLight.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Engine\GameSystem.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Engine\Light.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Engine\MainCamera.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Engine\OrthoView.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Engine\Particle.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Engine\ParticleManager.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Engine\PhysicsManager.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="..\..\Engine\DataStructures.h">
+      <Filter>ソース ファイル</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Engine\QuadTree.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Engine\Singleton.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Engine\TraceCamera.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Engine\UIClient.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Engine\UIRenderer.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>ソース ファイル</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Engine\Settings.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Engine\Singleton.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Engine\Camera.h">
+      <Filter>ソース ファイル\CAMERA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Engine\CameraController.h">
+      <Filter>ソース ファイル\CAMERA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Engine\MainCamera.h">
+      <Filter>ソース ファイル\CAMERA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Engine\OrthoView.h">
+      <Filter>ソース ファイル\CAMERA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Engine\TraceCamera.h">
+      <Filter>ソース ファイル\CAMERA</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Engine\LightController.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>ソース ファイル\LIGHT</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Engine\DataStructures.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="..\..\Engine\UIClient.h">
+      <Filter>ソース ファイル\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Engine\UIRenderer.h">
+      <Filter>ソース ファイル\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Engine\Particle.h">
+      <Filter>ソース ファイル\PARTICLE</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Engine\ParticleManager.h">
+      <Filter>ソース ファイル\PARTICLE</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Engine\Actor.h">
+      <Filter>ソース ファイル\OBJECT SYSTEM</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Engine\ActorManager.h">
+      <Filter>ソース ファイル\OBJECT SYSTEM</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Engine\GameSystem.h">
+      <Filter>ソース ファイル\SYSTEM</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Engine\AudioSystem.h">
+      <Filter>ソース ファイル\SYSTEM</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Engine\PhysicsManager.h">
+      <Filter>ソース ファイル\SYSTEM</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Engine\ComputeExecuter.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>ソース ファイル\SYSTEM</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Engine\EntityComponentSystem.h">
+      <Filter>ソース ファイル\ECS%28NOT IMPLEMENTED%29</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Engine\LayerComponent.h">
+      <Filter>ソース ファイル\ECS%28NOT IMPLEMENTED%29</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Engine\HierarchyComponent.h">
+      <Filter>ソース ファイル\ECS%28NOT IMPLEMENTED%29</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Engine\NameComponent.h">
+      <Filter>ソース ファイル\ECS%28NOT IMPLEMENTED%29</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Engine\Scene_ECS.h">
+      <Filter>ソース ファイル\ECS%28NOT IMPLEMENTED%29</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Engine\TransformComponent.h">
+      <Filter>ソース ファイル\ECS%28NOT IMPLEMENTED%29</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Engine\TestEngine.h">
+      <Filter>ソース ファイル\ECS%28NOT IMPLEMENTED%29</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Engine\Source\Actor.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Engine\Source\ActorManager.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Engine\Source\AudioSystem.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Engine\Source\CameraController.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Engine\Source\CustomLight.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Engine\Source\GameSystem.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Engine\Source\MainCamera.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Engine\Source\OrthoView.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Engine\Source\ParticleManager.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Engine\Source\PhysicsManager.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Engine\Source\Singleton.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Engine\Source\TraceCamera.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="..\..\Engine\Source\CameraController.cpp">
+      <Filter>ソース ファイル\CAMERA</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Engine\Source\UIRenderer.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="..\..\Engine\Source\MainCamera.cpp">
+      <Filter>ソース ファイル\CAMERA</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Engine\Source\OrthoView.cpp">
+      <Filter>ソース ファイル\CAMERA</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Engine\Source\TraceCamera.cpp">
+      <Filter>ソース ファイル\CAMERA</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Engine\Source\LightController.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>ソース ファイル\LIGHT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Engine\Source\UIRenderer.cpp">
+      <Filter>ソース ファイル\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Engine\Source\ParticleManager.cpp">
+      <Filter>ソース ファイル\PARTICLE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Engine\Source\Actor.cpp">
+      <Filter>ソース ファイル\OBJECT SYSTEM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Engine\Source\ActorManager.cpp">
+      <Filter>ソース ファイル\OBJECT SYSTEM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Engine\Source\GameSystem.cpp">
+      <Filter>ソース ファイル\SYSTEM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Engine\Source\AudioSystem.cpp">
+      <Filter>ソース ファイル\SYSTEM</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Engine\Source\ComputeExecuter.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>ソース ファイル\SYSTEM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Engine\Source\PhysicsManager.cpp">
+      <Filter>ソース ファイル\SYSTEM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Engine\Source\NameComponent.cpp">
+      <Filter>ソース ファイル\ECS%28NOT IMPLEMENTED%29</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Engine\Source\SceneSerializer.cpp">
+      <Filter>ソース ファイル\ECS%28NOT IMPLEMENTED%29</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Engine\Source\Scene_ECS.cpp">
+      <Filter>ソース ファイル\ECS%28NOT IMPLEMENTED%29</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Engine\Source\TransformComponent.cpp">
+      <Filter>ソース ファイル\ECS%28NOT IMPLEMENTED%29</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Engine\Source\TestEngine.cpp">
+      <Filter>ソース ファイル\ECS%28NOT IMPLEMENTED%29</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

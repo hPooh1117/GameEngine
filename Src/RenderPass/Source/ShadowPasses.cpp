@@ -6,13 +6,13 @@
 
 #include "./Renderer/Blender.h"
 #include "./Renderer/DepthStencilView.h"
-#include "./Renderer/GraphicsEngine.h"
 #include "./Renderer/Mesh.h"
 #include "./Renderer/NewMeshRenderer.h"
 #include "./Renderer/Shader.h"
-#include "./Renderer/ShadowMap.h"
+//#include "./Renderer/ShadowMap.h"
 #include "./Renderer/Skybox.h"
 #include "./Renderer/Texture.h"
+#include "./Renderer/Renderer.h"
 #include "./Renderer/RenderTarget.h"
 #include "./Renderer/VertexDecleration.h"
 
@@ -20,9 +20,10 @@
 
 
 
-void ShadowPass::Initialize(D3D::DevicePtr& device)
+void ShadowPass::Initialize(Graphics::GraphicsDevice* device)
 {
-	GetRenderTargetManager()->Create(device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R32G32B32A32_FLOAT, RenderTarget::EShadow);
+	auto pDevice = device->GetDevicePtr();
+	GetRenderTargetManager()->Create(pDevice, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R32G32B32A32_FLOAT, RenderTarget::EShadow);
 	
 	if (mbIsInitialized) return;
 
@@ -37,29 +38,30 @@ void ShadowPass::Initialize(D3D::DevicePtr& device)
 
 	mpShadowMap = std::make_unique<ShadowMap>(device);
 
-	mpDSV->Create(device, SCREEN_WIDTH, SCREEN_HEIGHT);
+	mpDSV->Create(pDevice, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	mbIsInitialized = true;
 }
 
 
-void ShadowPass::RenderShadow(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time)
+void ShadowPass::RenderShadow(Graphics::GraphicsDevice* device, float elapsed_time)
 {
-	D3D::DeviceContextPtr pImmContext = p_graphics->GetImmContextPtr();
 
-	//p_graphics->SetDepthStencil(GraphicsEngine::DS_TRUE);
+	D3D::DeviceContextPtr pImmContext = device->GetImmContextPtr();
 
-	mpShadowMap->Activate(p_graphics, ENGINE.GetLightPtr().get(), ENGINE.GetCameraPtr().get());
+	//p_graphics->OMSetDepthStencilState(GraphicsDevice::DS_TRUE);
+
+	mpShadowMap->Activate(device, ENGINE.GetLightPtr().get(), ENGINE.GetCameraPtr().get());
 
 	GetRenderTargetManager()->Activate(pImmContext, mpDSV, RenderTarget::EShadow);
 
-	ENGINE.GetMeshRenderer()->RenderMesh(pImmContext, elapsed_time, RenderPassID::EShadowPass);
+	ENGINE.GetRenderer()->GetMeshRenderer()->RenderMesh(device, elapsed_time, RenderPassID::EShadowPass);
 
-	p_graphics->ActivateBackBuffer();
+	device->ActivateBackBuffer();
 
 	GetRenderTargetManager()->Deactivate(pImmContext, RenderTarget::EShadow, 1, 5);
 
-	mpShadowMap->Deactivate(p_graphics);
+	mpShadowMap->Deactivate(device);
 
 	//ENGINE.GetUIRenderer()->FinishRenderingWindow();
 

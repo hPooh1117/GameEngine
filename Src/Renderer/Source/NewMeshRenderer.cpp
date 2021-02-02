@@ -5,21 +5,23 @@
 #include "RenderTarget.h"
 #include "DepthStencilView.h"
 #include "GeometricPrimitiveSelf.h"
-#include "GraphicsEngine.h"
 #include "Shader.h"
 #include "SkinnedMesh.h"
-#include "Skybox.h"
+//#include "Skybox.h"
 #include "StaticMesh.h"
-#include "TextureHolder.h"
+//#include "TextureHolder.h"
+#include "Renderer.h"
 #include "Plane.h"
-#include "ComputedTexture.h"
+//#include "ComputedTexture.h"
+#include "GraphicsDevice.h"
+#include "ShaderInterop_Renderer.h"
 
 #include "./Engine/Actor.h"
-#include "./Engine/ActorManager.h"
+//#include "./Engine/ActorManager.h"
 #include "./Engine/CameraController.h"
 #include "./Engine/GameSystem.h"
 
-#include "./Component/MeshComponent.h"
+//#include "./Component/MeshComponent.h"
 
 
 #include "./RenderPass/ForwardPasses.h"
@@ -39,7 +41,20 @@ NewMeshRenderer::NewMeshRenderer()
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-bool NewMeshRenderer::Initialize(D3D::DevicePtr& p_device)
+void NewMeshRenderer::CreateConstantBuffers(Graphics::GraphicsDevice* p_device)
+{
+	//Graphics::GPUBufferDesc desc = {};
+	//desc.ByteWidth = sizeof(CBufferForMesh);
+	//desc.BindFlags = Graphics::BIND_CONSTANT_BUFFER;
+	//desc.Usage = Graphics::USAGE_DEFAULT;
+	//desc.CPUAccessFlags = 0;
+	//desc.MiscFlags = 0;
+	//desc.StructureByteStride = 0;
+
+	//p_device->CreateBuffer(&desc, nullptr, mpCBufferForMesh.get());
+}
+
+bool NewMeshRenderer::Initialize(Graphics::GraphicsDevice* p_device)
 {
 	mpSkybox->Initialize(p_device, mSkyboxFilename.c_str());
 	return true;
@@ -47,8 +62,9 @@ bool NewMeshRenderer::Initialize(D3D::DevicePtr& p_device)
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-bool NewMeshRenderer::InitializeMeshes(D3D::DevicePtr& p_device)
+bool NewMeshRenderer::InitializeMeshes(Graphics::GraphicsDevice* p_device)
 {
+	auto D3DDevice = p_device->GetDevicePtr();
 	for (auto& component : mMeshDataTable)
 	{
 		switch (component.second->GetMeshTypeID())
@@ -106,7 +122,7 @@ bool NewMeshRenderer::InitializeMeshes(D3D::DevicePtr& p_device)
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-void NewMeshRenderer::RegistMeshDataFromActors(D3D::DevicePtr& p_device, ActorManager* p_actors)
+void NewMeshRenderer::RegistMeshDataFromActors(Graphics::GraphicsDevice* device, ActorManager* p_actors)
 {
 	for (auto i = 0u; i < p_actors->GetActorsSize(); ++i)
 	{
@@ -114,28 +130,29 @@ void NewMeshRenderer::RegistMeshDataFromActors(D3D::DevicePtr& p_device, ActorMa
 		mMeshDataTable.emplace(i, p_actors->GetActor(i)->GetComponent<MeshComponent>());
 	}
 
-	InitializeMeshes(p_device);
+	InitializeMeshes(device);
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-void NewMeshRenderer::Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time, unsigned int current_pass_id)
+void NewMeshRenderer::Render(Graphics::GraphicsDevice* device, float elapsed_time, unsigned int current_pass_id)
 {
-	D3D::DeviceContextPtr pImmContext = p_graphics->GetImmContextPtr();
+	D3D::DeviceContextPtr pImmContext = device->GetImmContextPtr();
 
-	p_graphics->SetDepthStencil(GraphicsEngine::DS_TRUE_LESS_EQUAL);
+	device->OMSetDepthStencilState(Graphics::DS_TRUE_LESS_EQUAL);
 
-	RenderSkybox(pImmContext, elapsed_time, current_pass_id);
+	RenderSkybox(device, elapsed_time, current_pass_id);
 
-	p_graphics->SetDepthStencil(GraphicsEngine::DS_TRUE);
+	device->OMSetDepthStencilState(Graphics::DS_TRUE);
 
-	RenderMesh(pImmContext, elapsed_time, current_pass_id);
+	RenderMesh(device, elapsed_time, current_pass_id);
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-void NewMeshRenderer::RenderMesh(D3D::DeviceContextPtr& p_imm_context, float elapsed_time, unsigned int current_pass_id)
+void NewMeshRenderer::RenderMesh(Graphics::GraphicsDevice* p_device, float elapsed_time, unsigned int current_pass_id)
 {
+	auto pImmContext = p_device->GetImmContextPtr();
 	for (auto& mesh : mMeshTable)
 	{
 		// メッシュデータ受け取り
@@ -147,17 +164,21 @@ void NewMeshRenderer::RenderMesh(D3D::DeviceContextPtr& p_imm_context, float ela
 		ShaderID id = static_cast<ShaderID>(component->GetShaderID(ChooseShaderUsageForMesh(current_pass_id)));
 		if (id == ShaderID::UNREGISTERED_SHADER) continue;
 
-		ENGINE.GetRenderPass(current_pass_id)->SetShader(p_imm_context, static_cast<ShaderID>(id));
+		ENGINE.GetRenderer()->GetRenderPass(current_pass_id)->SetShader(p_device, static_cast<ShaderID>(id));
+		auto textureHolder = ENGINE.GetRenderer()->GetTextureHolderPtr();
 
-		// テクスチャ準備
+		// Set Texture Info
 		for (auto& texData : component->GetTextureTable())
 		{
-			if (texData.filename == L"EMPTY") ENGINE.GetTextureHolderPtr()->Set(p_imm_context, texData.filename, texData.slot, false);
-			else							  ENGINE.GetTextureHolderPtr()->Set(p_imm_context, texData.filename, texData.slot);
-			ENGINE.GetTextureHolderPtr()->SetSampler(p_imm_context, texData.slot, SamplerID::EWrap);
-			ENGINE.GetTextureHolderPtr()->SetSampler(p_imm_context, 1, SamplerID::EBorder);
-			ENGINE.GetTextureHolderPtr()->SetSampler(p_imm_context, 2, SamplerID::EClamp);
+			if (texData.filename == L"EMPTY") textureHolder->Set(pImmContext, texData.filename.c_str(), texData.slot, false);
+			else							  textureHolder->Set(pImmContext, texData.filename.c_str(), texData.slot);
 		}
+
+		p_device->SetSamplers(Graphics::SS_LINEAR_WRAP, 0);
+		p_device->SetSamplers(Graphics::SS_ANISO_CLAMP, 1);
+		p_device->SetSamplers(Graphics::SS_LINEAR_CLAMP, 1);
+
+		// Set Motion
 		// モーションが変更されていたら
 		if (component->GetWasChangedMotion())
 		{
@@ -170,22 +191,28 @@ void NewMeshRenderer::RenderMesh(D3D::DeviceContextPtr& p_imm_context, float ela
 		// 現在がShadowPassなら、shadowの描画命令を送る
 		bool bForShadow = current_pass_id == RenderPassID::EShadowPass ? true : false;
 
-		mesh.second->Render(p_imm_context, elapsed_time, world, ENGINE.GetCameraPtr().get(), nullptr, component->GetMaterialData(), bForShadow, bIsSolid);
+		mesh.second->Render(p_device, elapsed_time, world, ENGINE.GetCameraPtr().get(), nullptr, component->GetMaterialData(), bForShadow, bIsSolid);
 	}
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-void NewMeshRenderer::RenderSkybox(D3D::DeviceContextPtr& p_imm_context, float elapsed_time, unsigned int current_pass_id)
+void NewMeshRenderer::RenderSkybox(Graphics::GraphicsDevice* p_device, float elapsed_time, unsigned int current_pass_id)
 {
-	if (!mpSkybox->HasComputed()) mpSkybox->ConvertEquirectToCubeMap(p_imm_context);
+	auto pImmContext = p_device->GetImmContextPtr();
+	if (!mpSkybox->HasComputed()) mpSkybox->ConvertEquirectToCubeMap(p_device);
 
 	UINT shaderID = static_cast<ShaderID>(ChooseShaderIdForSkybox(current_pass_id));
-	ENGINE.GetRenderPass(current_pass_id)->SetShader(p_imm_context, static_cast<ShaderID>(shaderID));
+
+	ENGINE.GetRenderer()->GetRenderPass(current_pass_id)->SetShader(p_device, static_cast<ShaderID>(shaderID));
+
 	Vector3 pos = ENGINE.GetCameraPtr()->GetCameraPosition();
+
 	DirectX::XMMATRIX w = DirectX::XMMatrixTranslation(pos.x, pos.y, pos.z);
-	MaterialData data = {};
-	mpSkybox->Render(p_imm_context, elapsed_time, w, ENGINE.GetCameraPtr().get(), nullptr, data);
+
+	Material data = {};
+
+	mpSkybox->Render(p_device, elapsed_time, w, ENGINE.GetCameraPtr().get(), nullptr, data);
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
@@ -196,11 +223,11 @@ UINT NewMeshRenderer::ChooseShaderUsageForMesh(UINT current_pass)
 	switch (current_pass)
 	{
 	case RenderPassID::EShadowPass:
-		return ShaderUsage::EShader;
+		return static_cast<UINT>(ShaderUsage::EShader);
 	case RenderPassID::ECubeMapPass:
-		return ShaderUsage::ECubeMap;
+		return static_cast<UINT>(ShaderUsage::ECubeMap);
 	default:
-		return ShaderUsage::EMain;
+		return static_cast<UINT>(ShaderUsage::EMain);
 	}
 }
 

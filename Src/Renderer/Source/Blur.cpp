@@ -2,7 +2,6 @@
 
 
 #include "ComputedTexture.h"
-#include "Shader.h"
 
 #include "./Application/Helper.h"
 #include "./Utilities/Log.h"
@@ -10,12 +9,14 @@
 
 BlurExecuter::BlurExecuter()
 	:mKernelSize(4),
-	mBlurStrength(1)
+	mBlurStrength(0)
 {
 	for (UINT i = 0; i < BLUR_PASS_MAX; ++i)
 	{
 		mpBlurTex[i] = std::make_unique<ComputedTexture>();
 		mpBlurWideTex[i] = std::make_unique<ComputedTexture>();
+		mpCS_Blur[i] = std::make_unique<Shader>();
+		mpCS_Blur[i + BLUR_PASS_MAX] = std::make_unique<Shader>();
 	}
 }
 
@@ -44,11 +45,9 @@ void BlurExecuter::Initialize(D3D::DevicePtr& p_device)
 	{
 		mpBlurTex[i]->CreateTexture(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT);
 		mpBlurTex[i]->CreateTextureUAV(p_device, 0);
-		mpBlurTex[i]->CreateSampler(p_device, D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_CLAMP);
 
 		mpBlurWideTex[i]->CreateTexture(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT);
 		mpBlurWideTex[i]->CreateTextureUAV(p_device, 0);
-		mpBlurWideTex[i]->CreateSampler(p_device, D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_CLAMP);
 	}
 }
 
@@ -82,9 +81,10 @@ void BlurExecuter::CreateShader(D3D::DevicePtr& p_device)
 			}
 		};
 
-		mpBlurTex[EHorizontal]->CreateShader(p_device, descHorizontal.filename.c_str(), "CSmain", descHorizontal.macros);
-		mpBlurTex[EVertical]->CreateShader(p_device, descVertical.filename.c_str(), "CSmain", descVertical.macros);
-
+		//mpBlurTex[EHorizontal]->CreateShader(p_device, descHorizontal.filename.c_str(), "CSmain", descHorizontal.macros);
+		//mpBlurTex[EVertical]->CreateShader(p_device, descVertical.filename.c_str(), "CSmain", descVertical.macros);
+		mpCS_Blur[0]->CreateComputeShader(p_device, descHorizontal.filename.c_str(), "CSmain", descHorizontal.macros);
+		mpCS_Blur[1]->CreateComputeShader(p_device, descVertical.filename.c_str(), "CSmain", descVertical.macros);
 	}
 	{
 		const ShaderStageDesc descHorizontal = {
@@ -114,8 +114,10 @@ void BlurExecuter::CreateShader(D3D::DevicePtr& p_device)
 			}
 		};
 
-		mpBlurWideTex[EHorizontal]->CreateShader(p_device, descHorizontal.filename.c_str(), "CSmain", descHorizontal.macros);
-		mpBlurWideTex[EVertical]->CreateShader(p_device, descVertical.filename.c_str(), "CSmain", descVertical.macros);
+		//mpBlurWideTex[EHorizontal]->CreateShader(p_device, descHorizontal.filename.c_str(), "CSmain", descHorizontal.macros);
+		//mpBlurWideTex[EVertical]->CreateShader(p_device, descVertical.filename.c_str(), "CSmain", descVertical.macros);
+		mpCS_Blur[2]->CreateComputeShader(p_device, descHorizontal.filename.c_str(), "CSmain", descHorizontal.macros);
+		mpCS_Blur[3]->CreateComputeShader(p_device, descVertical.filename.c_str(), "CSmain", descVertical.macros);
 	}
 }
 
@@ -138,8 +140,11 @@ void BlurExecuter::ActivateBlur(D3D::DeviceContextPtr& p_imm_context, bool b_hor
 	//p_imm_context->CSSetConstantBuffers(1, 1, mpCBuffer.GetAddressOf());
 }
 
-void BlurExecuter::ExecuteBlur(D3D::DeviceContextPtr& p_imm_context, const D3D::SRVPtr& srv, UINT slot)
+void BlurExecuter::ExecuteBlur(Graphics::GraphicsDevice* p_device, const D3D::SRVPtr& srv, UINT slot)
 {
+	auto& ImmContext = p_device->GetImmContextPtr();
+
+	p_device->SetSamplers(Graphics::SS_LINEAR_CLAMP, 0);
 
 	for (UINT i = 0; i < BLUR_PASS_MAX; ++i)
 	{
@@ -155,16 +160,16 @@ void BlurExecuter::ExecuteBlur(D3D::DeviceContextPtr& p_imm_context, const D3D::
 		if (mBlurStrength == 0)
 		{
 			const D3D::SRVPtr& pSRV = i == 0 ? srv : mpBlurTex[0]->GetSRV();
-
-			mpBlurTex[i]->Compute(p_imm_context, pSRV, DISPATCH_GROUP_X, DISPATCH_GROUP_Y, DISPATCH_GROUP_Z);
-			mpBlurTex[i]->Set(p_imm_context, slot);
+			mpCS_Blur[i]->ActivateCSShader(ImmContext);
+			mpBlurTex[i]->Compute(p_device, pSRV, DISPATCH_GROUP_X, DISPATCH_GROUP_Y, DISPATCH_GROUP_Z);
+			mpBlurTex[i]->Set(ImmContext, slot);
 		}
 		else
 		{
 			const D3D::SRVPtr& pSRV = i == 0 ? srv : mpBlurWideTex[0]->GetSRV();
-
-			mpBlurWideTex[i]->Compute(p_imm_context, pSRV, DISPATCH_GROUP_X, DISPATCH_GROUP_Y, DISPATCH_GROUP_Z);
-			mpBlurWideTex[i]->Set(p_imm_context, slot);
+			mpCS_Blur[i + BLUR_PASS_MAX]->ActivateCSShader(ImmContext);
+			mpBlurWideTex[i]->Compute(p_device, pSRV, DISPATCH_GROUP_X, DISPATCH_GROUP_Y, DISPATCH_GROUP_Z);
+			mpBlurWideTex[i]->Set(ImmContext, slot);
 		}
 	}
 }

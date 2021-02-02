@@ -25,12 +25,10 @@ private:
 	struct CBufferForBone
 	{
 		DirectX::XMFLOAT4X4 m_bone_transforms[FbxInfo::MAX_BONES];
-		//DirectX::XMFLOAT4X4 m_motion_transforms[FbxInfo::MAX_BONES];
-		//DirectX::XMFLOAT4X4 m_bone_offset[FbxInfo::MAX_BONES];
 	};
 
 
-	std::vector<MyFbxMesh> m_meshes;
+	std::vector<MyFbxMesh> mMeshes;
 	std::string mCurrentMotion = "default";
 	std::string mPreviousMotion = "default";
 	FrameTimer mFrameInterpolation;
@@ -45,26 +43,27 @@ private:
 	D3D11_TEXTURE2D_DESC m_texture2D_desc;
 
 public:
-	SkinnedMesh(Microsoft::WRL::ComPtr<ID3D11Device>& device, const char* filename, unsigned int coord_system);
+	SkinnedMesh(Graphics::GraphicsDevice* p_device, const char* filename, unsigned int coord_system);
 	~SkinnedMesh() = default;
 
 
 public:
-	void LoadFbxFile(Microsoft::WRL::ComPtr<ID3D11Device>& device, const char* filename);
+	void LoadFbxFile(Graphics::GraphicsDevice* p_device, const char* filename);
 
-	virtual void CreateBuffers(Microsoft::WRL::ComPtr<ID3D11Device>& device) override;
+	virtual void CreateBuffers(Graphics::GraphicsDevice* p_device) override;
 
 	virtual void Render(
-		D3D::DeviceContextPtr& imm_context,
+		Graphics::GraphicsDevice* p_device,
 		float elapsed_time,
 		const DirectX::XMMATRIX& world,
 		CameraController* camera,
 		Shader* shader,
-		const MaterialData& mat_data,
+		const Material& mat_data,
 		bool isShadow = false,
 		bool isSolid = true
 	) override;
 
+	
 	bool AddMotion(std::string& name, const char* filename);
 
 	DirectX::XMMATRIX Lerp(DirectX::XMFLOAT4X4& A, DirectX::XMFLOAT4X4& B, float rate);

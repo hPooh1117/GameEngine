@@ -99,7 +99,7 @@ void Input::HandleInput(HWND hwnd)
 	POINT mousePos;
 	::GetCursorPos(&mousePos);
 	::ScreenToClient(hwnd, &mousePos);
-	mMousePos = Vector2(mousePos.x, mousePos.y);
+	mMousePos = Vector2(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
 
 	// マウス移動量更新
 	mMouseDelta = mMousePos - prevMousePos;

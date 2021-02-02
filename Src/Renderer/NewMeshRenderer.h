@@ -7,13 +7,15 @@
 #include "./Application/Helper.h"
 
 #include "./Renderer/D3D_Helper.h"
+#include "./Renderer/GraphicsDevice.h"
+#include "./Renderer/Skybox.h"
+#include "./Renderer/Mesh.h"
+#include "./Component/MeshComponent.h"
 
-class ActorManager;
-class Mesh;
-class MeshComponent;
-class TextureHolder;
-class ComputedTexture;
-class GraphicsEngine;
+#include "./Engine/ActorManager.h"
+#include "./Renderer/TextureHolder.h"
+#include "./Renderer/ComputedTexture.h"
+
 
 class NewMeshRenderer
 {
@@ -22,19 +24,26 @@ private:
 	std::unordered_map<unsigned int, std::unique_ptr<Mesh>>             mMeshTable;
 	std::unique_ptr<Skybox>                                             mpSkybox;
 	std::wstring                                                        mSkyboxFilename;
+
+	std::unique_ptr<Graphics::GPUBuffer> mpCBufferForMesh;
+	std::unique_ptr<Graphics::GPUBuffer> mpCBufferForMaterial;
+
 public:
 	NewMeshRenderer();
 	~NewMeshRenderer() = default;
 
-	bool Initialize(D3D::DevicePtr& p_device);
-	bool InitializeMeshes(D3D::DevicePtr& p_device);
-	void RegistMeshDataFromActors(D3D::DevicePtr& p_device, ActorManager* p_actors);
 
-	void Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time, unsigned int current_pass_id);
-	void RenderMesh(D3D::DeviceContextPtr& p_imm_context, float elapsed_time, unsigned int current_pass_id);
+	void CreateConstantBuffers(Graphics::GraphicsDevice* p_device);
+	bool Initialize(Graphics::GraphicsDevice* device);
+	bool InitializeMeshes(Graphics::GraphicsDevice* device);
+
+	void RegistMeshDataFromActors(Graphics::GraphicsDevice* device, ActorManager* p_actors);
+
+	void Render(Graphics::GraphicsDevice* device, float elapsed_time, unsigned int current_pass_id);
+	void RenderMesh(Graphics::GraphicsDevice* device, float elapsed_time, unsigned int current_pass_id);
 
 private:
-	void RenderSkybox(D3D::DeviceContextPtr& p_imm_context, float elapsed_time, unsigned int current_pass_id);
+	void RenderSkybox(Graphics::GraphicsDevice* device, float elapsed_time, unsigned int current_pass_id);
 	UINT ChooseShaderUsageForMesh(UINT current_pass); // 現在の描画パスによって、idを選択
 	UINT ChooseShaderIdForSkybox(UINT current_pass);
 public:

@@ -7,12 +7,16 @@
 #include "ShaderIDTable.h"
 
 #include "./Renderer/D3D_Helper.h"
+#include "./Renderer/GraphicsDevice.h"
+#include "./Renderer/DepthStencilView.h"
+#include "./Renderer/NewMeshRenderer.h"
+#include "./Renderer/RenderTarget.h"
+#include "./Renderer/Shader.h"
 
-class DepthStencilView;
-class Shader;
-class RenderTarget;
-class NewMeshRenderer;
-class GraphicsEngine;
+//class DepthStencilView;
+//class Shader;
+//class RenderTarget;
+//class NewMeshRenderer;
 
 enum class VEDType : unsigned int;
 
@@ -59,13 +63,13 @@ public:
 	RenderPass();
 	virtual ~RenderPass() = default;
 
-	virtual void Initialize(D3D::DevicePtr& device) = 0;
+	virtual void Initialize(Graphics::GraphicsDevice* device) = 0;
 
 protected:
-	void InitializeCommonShader(D3D::DevicePtr& device);
+	void InitializeCommonShader(Graphics::GraphicsDevice* device);
 
 	void AddVertexAndPixelShader(
-		D3D::DevicePtr& device,
+		Graphics::GraphicsDevice* device,
 		UINT           id,
 		const wchar_t* vs,
 		const wchar_t* ps,
@@ -74,13 +78,13 @@ protected:
 		const VEDType& vedType);
 
 	void AddGeometryShader(
-		D3D::DevicePtr& device,
+		Graphics::GraphicsDevice* device,
 		UINT           id,
 		const wchar_t* gs,
 		const char* gs_entry);
 
 	void AddDomainAndHullShader(
-		D3D::DevicePtr& device,
+		Graphics::GraphicsDevice* device,
 		UINT           id,
 		const wchar_t* ds,
 		const wchar_t* hs,
@@ -96,18 +100,18 @@ protected:
 
 	
 public:
-	const std::unique_ptr<Shader>&          GetShaderPtr(UINT shader_id);
-	auto& GetRenderTargetManager() { return mpRenderTargetManager; }
+	Shader*   GetShaderPtr(UINT shader_id);
+	auto&     GetRenderTargetManager() { return mpRenderTargetManager; }
 	
 	//const std::unique_ptr<RenderTarget>& GetRenderTargetPtr() { return mpRenderTargets; }
 	//RenderTarget* GetRenderTargetPtr(UINT id) { if (id < 0 || id >= mpRenderTargetTable.size()) return nullptr; return mpRenderTargetTable[id].get(); }
 
 	bool IsInitialized() { return mbIsInitialized; }
 
-	void SetShader(D3D::DeviceContextPtr& p_imm_context, ShaderID id);
+	void SetShader(Graphics::GraphicsDevice* device, UINT id);
 	void CheckActivatedShaders();
-	void ShowShaderList(std::unique_ptr<GraphicsEngine>& p_graphics, const char* current_pass);
-	void ReloadShaderFile(std::unique_ptr<GraphicsEngine>& p_graphics);
+	void ShowShaderList(Graphics::GraphicsDevice* device, const char* current_pass);
+	void ReloadShaderFile(Graphics::GraphicsDevice* device);
 	static void Clear();
-	//void SetBackBuffer(std::unique_ptr<GraphicsEngine>& p_graphics);
+	//void SetBackBuffer(std::unique_ptr<GraphicsDevice>& p_graphics);
 };

@@ -1,22 +1,27 @@
 #include "UIRenderer.h"
 
+
 #include "GameSystem.h"
 
+#include "./Application/Helper.h"
+
+#include "./Renderer/GraphicsDevice.h"
 #include "./Renderer/Sprite.h"
 #include "./Renderer/RenderTarget.h"
+#include "./Renderer/Renderer.h"
 
 #include "./RenderPass/RenderPasses.h"
 #include "./Utilities/Log.h"
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-UIRenderer::UIRenderer(D3D::DevicePtr& p_device):
+UIRenderer::UIRenderer(Graphics::GraphicsDevice* device):
 	mUIConfig(0)
 {
-	mpSpriteFont = std::make_unique<Sprite>(p_device, L"./Data/Fonts/font0.png");
-	mpSprite = std::make_unique<Sprite>(p_device);
+	mpSpriteFont = std::make_unique<Sprite>(device, L"./Data/Fonts/font0.png");
+	mpSprite = std::make_unique<Sprite>(device);
 	mCurrentSettings.text = "";
-	mCurrentSettings.pos = Vector2(16, 8);
+	mCurrentSettings.pos = Vector2(16, SCREEN_HEIGHT - 8);
 	mCurrentSettings.size = Vector2(16, 16);
 	mCurrentSettings.color = Vector4(1, 1, 1, 1);
 }
@@ -103,30 +108,33 @@ void UIRenderer::SetText(std::string text)
 {
 	mCurrentSettings.text = text;
 
+
 	mFontDataQueue.emplace_back(mCurrentSettings);
+
+	SetNextSpriteFontSettings(mCurrentSettings.pos - Vector2(0, FONT_SPACE), mCurrentSettings.size, mCurrentSettings.color);
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-void UIRenderer::RenderSpriteFontQueue(D3D::DeviceContextPtr& p_imm_context)
+void UIRenderer::RenderSpriteFontQueue(Graphics::GraphicsDevice* device)
 {
 	if (mFontDataQueue.empty()) return;
 
-	ENGINE.GetRenderPass(RenderPassID::EForwardPass)->SetShader(p_imm_context, ShaderID::ESprite);
-
+	ENGINE.GetRenderer()->GetRenderPass(RenderPassID::EForwardPass)->SetShader(device, ShaderID::ESprite);
+	auto pImmContext = device->GetImmContextPtr();
 
 	for (auto& data : mFontDataQueue)
 	{
-		mpSpriteFont->TextOutput(p_imm_context, data.text, nullptr, data.pos, data.size, data.color);
+		mpSpriteFont->TextOutput(device, data.text, nullptr, data.pos, data.size, data.color);
 	}
 
 	ClearFontQueue();
 
 }
 
-void UIRenderer::RenderFullScreenQuad(D3D::DeviceContextPtr& p_imm_context)
+void UIRenderer::RenderFullScreenQuad(Graphics::GraphicsDevice* device)
 {
-	ENGINE.GetRenderPass(RenderPassID::EForwardPass)->SetShader(p_imm_context, ShaderID::ESprite);
+	ENGINE.GetRenderer()->GetRenderPass(RenderPassID::EForwardPass)->SetShader(device, ShaderID::ESprite);
 
 }
 
@@ -143,7 +151,7 @@ void UIRenderer::ClearFontQueue()
 {
 	mFontDataQueue.clear();
 	mCurrentSettings.text = "";
-	mCurrentSettings.pos = Vector2(16, 8);
+	mCurrentSettings.pos = Vector2(16, SCREEN_HEIGHT - 8);
 	mCurrentSettings.size = Vector2(16, 16);
 	mCurrentSettings.color = Vector4(1, 1, 1, 1);
 

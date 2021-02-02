@@ -10,7 +10,6 @@
 
 #include "./Renderer/Blender.h"
 #include "./Renderer/Shader.h"
-#include "./Renderer/GraphicsEngine.h"
 #include "./Renderer/Blender.h"
 #include "./Renderer/Skybox.h"
 
@@ -29,7 +28,7 @@ const Settings::Renderer Scene::mSettings[7] = {
 };
 
 Scene::Scene(SceneManager* manager,
-    Microsoft::WRL::ComPtr<ID3D11Device>& device)
+    Graphics::GraphicsDevice* p_device)
     :mTimer(0),
     mState(0),
     mChangeFlag(false),
@@ -41,7 +40,7 @@ Scene::Scene(SceneManager* manager,
     //mSceneNameTable[static_cast<unsigned int>(SceneID::SCENETITLE)] = "Title";
     //mSceneNameTable[static_cast<unsigned int>(SceneID::SCENE01)] = "Scene01";
     mSceneNameTable[static_cast<unsigned int>(SceneID::SCENE_A)] = "Forward Shader ";
-    mSceneNameTable[static_cast<unsigned int>(SceneID::SCENE_B)] = "Deffered Shader";
+    mSceneNameTable[static_cast<unsigned int>(SceneID::SCENE_B)] = "Deferred Shader";
     mSceneNameTable[static_cast<unsigned int>(SceneID::SCENE_C)] = "SporLight Sea  ";
     mSceneNameTable[static_cast<unsigned int>(SceneID::SCENE_D)] = "Physics Test   ";
     mSceneNameTable[static_cast<unsigned int>(SceneID::SCENE_E)] = "SSAO Test      ";

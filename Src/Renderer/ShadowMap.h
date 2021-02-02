@@ -4,9 +4,14 @@
 #include <DirectXMath.h>
 #include "D3D_Helper.h"
 
-class GraphicsEngine;
+#include "./Renderer/GraphicsDevice.h"
+#include "GraphicsDevice.h"
+#include "Shader.h"
+#include "Texture.h"
+#include "./Engine/CameraController.h"
+#include "./Engine/LightController.h"
+
 class Shader;
-class Light;
 class CameraController;
 class Texture;
 class LightController;
@@ -28,14 +33,14 @@ private:
 	float mDistanceToLight;
 
 public:
-	ShadowMap(D3D::DevicePtr& device);
+	ShadowMap(Graphics::GraphicsDevice* device);
 
 	void Activate(
-		const std::unique_ptr<GraphicsEngine>& p_graphics,
+		Graphics::GraphicsDevice* device,
 		LightController* p_light,
 		CameraController* p_camera);
 	
-	void Deactivate(std::unique_ptr<GraphicsEngine>& p_graphics);
+	void Deactivate(Graphics::GraphicsDevice* device);
 
 	void RenderUI();
 	

@@ -215,21 +215,9 @@ HRESULT ResourceManager::CompileHLSLFile(
 	const std::string shaderModel,
 	Microsoft::WRL::ComPtr<ID3DBlob>& shaderBlob)
 {
-	//typedef std::pair <std::wstring, std::string> Keys;
-	//static std::unordered_map < Keys, Microsoft::WRL::ComPtr<ID3DBlob>, pair_hash> cache;
+	char file_multibyte[256];
+	WideCharToMultiByte(CP_ACP, 0, filename.c_str(), -1, file_multibyte, 256, NULL, NULL);
 
-	//Keys key = std::make_pair(filename, func);
-
-	//auto it = cache.find(key);
-	//if (it != cache.end())
-	//{
-	//    shaderBlob = it->second;
-	//    char file_multibyte[256];
-	//    WideCharToMultiByte(CP_ACP, 0, filename.c_str(), -1, file_multibyte, 256, NULL, NULL);
-	//    Log::Info("[RESOURCE MANAGER] Already compiled (%s)", file_multibyte);
-
-	//    return S_OK;
-	//}
 
 	DWORD shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
 	shaderFlags |= D3DCOMPILE_DEBUG;
@@ -249,16 +237,15 @@ HRESULT ResourceManager::CompileHLSLFile(
 		errorBlob.GetAddressOf()
 	);
 
+
 	if (errorBlob != NULL)
 	{
 		MessageBoxA(0, (char*)errorBlob->GetBufferPointer(), NULL, MB_OK);
-
+		return result;
 	}
 
 	//cache.emplace(key, shaderBlob);
 
-	char file_multibyte[256];
-	WideCharToMultiByte(CP_ACP, 0, filename.c_str(), -1, file_multibyte, 256, NULL, NULL);
 
 	Log::Info("[RESOURCE MANAGER] Finished Compiling (%s)", file_multibyte);
 

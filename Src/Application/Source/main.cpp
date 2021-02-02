@@ -15,9 +15,11 @@ int APIENTRY WinMain(
 #endif
 
 	srand((unsigned int)time(NULL));
+	
 
 	Application app;
-	app.Init();
+	app.Initialize();
+	
 	app.Run();
 	//app.UnInit();
 	return 1;

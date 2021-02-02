@@ -34,8 +34,8 @@
 //SamplerState depth_sampler : register(s7);
 
 Texture2D albedo_texture        : register(t0);
-SamplerState decal_sampler      : register(s0);
-SamplerState border_sampler     : register(s1);
+SamplerState decal_sampler      : register(s1);
+SamplerState border_sampler     : register(s3);
 Texture2D normal_texture        : register(t1);
 Texture2D position_texture      : register(t2);
 Texture2D shadow_texture        : register(t3);
@@ -59,6 +59,7 @@ cbuffer CBPerMatrix : register(b0)
 	float4x4 inv_viewproj;
 	float4x4 inv_view_mat;
 	float4x4 inv_proj_mat;
+	float4 param;
 };
 
 cbuffer CBPerMeshMat : register(b1)
@@ -74,6 +75,9 @@ cbuffer CBPerMeshMat : register(b1)
 	int   gTextureConfig;
 }
 
+static const float PI = 3.14159265358979323846;
+static const float INV_PI = 0.31830988618379067153;
+static const float SQRT2 = 1.41421356237309504880;
 
 //----------------------------------
 // データフォーマット
@@ -97,7 +101,8 @@ struct PS_Input
 //	グローバル変数
 //--------------------------------------------
 static const float SAMPLING_RATIO = 2.0f;
-static const float BIAS = 0.0;
+//static const float BIAS = 0.0;
+static const float EPSILON = 0.001; 
 static const uint MAX_SAMPLES = 16;
 
 
@@ -120,6 +125,8 @@ cbuffer CBPerAO : register(b5)
 	float2   screenSize_rcp;
 	float2   noise_scale;
 	float4   sample_pos[MAX_SAMPLES];
+
+	float	 bias;
 }
 
 
@@ -137,7 +144,7 @@ PS_Input VSmain(VS_Input input)
 
 
 	output.position = P;
-	output.color = mat_color;
+	output.color = input.color;
 	output.texcoord = input.texcoord;
 	output.projPos = output.texcoord * float2(2.0f, -2.0f) + float2(-1.0f, 1.0f);
 	return output;
@@ -304,7 +311,7 @@ PS_Output_SSAO PSmain2(PS_Input input)
 		sampleDepth = sampleViewPos.z / sampleViewPos.w;
 
 		float rangeCheck = smoothstep(0.0, 1.0, radius / abs(viewP.z - sampleDepth));
-		occlusion += rangeCheck * step(sampleDepth, samplePos.z + BIAS) * NdotS;
+		occlusion += rangeCheck * step(sampleDepth, samplePos.z + bias) * NdotS;
 	}
 
 	occlusion = 1.0 - (occlusion / (float)MAX_SAMPLES);
@@ -313,12 +320,15 @@ PS_Output_SSAO PSmain2(PS_Input input)
 
 	float3 diffuse = diffuse_texture.Sample(decal_sampler, input.texcoord).xyz;
 	float3 specular = specular_texture.Sample(decal_sampler, input.texcoord).xyz;
-	float3 shadow = shadow_texture.Sample(decal_sampler, input.texcoord).xyz;
+	float3 shadow = HasShadowMap(gTextureConfig) > 0 ? shadow_texture.Sample(decal_sampler, input.texcoord).xyz : 1.0;
 	float3 skybox = skybox_texture.Sample(decal_sampler, input.texcoord).xyz;
 
 	output.ambient = float4(finalOcclusion, finalOcclusion, finalOcclusion, 1.0);
 
-	output.result = float4((diffuse * output.ambient.xyz * albedo * shadow + specular * output.ambient.xyz * albedo * shadow + skybox)  , 1);
+	float3 result = diffuse + specular;
+	result *= output.ambient.xyz * albedo * shadow;
+	result += skybox;
+	output.result = float4(result, 1);
 
 	return output;
 }
@@ -332,14 +342,95 @@ PS_Output_SSAO PSmain(PS_Input input)
 	float3 diffuse = diffuse_texture.Sample(decal_sampler, input.texcoord).xyz;
 	float3 specular = specular_texture.Sample(decal_sampler, input.texcoord).xyz;
 	float3 albedo = albedo_texture.Sample(decal_sampler, input.texcoord).xyz;
-	float3 shadow = shadow_texture.Sample(decal_sampler, input.texcoord).xyz;
+	float3 shadow = HasShadowMap(gTextureConfig) > 0 ? shadow_texture.Sample(decal_sampler, input.texcoord).xyz : 1.0;
 	float3 skybox = skybox_texture.Sample(decal_sampler, input.texcoord).xyz;
 
 	float3 finalOcclusion = ambient_texture.Sample(decal_sampler, input.texcoord).rgb;
 
 	output.ambient = float4(finalOcclusion, 1.0);
 
-	output.result = float4((diffuse * output.ambient.xyz * albedo * shadow + specular * output.ambient.xyz * albedo * shadow + skybox), 1);
+	float3 result = diffuse + specular;
+	result *= output.ambient.xyz * albedo * shadow;
+	result += skybox;
+	output.result = float4(result, 1);
+
+	return output;
+}
+
+//--------------------------------------------------------------------------------------------------------------------------
+
+/// AO計算時のView空間Position取得
+float3 GetViewPosition(float2 uv, int2 cacheBlockOffset, float4x4 invP)
+{
+	const float depth = depth_texture.Sample(decal_sampler, uv).r;
+	return ReconstructPosition(uv, depth, invP);
+}
+
+/// @brief ワールド空間半球内部のランダムな点をサンプルし,XY空間に射影
+float2 GetRandomHemisphereXY(float2 uv, int seed)
+{
+	const float r1 = Rand(seed, uv);
+	const float r2 = frac(r1 * 2558.54);
+	const float r3 = frac(r2 * 1924.19);
+	const float r = pow(r1, 1.0 / 3.0) * sqrt(1.0 - r3 * r3);
+	const float theta = 2 * PI * r2;
+	float s, c;
+	sincos(theta, s, c);
+	return float2(c, s) * r;
+}
+
+// AO計算
+float CalculateAlchemyAO(float2 uv, int2 cacheBlockOffset = int2(0, 0))
+{
+	const float depth = depth_texture.Sample(decal_sampler, uv).r;
+	if (depth < 0.1) return 1.0;
+
+	const float3 normal = normal_texture.Sample(decal_sampler, uv).xyz; // FIXME
+	const float3 position = ReconstructPosition(uv, depth, inv_proj);
+
+	/// ワールド空間でのサンプリング半径から,スクリーンスペース半径への変換係数
+	// DEPTH_FACTOR_4 = 1/tan(fov/2)
+	const float ry = proj._11 * radius / position.z; // 画面に垂直な円のY軸半径
+	const float2 radiusScale = ry * 0.5 * float2(screenSize.x / screenSize.y, 1.0); // 楕円スケール,0.5倍はUV空間へのマップ
+
+	// AO値の積分
+	float sum = 0.0;
+	[unroll]
+	for (uint i = 0; i < MAX_SAMPLES; ++i)
+	{
+		const float2 sampleUV = uv + GetRandomHemisphereXY(uv, i) * radiusScale; // サンプルするUV座標値を計算
+		const float3 samplePosition = GetViewPosition(sampleUV, cacheBlockOffset, inv_proj); // view空間でのサンプリング地点
+		const float3 v = samplePosition - position;
+		sum += max(0.0, dot(v, normal) + position.z * bias) / (dot(v, v) + EPSILON);
+	}
+	float AO = 2.0 * power * sum / MAX_SAMPLES;
+
+	// 遠くのAOは薄くするための,視錐台内部のz正規化値,これがないと無限遠方がおかしくなる
+	const float depthAttenuate = saturate((cameraFarZ - position.z) / (cameraFarZ - cameraNearZ));
+	AO *= depthAttenuate;
+
+	return 1.0 - AO;
+}
+
+PS_Output_SSAO PSmainAlchemy(PS_Input input)
+{
+	PS_Output_SSAO output = (PS_Output_SSAO)0;
+
+	float ambient = CalculateAlchemyAO(input.texcoord.xy);
+
+	float3 diffuse = diffuse_texture.Sample(decal_sampler, input.texcoord).xyz;
+	float3 specular = specular_texture.Sample(decal_sampler, input.texcoord).xyz;
+	float3 albedo = albedo_texture.Sample(decal_sampler, input.texcoord).xyz;
+	float3 shadow = HasShadowMap(gTextureConfig) > 0 ? shadow_texture.Sample(decal_sampler, input.texcoord).xyz : 1.0;
+	float3 skybox = skybox_texture.Sample(decal_sampler, input.texcoord).xyz;
+
+
+	output.ambient = float4(ambient, ambient, ambient, 1.0);
+
+	float3 result = diffuse + specular;
+	result *= output.ambient.xyz * albedo * shadow;
+	result += skybox;
+	output.result = float4(result, 1);
 
 	return output;
 }

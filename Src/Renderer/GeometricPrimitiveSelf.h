@@ -7,27 +7,30 @@ class GeometricPrimitiveSelf : public Mesh
 {
 protected:
     // Buffers
-    D3D::BufferPtr            m_pVertexBuffer;
-    D3D::BufferPtr            m_pIndexBuffer;
+    //D3D::BufferPtr            m_pVertexBuffer;
+    //D3D::BufferPtr            m_pIndexBuffer;
+    
+    std::unique_ptr<Graphics::GPUBuffer> mpVertexBuffer;
+    std::unique_ptr<Graphics::GPUBuffer> mpIndexBuffer;
 
-
+    CBufferForMesh mMeshData;
 public:
     GeometricPrimitiveSelf(
-        D3D::DevicePtr& device,
+        Graphics::GraphicsDevice* p_device,
         D3D11_PRIMITIVE_TOPOLOGY topology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST
     );
     virtual ~GeometricPrimitiveSelf();
 
-    void CreateBuffers(D3D::DevicePtr& device) override;
-    virtual void SetRenderState(D3D::DeviceContextPtr& imm_context) = 0;
+    void CreateBuffers(Graphics::GraphicsDevice* p_device) override;
+    virtual void SetRenderState(Graphics::GraphicsDevice* p_device) = 0;
 
     virtual void Render(
-        D3D::DeviceContextPtr& imm_context,
+        Graphics::GraphicsDevice* p_device,
         float elapsed_time,
         const DirectX::XMMATRIX& world,
         CameraController* camera,
         Shader* shader,
-        const MaterialData& mat_data,
+        const Material& mat_data,
         bool isShadow = false,
         bool isSolid = true
     ) override;
@@ -43,8 +46,8 @@ private:
     };
    D3D::BufferPtr mConstantBufferForLine;
 public:
-    BasicLine(D3D::DevicePtr& device);
-    void SetRenderState(D3D::DeviceContextPtr& imm_context);
+    BasicLine(Graphics::GraphicsDevice* p_device);
+    void SetRenderState(Graphics::GraphicsDevice* p_device);
 };
 
 
@@ -52,8 +55,8 @@ public:
 class BasicCube : public GeometricPrimitiveSelf
 {
 public:
-    BasicCube(D3D::DevicePtr& device);
-    void SetRenderState(D3D::DeviceContextPtr& imm_context){}
+    BasicCube(Graphics::GraphicsDevice* p_device);
+    void SetRenderState(Graphics::GraphicsDevice* p_device){}
 
 };
 
@@ -63,9 +66,9 @@ class BasicCylinder : public GeometricPrimitiveSelf
 {
 public:
     BasicCylinder(
-        D3D::DevicePtr& device,
+        Graphics::GraphicsDevice* p_device,
         unsigned int slices = 8);
-    void SetRenderState(D3D::DeviceContextPtr& imm_context) {}
+    void SetRenderState(Graphics::GraphicsDevice* p_device) {}
 
 };
 
@@ -75,12 +78,12 @@ class BasicSphere : public GeometricPrimitiveSelf
 {
 public:
     BasicSphere(
-        D3D::DevicePtr& device,
+        Graphics::GraphicsDevice* p_device,
         unsigned int slices = 8,
         unsigned int stacks = 8,
         float radius = 0.5f
     );
-    void SetRenderState(D3D::DeviceContextPtr& imm_context) {}
+    void SetRenderState(Graphics::GraphicsDevice* p_device) {}
 
 };
 
@@ -90,11 +93,11 @@ class BasicCapsule : public GeometricPrimitiveSelf
 {
 public:
     BasicCapsule(
-        D3D::DevicePtr& device,
+        Graphics::GraphicsDevice* p_device,
         unsigned int slices = 8,
         unsigned int stacks = 8,
         float radius = 0.5f,
         float height = 1.0f);
-    void SetRenderState(D3D::DeviceContextPtr& imm_context) {}
+    void SetRenderState(Graphics::GraphicsDevice* p_device) {}
 
 };

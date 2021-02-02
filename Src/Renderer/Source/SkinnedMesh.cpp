@@ -49,22 +49,21 @@ const DirectX::XMFLOAT4X4 SkinnedMesh::COORD_CONVERSION[CG_SOFTWARE_TYPE] =
 	},
 };
 
-SkinnedMesh::SkinnedMesh(Microsoft::WRL::ComPtr<ID3D11Device>& device, const char* filename, unsigned int coord_system)
+SkinnedMesh::SkinnedMesh(Graphics::GraphicsDevice* p_device, const char* filename, unsigned int coord_system)
 	:Mesh(), 
 	mFrameInterpolation(MAX_MOTION_INTERPOLATION),
 	mCoordSystem(coord_system)
 {
-
-	LoadFbxFile(device, filename);
+	LoadFbxFile(p_device, filename);
 
 	mFrameInterpolation.SetTime(MAX_MOTION_INTERPOLATION);
 
 
 	HRESULT hr = S_OK;
-
+	auto& pDevice = p_device->GetDevicePtr();
 
 	//--> Create Constant Buffer
-	hr = device->CreateBuffer(
+	hr = pDevice->CreateBuffer(
 		&CD3D11_BUFFER_DESC(
 			sizeof(CBufferForMesh),
 			D3D11_BIND_CONSTANT_BUFFER,
@@ -79,7 +78,7 @@ SkinnedMesh::SkinnedMesh(Microsoft::WRL::ComPtr<ID3D11Device>& device, const cha
 	_ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
 
-	hr = device->CreateBuffer(
+	hr = pDevice->CreateBuffer(
 		&CD3D11_BUFFER_DESC(
 			sizeof(CBufferForBone),
 			D3D11_BIND_CONSTANT_BUFFER,
@@ -90,7 +89,7 @@ SkinnedMesh::SkinnedMesh(Microsoft::WRL::ComPtr<ID3D11Device>& device, const cha
 		m_constant_buffer_bone.GetAddressOf()
 	);
 
-	hr = device->CreateBuffer(
+	hr = pDevice->CreateBuffer(
 		&CD3D11_BUFFER_DESC(
 			sizeof(CBufferForMaterial),
 			D3D11_BIND_CONSTANT_BUFFER,
@@ -100,67 +99,26 @@ SkinnedMesh::SkinnedMesh(Microsoft::WRL::ComPtr<ID3D11Device>& device, const cha
 			0
 		),
 		nullptr,
-		m_pConstantBufferMaterial.GetAddressOf()
+		mpConstantBufferMaterial.GetAddressOf()
 	);
 	_ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
-
-
-
-
-
-
-	//-->Create RasterizerState
-
-	hr = device->CreateRasterizerState(
-		&CD3D11_RASTERIZER_DESC(
-			D3D11_FILL_SOLID,                    // D3D11_FILL_MODE FillMode;
-			D3D11_CULL_BACK,                     // D3D11_CULL_MODE CullMode;
-			mCoordSystem > 0 ? TRUE : FALSE,     // BOOL FrontCounterClockwise;
-			0,                                   // INT DepthBias;
-			0.0f,                                // FLOAT DepthBiasClamp;
-			0.0f,                                // FLOAT SlopeScaledDepthBias;
-			TRUE,                                // BOOL DepthClipEnable;
-			FALSE,                               // BOOL ScissorEnable;
-			FALSE,                               // BOOL MultisampleEnable;
-			FALSE                                // BOOL AntialiasedLineEnable;
-		),
-		m_pRasterizerSolid.GetAddressOf()
-	);
-	_ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
-
-
-
-	hr = device->CreateRasterizerState(
-		&CD3D11_RASTERIZER_DESC(
-			D3D11_FILL_WIREFRAME,         // D3D11_FILL_MODE FillMode;
-			D3D11_CULL_BACK,          // D3D11_CULL_MODE CullMode;
-			TRUE,                     // BOOL FrontCounterClockwise;
-			0,                        // INT DepthBias;
-			0.0f,                     // FLOAT DepthBiasClamp;
-			0.0f,                     // FLOAT SlopeScaledDepthBias;
-			TRUE,                     // BOOL DepthClipEnable;
-			FALSE,                    // BOOL ScissorEnable;
-			FALSE,                    // BOOL MultisampleEnable;
-			FALSE                      // BOOL AntialiasedLineEnable;
-		),
-		m_pRasterizerWire.GetAddressOf()
-	);
-	_ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
-
 
 }
 
 //----------------------------------------------------------------------------------------------------------------------------
 
-void SkinnedMesh::LoadFbxFile(Microsoft::WRL::ComPtr<ID3D11Device>& device, const char* filename)
+void SkinnedMesh::LoadFbxFile(Graphics::GraphicsDevice* p_device, const char* filename)
 {
+	auto& pDevice = p_device->GetDevicePtr();
+
 	std::unique_ptr<FbxLoader> fbxLoader = std::make_unique<FbxLoader>();
+	
 	std::chrono::system_clock::time_point start, end;
 	start = std::chrono::system_clock::now();
 
-	if (fbxLoader->LoadFbxFile(device, filename, m_meshes))
+	if (fbxLoader->Load(pDevice, filename, mMeshes))
 	{
-		CreateBuffers(device);
+		CreateBuffers(p_device);
 	}
 	end = std::chrono::system_clock::now();
 
@@ -173,86 +131,65 @@ void SkinnedMesh::LoadFbxFile(Microsoft::WRL::ComPtr<ID3D11Device>& device, cons
 
 //----------------------------------------------------------------------------------------------------------------------------
 
-void SkinnedMesh::CreateBuffers(Microsoft::WRL::ComPtr<ID3D11Device>& device)
+void SkinnedMesh::CreateBuffers(Graphics::GraphicsDevice* p_device)
 {
-	for (auto& mesh : m_meshes)
+	for (auto& mesh : mMeshes)
 	{
-		HRESULT hr = S_OK;
+		// VERTEX BUFFER
+		Graphics::GPUBufferDesc desc = {};
+		desc.ByteWidth = sizeof(FbxInfo::Vertex) * mesh.mVertices.size();
+		desc.Usage = Graphics::USAGE_IMMUTABLE;
+		desc.BindFlags = Graphics::BIND_VERTEX_BUFFER;
+		desc.CPUAccessFlags = 0;
+		desc.MiscFlags = 0;
+		desc.StructureByteStride = 0;
+		mesh.mpVertexBuffer->desc = desc;
 
-		//--> Create Vertex Buffer
-		D3D11_SUBRESOURCE_DATA vSrData = {};
-		vSrData.pSysMem = mesh.mVertices.data();
-		vSrData.SysMemPitch = 0;
-		vSrData.SysMemSlicePitch = 0;
+		Graphics::SubresourceData data = {};
+		data.pSysMem = mesh.mVertices.data();
+		data.SysMemPitch = 0;
+		data.SysMemSlicePitch = 0;
+		p_device->CreateBuffer(&desc, &data, mesh.mpVertexBuffer.get());
 
-		hr = device->CreateBuffer(
-			&CD3D11_BUFFER_DESC(
-				sizeof(FbxInfo::Vertex) * mesh.mVertices.size(),
-				D3D11_BIND_VERTEX_BUFFER,
-				D3D11_USAGE_IMMUTABLE,
-				0,
-				0,
-				0
-			),
-			&vSrData,
-			mesh.m_pVertexBuffer.GetAddressOf()
-		);
-		_ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
-
-
-
-		D3D11_SUBRESOURCE_DATA iSrData = {};
-		iSrData.pSysMem = mesh.mIndices.data();
-		iSrData.SysMemPitch = 0;
-		iSrData.SysMemSlicePitch = 0;
-
-
-		hr = device->CreateBuffer(
-			&CD3D11_BUFFER_DESC(
-				sizeof(u_int) * mesh.mIndices.size(),
-				D3D11_BIND_INDEX_BUFFER,
-				D3D11_USAGE_IMMUTABLE,
-				0,
-				0,
-				0
-			),
-			&iSrData,
-			mesh.m_pIndexBuffer.GetAddressOf()
-		);
-		_ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
-
+		//INDEX BUFFER
+		desc.ByteWidth = sizeof(uint32_t) * mesh.mIndices.size();
+		desc.BindFlags = Graphics::BIND_INDEX_BUFFER;
+		mesh.mpIndexBuffer->desc = desc;
+		data.pSysMem = mesh.mIndices.data();
+		p_device->CreateBuffer(&desc, &data, mesh.mpIndexBuffer.get());
 	}
 }
 
 //----------------------------------------------------------------------------------------------------------------------------
 
 void SkinnedMesh::Render(
-	D3D::DeviceContextPtr& imm_context,
+	Graphics::GraphicsDevice* p_device,
 	float elapsed_time,
 	const DirectX::XMMATRIX& world,
 	CameraController* camera,
 	Shader* shader,
-	const MaterialData& mat_data,
+	const Material& mat_data,
 	bool isShadow,
 	bool isSolid
 )
 {
 	HRESULT hr = S_OK;
+	auto& ImmContext = p_device->GetImmContextPtr();
 	if (shader != nullptr)
 	{
-		shader->ActivateShaders(imm_context);
+		shader->ActivateShaders(ImmContext);
 	}
 
 	DirectX::XMFLOAT4X4 W, WVP;
 	CBufferForMesh meshData = {};
 	DirectX::XMStoreFloat4x4(&W, world);
-	DirectX::XMStoreFloat4x4(&WVP, world * (isShadow ? camera->GetOrthoView() * camera->GetOrthoProj(imm_context) : camera->GetViewMatrix() * camera->GetProjMatrix(imm_context)));
-	DirectX::XMStoreFloat4x4(&meshData.invViewProj, camera->GetInvProjMatrix(imm_context));
+	DirectX::XMStoreFloat4x4(&WVP, world * (isShadow ? camera->GetOrthoView() * camera->GetOrthoProj(ImmContext) : camera->GetViewMatrix() * camera->GetProjMatrix(ImmContext)));
+	DirectX::XMStoreFloat4x4(&meshData.invViewProj, camera->GetInvProjMatrix(ImmContext));
 	DirectX::XMStoreFloat4x4(&meshData.invView, camera->GetInvViewMatrix());
-	DirectX::XMStoreFloat4x4(&meshData.invProj, camera->GetInvProjMatrix(imm_context));
+	DirectX::XMStoreFloat4x4(&meshData.invProj, camera->GetInvProjMatrix(ImmContext));
 
 
-	for (auto& mesh : m_meshes)
+	for (auto& mesh : mMeshes)
 	{
 		CBufferForBone boneData = {};
 
@@ -330,10 +267,18 @@ void SkinnedMesh::Render(
 		//imm_context->UpdateSubresource(mesh.mpVertexBuffer.Get(), 0, NULL, mesh.mVertices.data(), 0, 0);
 #pragma endregion
 
-		imm_context->IASetVertexBuffers(0, 1, mesh.m_pVertexBuffer.GetAddressOf(), &stride, &offset);
-		imm_context->IASetIndexBuffer(mesh.m_pIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-		imm_context->IASetPrimitiveTopology(mTopologyType);
-		imm_context->RSSetState(isSolid ? m_pRasterizerSolid.Get() : m_pRasterizerWire.Get());
+		Graphics::GPUBuffer* vb = mesh.mpVertexBuffer.get();
+		p_device->BindVertexBuffer(&vb, 0, 1, &stride, &offset);
+		p_device->BindIndexBuffer(mesh.mpIndexBuffer.get(), Graphics::INDEXFORMAT_32BIT, 0);
+		p_device->BindPrimitiveTopology(Graphics::TRIANGLELIST);
+		if (isSolid)
+		{
+			p_device->RSSetState(mCoordSystem > 0 ? Graphics::RS_MAYA_BACK : Graphics::RS_BACK);
+		}
+		else
+		{
+			p_device->RSSetState(mCoordSystem > 0 ? Graphics::RS_MAYA_WIRE_BACK : Graphics::RS_WIRE_BACK);
+		}
 
 		DirectX::XMStoreFloat4x4(
 			&meshData.WVP,
@@ -347,16 +292,16 @@ void SkinnedMesh::Render(
 			DirectX::XMLoadFloat4x4(&COORD_CONVERSION[mCoordSystem]) *
 			DirectX::XMLoadFloat4x4(&W));
 
-		imm_context->UpdateSubresource(mpConstantBufferMesh.Get(), 0, nullptr, &meshData, 0, 0);
-		imm_context->VSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
-		imm_context->HSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
-		imm_context->DSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
-		imm_context->GSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
-		imm_context->PSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
+		ImmContext->UpdateSubresource(mpConstantBufferMesh.Get(), 0, nullptr, &meshData, 0, 0);
+		ImmContext->VSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
+		ImmContext->HSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
+		ImmContext->DSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
+		ImmContext->GSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
+		ImmContext->PSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
 
-		imm_context->UpdateSubresource(m_constant_buffer_bone.Get(), 0, nullptr, &boneData, 0, 0);
-		imm_context->VSSetConstantBuffers(4, 1, m_constant_buffer_bone.GetAddressOf());
-		imm_context->PSSetConstantBuffers(4, 1, m_constant_buffer_bone.GetAddressOf());
+		ImmContext->UpdateSubresource(m_constant_buffer_bone.Get(), 0, nullptr, &boneData, 0, 0);
+		ImmContext->VSSetConstantBuffers(4, 1, m_constant_buffer_bone.GetAddressOf());
+		ImmContext->PSSetConstantBuffers(4, 1, m_constant_buffer_bone.GetAddressOf());
 
 		for (FbxInfo::Subset& subset : mesh.mSubsets)
 		{
@@ -373,17 +318,19 @@ void SkinnedMesh::Render(
 			matData.diffuse = mat_data.diffuse;
 			matData.specular = mat_data.specular;
 
-			imm_context->UpdateSubresource(m_pConstantBufferMaterial.Get(), 0, nullptr, &matData, 0, 0);
-			imm_context->VSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());
-			imm_context->HSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());
-			imm_context->DSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());
-			imm_context->GSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());
-			imm_context->PSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());
+			ImmContext->UpdateSubresource(mpConstantBufferMaterial.Get(), 0, nullptr, &matData, 0, 0);
+			ImmContext->VSSetConstantBuffers(1, 1, mpConstantBufferMaterial.GetAddressOf());
+			ImmContext->HSSetConstantBuffers(1, 1, mpConstantBufferMaterial.GetAddressOf());
+			ImmContext->DSSetConstantBuffers(1, 1, mpConstantBufferMaterial.GetAddressOf());
+			ImmContext->GSSetConstantBuffers(1, 1, mpConstantBufferMaterial.GetAddressOf());
+			ImmContext->PSSetConstantBuffers(1, 1, mpConstantBufferMaterial.GetAddressOf());
 
+			for (auto& tex : subset.diffuse.textures)
+			{
+				if (tex) tex->Set(ImmContext);
+			}
 
-			subset.diffuse.texture->Set(imm_context);
-
-			imm_context->DrawIndexed(subset.indexCount, subset.indexStart, 0);
+			p_device->DrawIndexed(subset.indexCount, subset.indexStart, 0);
 		}
 	}
 	mFrameInterpolation.Tick();
@@ -394,11 +341,11 @@ void SkinnedMesh::Render(
 
 bool SkinnedMesh::AddMotion(std::string& name, const char* filename)
 {
-	if (m_meshes.size() == 0) return false;
+	if (mMeshes.size() == 0) return false;
 
 	std::unique_ptr<FbxLoader> loader = std::make_unique<FbxLoader>();
 
-	return (loader->AddMotion(name, filename, m_meshes));
+	return (loader->AddMotion(name, filename, mMeshes));
 }
 
 //----------------------------------------------------------------------------------------------------------------------------
@@ -407,8 +354,6 @@ DirectX::XMMATRIX SkinnedMesh::Lerp(DirectX::XMFLOAT4X4& A, DirectX::XMFLOAT4X4&
 {
 	DirectX::XMMATRIX out;
 	out = DirectX::XMLoadFloat4x4(&A) * (1.0f - rate) + DirectX::XMLoadFloat4x4(&B) * rate;
-	//DirectX::XMFLOAT4X4 outt;
-	//DirectX::XMStoreFloat4x4(&outt, out);
 	return out;
 }
 
@@ -416,8 +361,8 @@ DirectX::XMMATRIX SkinnedMesh::Lerp(DirectX::XMFLOAT4X4& A, DirectX::XMFLOAT4X4&
 
 void SkinnedMesh::Play(std::string name, int blend_time, bool isLooped)
 {
-	auto it = m_meshes.begin();
-	while (it != m_meshes.end())
+	auto it = mMeshes.begin();
+	while (it != mMeshes.end())
 	{
 		auto i = it->mMotions.find(name);
 		if (i == it->mMotions.end())

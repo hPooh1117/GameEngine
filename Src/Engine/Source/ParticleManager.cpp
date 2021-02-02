@@ -3,10 +3,10 @@
 using namespace DirectX;
 
 ParticleManager::ParticleManager(
-	Microsoft::WRL::ComPtr<ID3D11Device>& device, 
+	Graphics::GraphicsDevice* p_device,
 	const wchar_t* filename)
 {
-	m_plane_batch = std::make_unique<PlaneBatch>(device, filename, 5000);
+	m_plane_batch = std::make_unique<PlaneBatch>(p_device, filename, 5000);
 	m_texture_filename = filename;
 }
 
@@ -121,20 +121,22 @@ void ParticleManager::Update(float elapsed_time)
 }
 
 void ParticleManager::Render(
-	Microsoft::WRL::ComPtr<ID3D11DeviceContext>& imm_context,
+	Graphics::GraphicsDevice* p_device,
 	const std::shared_ptr<CameraController>& camera, 
 	const std::shared_ptr<Shader>& shader)
 {
-	m_plane_batch->Begin(imm_context, shader);
+	auto& ImmContext = p_device->GetImmContextPtr();
+
+	m_plane_batch->Begin(p_device, shader);
 	for (auto& particle : m_particles)
 	{
 		if (particle.lifespan <= 0.0f) continue;
 		XMMATRIX world = XMMatrixIdentity();
 		world *= XMMatrixScaling(particle.scale, particle.scale, particle.scale);
 		world *= XMMatrixTranslation(particle.position.x, particle.position.y, particle.position.z);
-		m_plane_batch->Render(imm_context, world, camera, particle.color);
+		m_plane_batch->Render(p_device, world, camera, particle.color);
 	}
-	m_plane_batch->End(imm_context);
+	m_plane_batch->End(p_device);
 }
 
 ParticleManager::~ParticleManager()

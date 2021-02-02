@@ -21,7 +21,7 @@ Window::Window()
 {
 }
 
-bool Window::Init()
+bool Window::Initialize()
 {
 	WNDCLASSEX wcex;
 	wcex.cbSize = sizeof(WNDCLASSEX);
@@ -44,7 +44,7 @@ bool Window::Init()
 		WS_EX_OVERLAPPEDWINDOW,
 		L"GameEngine",
 		L"",
-		WS_OVERLAPPEDWINDOW/* ^ WS_MAXIMIZEBOX ^ WS_THICKFRAME | WS_VISIBLE*/,
+		WS_OVERLAPPEDWINDOW ^ WS_MAXIMIZEBOX ^ WS_THICKFRAME | WS_VISIBLE,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
 		rc.right - rc.left,
@@ -85,6 +85,7 @@ bool Window::Run()
 
 	}
 
+	
 #ifdef USE_IMGUI
 	// cleanup imgui
 	ImGui_ImplDX11_Shutdown();
@@ -93,7 +94,7 @@ bool Window::Run()
 #endif //USE_IMGUI
 
 
-	return false;
+	return true;
 }
 
 void Window::SetHWND(HWND hwnd)

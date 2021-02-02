@@ -97,6 +97,7 @@
 //	output.depth = float4(input.depth.x / input.depth.y, 0, 0, 1);
 //	return output;
 //}
+#include "HF_GlobalVariables.hlsli"
 
 struct VS_Input
 {
@@ -118,15 +119,6 @@ struct PS_Input
 TextureCube env_texture : register(t13);
 SamplerState decal_sampler : register(s0);
 
-cbuffer CBPerMatrix : register(b0)
-{
-	row_major float4x4 matWVP;
-	row_major float4x4 world;
-
-
-	row_major float4x4 inv_projview;
-
-};
 
 static const float GAMMA = 2.2;
 static const float EXPOSURE = 0.5;

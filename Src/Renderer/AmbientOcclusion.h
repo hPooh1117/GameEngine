@@ -6,8 +6,10 @@
 #include "./Utilities/Vector.h"
 #include "./Engine/UIClient.h"
 
-class GraphicsEngine;
-class Shader;
+#include "GraphicsDevice.h"
+#include "./Renderer/Shader.h"
+
+
 class Texture;
 class CameraController;
 class ComputedTexture;
@@ -32,12 +34,13 @@ private:
 	D3D::BufferPtr           m_pCBufferForAO;
 	std::unique_ptr<ComputedTexture> mpSSAOTex;
 	std::unique_ptr<ComputedTexture> mpAlchemyAOTex;
+	std::unique_ptr<Shader> mpCS_SSAO;
+	std::unique_ptr<Shader> mpCS_AlchemyAO;
 
-	DirectX::XMFLOAT4 mSamplePos[MAX_SAMPLES];
+	DirectX::XMFLOAT4 mSamplePos[MAX_SAMPLES] = { {} };
 	
 	D3D::Texture2DPtr        m_pNoiseTexture;
 	D3D::SRVPtr   m_pNoiseResourceView;
-	D3D::SamplerStatePtr     m_pWrapSampler;
 	Vector2                  mNoiseScale;
 	float                    mSampleRadius;
 	float                    mPower;
@@ -68,15 +71,23 @@ private:
 		DirectX::XMFLOAT2  screenSize_rcp;
 		DirectX::XMFLOAT2  noiseScale;
 		DirectX::XMFLOAT4  samplePos[MAX_SAMPLES];
+
+		float              bias;
+		float dummy = 0;
+		float dummy1 = 0;
+		float dummy2 = 0;
 	};
 
 public:
 	AmbientOcclusion();
-	bool Initialize(D3D::DevicePtr& p_device);
-	void Activate(std::unique_ptr<GraphicsEngine>& p_graphics, CameraController* p_camera);
-	void ExecuteOcclusion(std::unique_ptr<GraphicsEngine>& p_graphics, D3D::SRVPtr& p_srv);
-	void Deactivate(std::unique_ptr<GraphicsEngine>& p_graphics, UINT slot);
+	bool Initialize(Graphics::GraphicsDevice* device);
+	void Activate(Graphics::GraphicsDevice* device, CameraController* p_camera);
+	void ExecuteOcclusion(Graphics::GraphicsDevice* device, D3D::SRVPtr& p_srv);
+	void Deactivate(Graphics::GraphicsDevice* device, UINT slot);
 
 	virtual void RenderUI() override;
+
+
+
 	~AmbientOcclusion();
 };

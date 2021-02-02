@@ -204,7 +204,11 @@ MeshComponent::MeshComponent(Actor* p_owner)
 	mCurrentMotionKey("default"),
 	mbChangedMotion(false),
 	mAnimeBlendTime(60),
-	mbIsPBR(false)
+	mbIsPBR(false),
+	mbDiffuseLight(true),
+	mbSpecularLight(true),
+	mFbxType(0),
+	mTextureConfig(0)
 {
 	mMeshID = MeshTypeID::E_Default;
 	mMaterialData.mat_color = { 1, 1, 1, 1 };
@@ -250,7 +254,7 @@ bool MeshComponent::RegisterMesh(UINT mesh_type_id, UINT shader_id, const wchar_
 {
 	mMeshID = mesh_type_id < MeshTypeID::ENUM_MESH_TYPE_MAX ? mesh_type_id : MeshTypeID::E_Default;
 	mFbxType = coord_system;
-	mShaderIDTable.emplace(ShaderUsage::EMain, shader_id);
+	mShaderIDTable.emplace(static_cast<UINT>(ShaderUsage::EMain), shader_id);
 	if (mesh_filename != nullptr)
 	{
 		mMeshFileName = mesh_filename;
@@ -293,7 +297,7 @@ bool MeshComponent::RegisterTexture(const wchar_t* tex_filename, TextureConfig t
 	if (textureConfig == TextureConfig::EMetallicMap || textureConfig == TextureConfig::ERoughnessMap) mbIsPBR = true;
 
 	mTextureTable.emplace_back(data);
-	Log::Info("[MESH COMP] Regist Texture (ActorNo.%d). ( Slot : %d)", mpOwner->GetID(), data.slot/*, mMeshFileName*/);
+	Log::Info("[MESH COMP] Regist Texture. ( Slot : %d)", data.slot/*, mMeshFileName*/);
 	return true;
 }
 
@@ -305,18 +309,18 @@ bool MeshComponent::RegisterMotion(const char* name, const wchar_t* motion_filen
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-bool MeshComponent::RegisterAdditionalShader(ShaderID shader_id, unsigned int usage)
+bool MeshComponent::RegisterAdditionalShader(UINT shader_id, ShaderUsage usage)
 {
-	mShaderIDTable.emplace(usage, shader_id);
+	mShaderIDTable.emplace(static_cast<UINT>(usage), shader_id);
 	Log::Info("[MESH COMP] Regist Additional Shader (ActorNo.%d). ( Usage : %d, ShaderType : %d", mpOwner->GetID(), usage, shader_id);
-	if (usage == ShaderUsage::EShader) mTextureConfig += static_cast<int>(TextureConfig::EShadowMap);
+	if (static_cast<ShaderUsage>(usage) == ShaderUsage::EShader) mTextureConfig += static_cast<int>(TextureConfig::EShadowMap);
 	mMaterialData.textureConfig = mTextureConfig;
 	return false;
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-const DirectX::XMMATRIX& MeshComponent::GetWorldMatrix()
+const DirectX::XMMATRIX MeshComponent::GetWorldMatrix()
 {
 	return mpOwner->GetWorldMatrix();
 }

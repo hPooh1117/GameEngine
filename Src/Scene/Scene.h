@@ -1,20 +1,23 @@
 #pragma once
 #include "SceneManager.h"
+#include "SceneHelper.h"
 
 #include "./Application/Helper.h"
 #include "./Application/Input.h"
 
 #include "./Renderer/D3D_Helper.h"
+#include "./Renderer/GraphicsDevice.h"
 
 #include "./Utilities/Vector.h"
 
 namespace Settings { struct Renderer; }
-class GraphicsEngine;
+
+
 
 class Scene
 {
 public:
-    static const Settings::Renderer mSettings[7];
+    static const Settings::Renderer mSettings[static_cast<UINT>(SceneID::SCENE_NUM_MAX)];
 protected:
     SceneManager*                                 m_pManager;
     int                                           mTimer;
@@ -36,14 +39,14 @@ protected:
 
 public:
     Scene(SceneManager* manager,
-        Microsoft::WRL::ComPtr<ID3D11Device>& device);
+        Graphics::GraphicsDevice* p_device);
     //Scene(D3D::DevicePtr& device);
     virtual ~Scene() = default;
 
     virtual void InitializeScene() = 0;
     virtual void Update(float elapsed_time) = 0;
-    virtual void PreCompute(std::unique_ptr<GraphicsEngine>& p_graphics) = 0;
-    virtual void Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time) = 0;
+    virtual void PreCompute(Graphics::GraphicsDevice* p_graphics) = 0;
+    virtual void Render(Graphics::GraphicsDevice* p_graphics, float elapsed_time) = 0;
     virtual void RenderUI() = 0;
     
     const std::string& GetCurrentSceneName();

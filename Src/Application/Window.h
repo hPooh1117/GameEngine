@@ -16,7 +16,7 @@ protected:
 
 public:
     Window();
-    virtual bool Init();
+    virtual bool Initialize();
     void ShowAndUpdateWindow();
     bool Run();
     void SetHWND(HWND hwnd);

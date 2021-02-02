@@ -1,9 +1,7 @@
-#include "sprite.h"
+#include "Sprite.h"
 
 #include "ResourceManager.h"
 #include "./Utilities/misc.h"
-#include "Texture.h"
-#include "Shader.h"
 
 //---< namespace >-----------------------------------------------------------------------------------------------------
 using namespace DirectX;
@@ -14,11 +12,12 @@ using namespace DirectX;
 //      sprite
 //
 //******************************************************************************
-Sprite::Sprite(D3D::DevicePtr& device)
+Sprite::Sprite(Graphics::GraphicsDevice* p_device):
+    mpVertexBuffer(std::make_unique<Graphics::GPUBuffer>())
 {
     HRESULT hr = S_OK;
-
-    m_pTexture = std::unique_ptr<Texture>();
+    auto& pDevice = p_device->GetDevicePtr();
+    mpTexture = std::unique_ptr<Texture>();
 
     // 頂点情報のセット
     vertex vertices[] = {
@@ -29,50 +28,64 @@ Sprite::Sprite(D3D::DevicePtr& device)
     };
 
 
-    // 頂点バッファ―オブジェクトの生成
-    D3D11_BUFFER_DESC vbDesc;
-    vbDesc.ByteWidth = sizeof(vertex) * 4;
-    vbDesc.Usage = D3D11_USAGE_DYNAMIC;        // accessable by GPU(read only) and CPU (write only).
-    vbDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;   // bind with vertex buffer
-    vbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;     // CPU can write 
-    vbDesc.MiscFlags = 0;
-    vbDesc.StructureByteStride = 0;
+    //// 頂点バッファ―オブジェクトの生成
+    //D3D11_BUFFER_DESC vbDesc;
+    //vbDesc.ByteWidth = sizeof(vertex) * 4;
+    //vbDesc.Usage = D3D11_USAGE_DYNAMIC;        // accessable by GPU(read only) and CPU (write only).
+    //vbDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;   // bind with vertex buffer
+    //vbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;     // CPU can write 
+    //vbDesc.MiscFlags = 0;
+    //vbDesc.StructureByteStride = 0;
 
-    D3D11_SUBRESOURCE_DATA vrData;
-    vrData.pSysMem = vertices;
-    vrData.SysMemPitch = 0;
-    vrData.SysMemSlicePitch = 0;
-
-
-    hr = device->CreateBuffer(&vbDesc, &vrData, m_pVertexBuffer.GetAddressOf());
-    if (FAILED(hr)) return;
+    //D3D11_SUBRESOURCE_DATA vrData;
+    //vrData.pSysMem = vertices;
+    //vrData.SysMemPitch = 0;
+    //vrData.SysMemSlicePitch = 0;
 
 
-    // Create RasterizerState
-    D3D11_RASTERIZER_DESC rrDesc = {};
-    rrDesc.AntialiasedLineEnable = false;
-    rrDesc.CullMode = D3D11_CULL_NONE;
-    rrDesc.DepthBias = 0;
-    rrDesc.DepthBiasClamp = 0.0f;
-    rrDesc.DepthClipEnable = FALSE;
-    rrDesc.FillMode = D3D11_FILL_SOLID;
-    rrDesc.FrontCounterClockwise = FALSE;
-    rrDesc.MultisampleEnable = FALSE;
-    rrDesc.ScissorEnable = FALSE;
-    rrDesc.SlopeScaledDepthBias = 0.0f;
-    device->CreateRasterizerState(&rrDesc, m_pRasterizerState.GetAddressOf());
+    //hr = pDevice->CreateBuffer(&vbDesc, &vrData, m_pVertexBuffer.GetAddressOf());
+    //if (FAILED(hr)) return;
+    Graphics::GPUBufferDesc& desc = mpVertexBuffer->desc;
+    desc.ByteWidth = sizeof(vertex) * 4;
+    desc.BindFlags = Graphics::BIND_VERTEX_BUFFER;
+    desc.Usage = Graphics::USAGE_DYNAMIC;
+    desc.CPUAccessFlags = Graphics::CPU_ACCESS_WRITE;
+    desc.MiscFlags = 0;
+    desc.StructureByteStride = 0;
+
+    Graphics::SubresourceData data = {};
+    data.pSysMem = vertices;
+    data.SysMemPitch = 0;
+    data.SysMemSlicePitch = 0;
+
+    p_device->CreateBuffer(&desc, &data, mpVertexBuffer.get());
+
+    //// Create RasterizerState
+    //D3D11_RASTERIZER_DESC rrDesc = {};
+    //rrDesc.AntialiasedLineEnable = false;
+    //rrDesc.CullMode = D3D11_CULL_NONE;
+    //rrDesc.DepthBias = 0;
+    //rrDesc.DepthBiasClamp = 0.0f;
+    //rrDesc.DepthClipEnable = FALSE;
+    //rrDesc.FillMode = D3D11_FILL_SOLID;
+    //rrDesc.FrontCounterClockwise = FALSE;
+    //rrDesc.MultisampleEnable = FALSE;
+    //rrDesc.ScissorEnable = FALSE;
+    //rrDesc.SlopeScaledDepthBias = 0.0f;
+    //pDevice->CreateRasterizerState(&rrDesc, m_pRasterizerState.GetAddressOf());
 
 
 
 }
 
 
-Sprite::Sprite(D3D::DevicePtr& device, const wchar_t* filename)
+Sprite::Sprite(Graphics::GraphicsDevice* p_device, const wchar_t* filename):
+    mpVertexBuffer(std::make_unique<Graphics::GPUBuffer>())
 {
     HRESULT hr = S_OK;
-
-    m_pTexture = std::make_unique<Texture>();
-    m_pTexture->Load(device, filename);
+    auto& pDevice = p_device->GetDevicePtr();
+    mpTexture = std::make_unique<Texture>();
+    mpTexture->Load(pDevice, filename);
 
     // 頂点情報のセット
     vertex vertices[] = {
@@ -83,38 +96,53 @@ Sprite::Sprite(D3D::DevicePtr& device, const wchar_t* filename)
     };
 
 
-    // 頂点バッファ―オブジェクトの生成
-    D3D11_BUFFER_DESC vbDesc;
-    vbDesc.ByteWidth = sizeof(vertex) * 4;
-    vbDesc.Usage = D3D11_USAGE_DYNAMIC;        // accessable by GPU(read only) and CPU (write only).
-    vbDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;   // bind with vertex buffer
-    vbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;     // CPU can write 
-    vbDesc.MiscFlags = 0;
-    vbDesc.StructureByteStride = 0;
+    //// 頂点バッファ―オブジェクトの生成
+    //D3D11_BUFFER_DESC vbDesc;
+    //vbDesc.ByteWidth = sizeof(vertex) * 4;
+    //vbDesc.Usage = D3D11_USAGE_DYNAMIC;        // accessable by GPU(read only) and CPU (write only).
+    //vbDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;   // bind with vertex buffer
+    //vbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;     // CPU can write 
+    //vbDesc.MiscFlags = 0;
+    //vbDesc.StructureByteStride = 0;
 
-    D3D11_SUBRESOURCE_DATA vrData;
-    vrData.pSysMem = vertices;
-    vrData.SysMemPitch = 0;
-    vrData.SysMemSlicePitch = 0;
-
-
-    hr = device->CreateBuffer(&vbDesc, &vrData, m_pVertexBuffer.GetAddressOf());
-    if (FAILED(hr)) return;
+    //D3D11_SUBRESOURCE_DATA vrData;
+    //vrData.pSysMem = vertices;
+    //vrData.SysMemPitch = 0;
+    //vrData.SysMemSlicePitch = 0;
 
 
-    // Create RasterizerState
-    D3D11_RASTERIZER_DESC rrDesc = {};
-    rrDesc.AntialiasedLineEnable = false;
-    rrDesc.CullMode = D3D11_CULL_NONE;
-    rrDesc.DepthBias = 0;
-    rrDesc.DepthBiasClamp = 0.0f;
-    rrDesc.DepthClipEnable = FALSE;
-    rrDesc.FillMode = D3D11_FILL_SOLID;
-    rrDesc.FrontCounterClockwise = FALSE;
-    rrDesc.MultisampleEnable = FALSE;
-    rrDesc.ScissorEnable = FALSE;
-    rrDesc.SlopeScaledDepthBias = 0.0f;
-    device->CreateRasterizerState(&rrDesc, m_pRasterizerState.GetAddressOf());
+    //hr = pDevice->CreateBuffer(&vbDesc, &vrData, m_pVertexBuffer.GetAddressOf());
+    //if (FAILED(hr)) return;
+
+    Graphics::GPUBufferDesc& desc = mpVertexBuffer->desc;
+    desc.ByteWidth = sizeof(vertex) * 4;
+    desc.BindFlags = Graphics::BIND_VERTEX_BUFFER;
+    desc.Usage = Graphics::USAGE_DYNAMIC;
+    desc.CPUAccessFlags = Graphics::CPU_ACCESS_WRITE;
+    desc.MiscFlags = 0;
+    desc.StructureByteStride = 0;
+
+    Graphics::SubresourceData data = {};
+    data.pSysMem = vertices;
+    data.SysMemPitch = 0;
+    data.SysMemSlicePitch = 0;
+
+    p_device->CreateBuffer(&desc, &data, mpVertexBuffer.get());
+
+
+    //// Create RasterizerState
+    //D3D11_RASTERIZER_DESC rrDesc = {};
+    //rrDesc.AntialiasedLineEnable = false;
+    //rrDesc.CullMode = D3D11_CULL_NONE;
+    //rrDesc.DepthBias = 0;
+    //rrDesc.DepthBiasClamp = 0.0f;
+    //rrDesc.DepthClipEnable = FALSE;
+    //rrDesc.FillMode = D3D11_FILL_SOLID;
+    //rrDesc.FrontCounterClockwise = FALSE;
+    //rrDesc.MultisampleEnable = FALSE;
+    //rrDesc.ScissorEnable = FALSE;
+    //rrDesc.SlopeScaledDepthBias = 0.0f;
+    //pDevice->CreateRasterizerState(&rrDesc, m_pRasterizerState.GetAddressOf());
 
 
 
@@ -130,7 +158,7 @@ Sprite::~Sprite()
 // @param angle  : Rotation angle (degree)
 // @param color  : Color of vertices
 void Sprite::Render(
-    D3D::DeviceContextPtr& imm_context,
+    Graphics::GraphicsDevice* p_device,
     Shader* p_shader,
     const Vector2& pos,
     const Vector2& size,
@@ -139,14 +167,14 @@ void Sprite::Render(
     const float angle,
     const Vector4& color)
 {
-
-    if (p_shader != nullptr) p_shader->ActivateShaders(imm_context);
+    auto& ImmContext = p_device->GetImmContextPtr();
+    if (p_shader != nullptr) p_shader->ActivateShaders(ImmContext);
 
     UINT stride = sizeof(vertex);
     UINT offset = 0;
     D3D11_VIEWPORT viewport;
     UINT numVp = 1;
-    imm_context->RSGetViewports(&numVp, &viewport);
+    ImmContext->RSGetViewports(&numVp, &viewport);
 
     vertex vertices[4] = {
         { XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f), color },
@@ -161,7 +189,7 @@ void Sprite::Render(
     float cosValue = cosf(radian);
     float mx = (tex_size.x * size.x * 0.5f) / tex_size.x;
     float my = (tex_size.y * size.y * 0.5f) / tex_size.y;
-    Vector2 textureSize = m_pTexture->GetTexSize();
+    Vector2 textureSize = mpTexture->GetTexSize();
 
     for (auto i = 0; i < 4; ++i)
     {
@@ -190,36 +218,24 @@ void Sprite::Render(
         vertices[i].texcoord.y = (tex_pos.y + vertices[i].texcoord.y * tex_size.y) / static_cast<UINT>(textureSize.y);
     }
 
-    D3D11_MAPPED_SUBRESOURCE mrData = {};
-    //mrData.pData;
-    //mrData.RowPitch;
-    //mrData.DepthPitch;
 
-    // Update VertexBuffer from calcuration result
-    imm_context->Map(m_pVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, NULL, &mrData);
-    memcpy(mrData.pData, vertices, sizeof(vertices));
-    imm_context->Unmap(m_pVertexBuffer.Get(), 0);
+    p_device->UpdateBuffer(mpVertexBuffer.get(), vertices, sizeof(vertices));
 
-
-
-
-    imm_context->IASetVertexBuffers(0, 1, m_pVertexBuffer.GetAddressOf(), &stride, &offset);
-
-    imm_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-
-
-    imm_context->RSSetState(m_pRasterizerState.Get());
+    Graphics::GPUBuffer* vb = mpVertexBuffer.get();
+    p_device->BindVertexBuffer(&vb, 0, 1, &stride, &offset);
+    p_device->BindPrimitiveTopology(Graphics::TRIANGLESTRIP);
+    p_device->RSSetState(Graphics::RS_SPRITE);
+    p_device->OMSetDepthStencilState(Graphics::DS_FALSE);
 
     // Set Texture
-    m_pTexture->Set(imm_context);
+    mpTexture->Set(ImmContext);
 
-    // ⑥プリミティブの描画
-    imm_context->Draw(4, 0);
+    p_device->Draw(4, 0);
 }
 
 
 void Sprite::Render(
-    D3D::DeviceContextPtr& imm_context,
+    Graphics::GraphicsDevice* p_device,
     Shader* p_shader,
     std::unique_ptr<Texture>& p_texture,
     const Vector2& pos,
@@ -229,13 +245,14 @@ void Sprite::Render(
     const float angle, 
     const Vector4& color)
 {
-    if (p_shader != nullptr) p_shader->ActivateShaders(imm_context);
+    auto& ImmContext = p_device->GetImmContextPtr();
+    if (p_shader != nullptr) p_shader->ActivateShaders(ImmContext);
 
     UINT stride = sizeof(vertex);
     UINT offset = 0;
     D3D11_VIEWPORT viewport;
     UINT numVp = 1;
-    imm_context->RSGetViewports(&numVp, &viewport);
+    ImmContext->RSGetViewports(&numVp, &viewport);
 
     vertex vertices[4] = {
         { XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f), color },
@@ -279,43 +296,33 @@ void Sprite::Render(
         vertices[i].texcoord.y = (tex_pos.y + vertices[i].texcoord.y * tex_size.y) / static_cast<UINT>(textureSize.y);
     }
 
-    D3D11_MAPPED_SUBRESOURCE mrData = {};
-    //mrData.pData;
-    //mrData.RowPitch;
-    //mrData.DepthPitch;
-
-    // Update VertexBuffer from calcuration result
-    imm_context->Map(m_pVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, NULL, &mrData);
-    memcpy(mrData.pData, vertices, sizeof(vertices));
-    imm_context->Unmap(m_pVertexBuffer.Get(), 0);
+    p_device->UpdateBuffer(mpVertexBuffer.get(), vertices, sizeof(vertices));
 
 
-
-
-    imm_context->IASetVertexBuffers(0, 1, m_pVertexBuffer.GetAddressOf(), &stride, &offset);
-
-    imm_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-
-
-    imm_context->RSSetState(m_pRasterizerState.Get());
+    Graphics::GPUBuffer* vb = mpVertexBuffer.get();
+    p_device->BindVertexBuffer(&vb, 0, 1, &stride, &offset);
+    p_device->BindPrimitiveTopology(Graphics::TRIANGLESTRIP);
+    p_device->RSSetState(Graphics::RS_SPRITE);
+    p_device->OMSetDepthStencilState(Graphics::DS_FALSE);
 
     // Set Texture
-    if (p_texture) p_texture->Set(imm_context);
+    if (p_texture) p_texture->Set(ImmContext);
 
-    // ⑥プリミティブの描画
-    imm_context->Draw(4, 0);
+    p_device->Draw(4, 0);
 
 }
 
-void Sprite::RenderScreen(D3D::DeviceContextPtr& imm_context, Shader* p_shader, const Vector2& pos, const Vector2& size)
+void Sprite::RenderScreen(Graphics::GraphicsDevice* p_device,
+    Shader* p_shader, const Vector2& pos, const Vector2& size)
 {
-    if (p_shader != nullptr) p_shader->ActivateShaders(imm_context);
+    auto& ImmContext = p_device->GetImmContextPtr();
+    if (p_shader != nullptr) p_shader->ActivateShaders(ImmContext);
 
     UINT stride = sizeof(vertex);
     UINT offset = 0;
     D3D11_VIEWPORT viewport;
     UINT numVp = 1;
-    imm_context->RSGetViewports(&numVp, &viewport);
+    ImmContext->RSGetViewports(&numVp, &viewport);
 
     vertex vertices[4] = {
         { XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f), XMFLOAT4(1, 1, 1, 1) },
@@ -359,26 +366,20 @@ void Sprite::RenderScreen(D3D::DeviceContextPtr& imm_context, Shader* p_shader, 
         vertices[i].texcoord.y = (vertices[i].texcoord.y * texSize.y) / static_cast<UINT>(texSize.y);
     }
 
-    D3D11_MAPPED_SUBRESOURCE mrData = {};
-    //mrData.pData;
-    //mrData.RowPitch;
-    //mrData.DepthPitch;
+    p_device->UpdateBuffer(mpVertexBuffer.get(), vertices, sizeof(vertices));
 
-    // Update VertexBuffer from calcuration result
-    imm_context->Map(m_pVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, NULL, &mrData);
-    memcpy(mrData.pData, vertices, sizeof(vertices));
-    imm_context->Unmap(m_pVertexBuffer.Get(), 0);
 
-    imm_context->IASetVertexBuffers(0, 1, m_pVertexBuffer.GetAddressOf(), &stride, &offset);
-    imm_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-    imm_context->RSSetState(m_pRasterizerState.Get());
+    Graphics::GPUBuffer* vb = mpVertexBuffer.get();
+    p_device->BindVertexBuffer(&vb, 0, 1, &stride, &offset);
+    p_device->BindPrimitiveTopology(Graphics::TRIANGLESTRIP);
+    p_device->RSSetState(Graphics::RS_SPRITE);
+    p_device->OMSetDepthStencilState(Graphics::DS_FALSE);
 
-    // ⑥プリミティブの描画
-    imm_context->Draw(4, 0);
+    p_device->Draw(4, 0);
 }
 
 void Sprite::TextOutput(
-    D3D::DeviceContextPtr& imm_context,
+    Graphics::GraphicsDevice* p_device,
     const std::string& str,
     Shader* p_shader,
     const Vector2& pos,
@@ -395,7 +396,7 @@ void Sprite::TextOutput(
         Vector2 texpos(sw * (c & 0x0F), sh * (c >> 4));
         Vector2 texSize(sw, sh);
 
-        Render(imm_context,
+        Render(p_device,
             p_shader,
             pos,
             size,
@@ -416,11 +417,11 @@ void Sprite::TextOutput(
 //      SpriteBatch
 //
 //******************************************************************************
-SpriteBatch::SpriteBatch(Microsoft::WRL::ComPtr<ID3D11Device>& device, const wchar_t* filename, const size_t maxInstances)
+SpriteBatch::SpriteBatch(Graphics::GraphicsDevice* p_device, const wchar_t* filename, const size_t maxInstances)
     :MAX_INSTANCES(maxInstances)
 {
     HRESULT hr = S_OK;
-
+    auto& pDevice = p_device->GetDevicePtr();
     Vertex vertices[] = {
         {XMFLOAT3(0,0,0), XMFLOAT2(0,0)},
         {XMFLOAT3(1,0,0), XMFLOAT2(1, 0)},
@@ -441,7 +442,7 @@ SpriteBatch::SpriteBatch(Microsoft::WRL::ComPtr<ID3D11Device>& device, const wch
     srData.SysMemPitch = 0;
     srData.SysMemSlicePitch = 0;
 
-    hr = device->CreateBuffer(&vbDesc, &srData, mVertexBuffer.GetAddressOf());
+    hr = pDevice->CreateBuffer(&vbDesc, &srData, mpVertexBuffer.GetAddressOf());
     if (FAILED(hr)) return;
 
 
@@ -457,8 +458,8 @@ SpriteBatch::SpriteBatch(Microsoft::WRL::ComPtr<ID3D11Device>& device, const wch
         { "COLOR",              0, DXGI_FORMAT_R32G32B32A32_FLOAT,   1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
     };
 
-    ResourceManager::CreateVSFromFile(device, "./Data/Shaders/sprite_batch_vs.cso", mVertexShader.GetAddressOf(), mInputLayout.GetAddressOf(), layouts, ARRAYSIZE(layouts));
-    ResourceManager::CreatePSFromFile(device, "./Data/Shaders/sprite_batch_ps.cso", mPixelShader.GetAddressOf());
+    ResourceManager::CreateVSFromFile(pDevice, "./Data/Shaders/sprite_batch_vs.cso", mVertexShader.GetAddressOf(), mInputLayout.GetAddressOf(), layouts, ARRAYSIZE(layouts));
+    ResourceManager::CreatePSFromFile(pDevice, "./Data/Shaders/sprite_batch_ps.cso", mPixelShader.GetAddressOf());
 
     Instance* instances = new Instance[MAX_INSTANCES];
     {
@@ -475,7 +476,7 @@ SpriteBatch::SpriteBatch(Microsoft::WRL::ComPtr<ID3D11Device>& device, const wch
         srData.SysMemPitch = 0;
         srData.SysMemSlicePitch = 0;
 
-        hr = device->CreateBuffer(&ibDesc, &srData, mInstanceBuffer.GetAddressOf());
+        hr = pDevice->CreateBuffer(&ibDesc, &srData, mInstanceBuffer.GetAddressOf());
         if (FAILED(hr)) return;
     }
     delete[] instances;
@@ -494,10 +495,10 @@ SpriteBatch::SpriteBatch(Microsoft::WRL::ComPtr<ID3D11Device>& device, const wch
     rrDesc.DepthClipEnable = FALSE;
     rrDesc.ScissorEnable = FALSE;
     rrDesc.MultisampleEnable = FALSE;
-    hr = device->CreateRasterizerState(&rrDesc, mRasterizerState.GetAddressOf());
+    hr = pDevice->CreateRasterizerState(&rrDesc, mRasterizerState.GetAddressOf());
     if (FAILED(hr)) return;
 
-    hr = ResourceManager::LoadTexFile(device, filename, mSRView.GetAddressOf(), &mTexDesc);
+    hr = ResourceManager::LoadTexFile(pDevice, filename, mSRView.GetAddressOf(), &mTexDesc);
     if (FAILED(hr)) return;
 
     FLOAT borderColor[4] = { 0, 0, 0, 0 };
@@ -512,7 +513,7 @@ SpriteBatch::SpriteBatch(Microsoft::WRL::ComPtr<ID3D11Device>& device, const wch
     memcpy(sDesc.BorderColor, borderColor, sizeof(FLOAT) * ARRAYSIZE(borderColor));
     sDesc.MinLOD = 0;
     sDesc.MaxLOD = D3D11_FLOAT32_MAX;
-    hr = device->CreateSamplerState(&sDesc, mSamplerState.GetAddressOf());
+    hr = pDevice->CreateSamplerState(&sDesc, mSamplerState.GetAddressOf());
     if (FAILED(hr)) return;
 
     D3D11_DEPTH_STENCIL_DESC dsDesc = {};
@@ -530,7 +531,7 @@ SpriteBatch::SpriteBatch(Microsoft::WRL::ComPtr<ID3D11Device>& device, const wch
     dsDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
     dsDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
     dsDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-    hr = device->CreateDepthStencilState(&dsDesc, mDepthStencilState.GetAddressOf());
+    hr = pDevice->CreateDepthStencilState(&dsDesc, mDepthStencilState.GetAddressOf());
     if (FAILED(hr)) return;
 
 }
@@ -540,30 +541,31 @@ SpriteBatch::~SpriteBatch()
 
 }
 
-void SpriteBatch::Begin(Microsoft::WRL::ComPtr<ID3D11DeviceContext>& imm_context)
+void SpriteBatch::Begin(Graphics::GraphicsDevice* p_device)
 {
     HRESULT hr = S_OK;
+    auto& ImmContext = p_device->GetImmContextPtr();
     UINT strides[2] = { sizeof(Vertex), sizeof(Instance) };
     UINT offsets[2] = { 0,0 };
 
-    ID3D11Buffer* vbs[2] = { mVertexBuffer.Get(), mInstanceBuffer.Get() };
-    imm_context->IASetVertexBuffers(0, 2, vbs, strides, offsets);
-    imm_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-    imm_context->IASetInputLayout(mInputLayout.Get());
+    ID3D11Buffer* vbs[2] = { mpVertexBuffer.Get(), mInstanceBuffer.Get() };
+    ImmContext->IASetVertexBuffers(0, 2, vbs, strides, offsets);
+    ImmContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+    ImmContext->IASetInputLayout(mInputLayout.Get());
 
-    imm_context->OMSetDepthStencilState(mDepthStencilState.Get(), 1);
-    imm_context->RSSetState(mRasterizerState.Get());
-    imm_context->VSSetShader(mVertexShader.Get(), nullptr, 0);
-    imm_context->PSSetShader(mPixelShader.Get(), nullptr, 0);
-    imm_context->PSSetShaderResources(0, 1, mSRView.GetAddressOf());
-    imm_context->PSSetSamplers(0, 1, mSamplerState.GetAddressOf());
+    ImmContext->OMSetDepthStencilState(mDepthStencilState.Get(), 1);
+    ImmContext->RSSetState(mRasterizerState.Get());
+    ImmContext->VSSetShader(mVertexShader.Get(), nullptr, 0);
+    ImmContext->PSSetShader(mPixelShader.Get(), nullptr, 0);
+    ImmContext->PSSetShaderResources(0, 1, mSRView.GetAddressOf());
+    ImmContext->PSSetSamplers(0, 1, mSamplerState.GetAddressOf());
 
     UINT numViewport = 1;
-    imm_context->RSGetViewports(&numViewport, &mViewport);
+    ImmContext->RSGetViewports(&numViewport, &mViewport);
 
     D3D11_MAP map = D3D11_MAP_WRITE_DISCARD;
     D3D11_MAPPED_SUBRESOURCE mappedBuffer;
-    hr = imm_context->Map(mInstanceBuffer.Get(), 0, map, 0, &mappedBuffer);
+    hr = ImmContext->Map(mInstanceBuffer.Get(), 0, map, 0, &mappedBuffer);
     _ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
     mInstance = static_cast<Instance*>(mappedBuffer.pData);
@@ -572,8 +574,8 @@ void SpriteBatch::Begin(Microsoft::WRL::ComPtr<ID3D11DeviceContext>& imm_context
 }
 
 void SpriteBatch::Render(
-    Microsoft::WRL::ComPtr<ID3D11DeviceContext>& imm_context, 
-    const DirectX::XMFLOAT2& pos, 
+    Graphics::GraphicsDevice* p_device,
+    const DirectX::XMFLOAT2& pos,
     const DirectX::XMFLOAT2& size, 
     const DirectX::XMFLOAT2 &texPos, 
     const DirectX::XMFLOAT2 &texSize,
@@ -605,12 +607,14 @@ void SpriteBatch::Render(
 }
 
 void SpriteBatch::RenderText(
-    Microsoft::WRL::ComPtr<ID3D11DeviceContext>& imm_context, 
+    Graphics::GraphicsDevice* p_device,
     const std::string& text,
     const DirectX::XMFLOAT2& pos,
     const DirectX::XMFLOAT2& size,
     const DirectX::XMFLOAT4& color)
 {
+    auto& ImmContext = p_device->GetImmContextPtr();
+
     float sw = 16.0f;
     float sh = 16.0f;
     float cursor = 0.0f;
@@ -622,7 +626,7 @@ void SpriteBatch::RenderText(
         XMFLOAT2 texPos(sw * (c & 0x0F), sh * (c >> 4));
         XMFLOAT2 texSize(sw, sh);
 
-        Render(imm_context,
+        Render(p_device,
             pos,
             size,
             texPos,
@@ -634,8 +638,9 @@ void SpriteBatch::RenderText(
     }
 }
 
-void SpriteBatch::End(Microsoft::WRL::ComPtr<ID3D11DeviceContext>& imm_context)
+void SpriteBatch::End(Graphics::GraphicsDevice* p_device)
 {
-    imm_context->Unmap(mInstanceBuffer.Get(), 0);
-    imm_context->DrawInstanced(4, mCountInstances, 0, 0);
+    auto& ImmContext = p_device->GetImmContextPtr();
+    ImmContext->Unmap(mInstanceBuffer.Get(), 0);
+    ImmContext->DrawInstanced(4, mCountInstances, 0, 0);
 }

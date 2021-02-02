@@ -1,5 +1,5 @@
 #include "H_DataFormat.hlsli"
-#include "H_DirectionalLight.hlsli"
+#include "HF_GlobalVariables.hlsli"
 
 Texture2D diffuse_texture : register(t0);
 TextureCube cube_texture : register(t9);

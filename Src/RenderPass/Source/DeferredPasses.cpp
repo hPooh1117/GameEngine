@@ -5,11 +5,11 @@
 #include "./Engine/UIRenderer.h"
 
 #include "./Renderer/DepthStencilView.h"
-#include "./Renderer/GraphicsEngine.h"
 #include "./Renderer/NewMeshRenderer.h"
 #include "./Renderer/RenderTarget.h"
 #include "./Renderer/Shader.h"
 #include "./Renderer/Sprite.h"
+#include "./Renderer/Renderer.h"
 #include "./Renderer/VertexDecleration.h"
 
 #include "./Utilities/ImGuiSelf.h"
@@ -41,12 +41,11 @@ const char* DeferredPass::GBUFFER_NAME[GBufferID::ENUM_GBUFFER_ID_MAX] =
 };
 
 DeferredPass::DeferredPass()
-	:RenderPass(),
-	mpPreLightingTarget(std::make_unique<RenderTarget>())
+	:RenderPass()
 {
 }
 
-void DeferredPass::Initialize(D3D::DevicePtr& p_device)
+void DeferredPass::Initialize(Graphics::GraphicsDevice* p_device)
 {
 
 	InitializeGBuffer(p_device);
@@ -55,12 +54,7 @@ void DeferredPass::Initialize(D3D::DevicePtr& p_device)
 	mpScreen = std::make_unique<Sprite>(p_device);
 
 	InitializeCommonShader(p_device);
-	AddVertexAndPixelShader(p_device, ShaderID::EDefferedSkybox, L"EquirectangularToCube.hlsl", L"EquirectangularToCube.hlsl", "VSmainDeffered", "PSmainDeffered", VEDType::VED_DEFAULT);
 	AddVertexAndPixelShader(p_device, ShaderID::EDefferedSkyboxRevised, L"DefferedSkybox.hlsl", L"DefferedSkybox.hlsl", "VSmain", "PSmain", VEDType::VED_DEFAULT);
-
-	//AddVertexAndPixelShader(p_device, ShaderID::EDefferedPhong, L"ToGBufferSimple.hlsl", L"ToGBufferSimple.hlsl", "VSmain", "PSmain", VEDType::VED_DEFAULT);
-	//AddVertexAndPixelShader(p_device, ShaderID::EDefferedPhongForSkinned, L"ToGBufferSimple.hlsl", L"ToGBufferSimple.hlsl", "VSmainS", "PSmain", VEDType::VED_SKINNED_MESH);
-	//AddVertexAndPixelShader(p_device, ShaderID::EDefferedPhongForSkinning, L"ToGBufferSimple.hlsl", L"ToGBufferSimple.hlsl", "VSmainSkinning", "PSmain", VEDType::VED_SKINNED_MESH);
 
 	AddVertexAndPixelShader(p_device, ShaderID::EDefferedShadow, L"ToGBufferShadow.hlsl", L"ToGBufferShadow.hlsl", "VSmain", "PSmain", VEDType::VED_DEFAULT);
 	AddVertexAndPixelShader(p_device, ShaderID::EDefferedShadowForSkinned, L"ToGBufferShadow.hlsl", L"ToGBufferShadow.hlsl", "VSmainS", "PSmain", VEDType::VED_SKINNED_MESH);
@@ -79,34 +73,36 @@ void DeferredPass::Initialize(D3D::DevicePtr& p_device)
 	mbIsInitialized = true;
 }
 
-void DeferredPass::InitializeGBuffer(D3D::DevicePtr& p_device)
+void DeferredPass::InitializeGBuffer(Graphics::GraphicsDevice* device)
 {
-	GetRenderTargetManager()->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::EColor); // color
-	GetRenderTargetManager()->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::ENormal);  // normal
-	GetRenderTargetManager()->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::EPosition);  // position
-	GetRenderTargetManager()->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::EShadowMap);  // shadow 
-	GetRenderTargetManager()->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R32G32B32A32_FLOAT, RenderTarget::EDepth);  // depth
+	auto pDevice = device->GetDevicePtr();
+	GetRenderTargetManager()->Create(pDevice, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R8G8B8A8_UNORM, RenderTarget::EColor); // color
+	GetRenderTargetManager()->Create(pDevice, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R32G32B32A32_FLOAT, RenderTarget::ENormal);  // normal
+	GetRenderTargetManager()->Create(pDevice, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::EPosition);  // position
+	if (ENGINE.IsCastingShadow()) 
+		GetRenderTargetManager()->Create(pDevice, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::EShadowMap);  // shadow 
+	GetRenderTargetManager()->Create(pDevice, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R32G32B32A32_FLOAT, RenderTarget::EDepth);  // depth
 	
-	GetRenderTargetManager()->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::EDiffuseLight);
-	GetRenderTargetManager()->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::ESpecularLight);
-	GetRenderTargetManager()->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::ESkybox);
-	GetRenderTargetManager()->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::EFirstResult);
+	GetRenderTargetManager()->Create(pDevice, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R8G8B8A8_UNORM, RenderTarget::EDiffuseLight);
+	GetRenderTargetManager()->Create(pDevice, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R8G8B8A8_UNORM, RenderTarget::ESpecularLight);
+	GetRenderTargetManager()->Create(pDevice, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::ESkybox);
+	GetRenderTargetManager()->Create(pDevice, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, RenderTarget::EFirstResult);
 
 
 	Log::Info("[DEFERRED PASS] Created GBuffers");
 
-	mpDSV->Create(p_device, SCREEN_WIDTH, SCREEN_HEIGHT);
+	mpDSV->Create(pDevice, SCREEN_WIDTH, SCREEN_HEIGHT);
 }
 
-void DeferredPass::RenderDefferedLighting(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time)
+void DeferredPass::RenderDefferedLighting(Graphics::GraphicsDevice* p_device, float elapsed_time)
 {
-	D3D::DeviceContextPtr& pImmContext = p_graphics->GetImmContextPtr();
+	D3D::DeviceContextPtr& pImmContext = p_device->GetImmContextPtr();
 
-	p_graphics->SetDepthStencil(GraphicsEngine::DS_TRUE);
+	p_device->OMSetDepthStencilState(Graphics::DS_TRUE);
 
 	GetRenderTargetManager()->Activate(pImmContext, mpDSV, RenderTarget::EColor, GEOMETRY_BUFFER_SIZE);
 
-	ENGINE.GetMeshRenderer()->Render(p_graphics, elapsed_time, RenderPassID::EDeferredPass);
+	ENGINE.GetRenderer()->GetMeshRenderer()->Render(p_device, elapsed_time, RenderPassID::EDeferredPass);
 
 
 	GetRenderTargetManager()->Activate(pImmContext, mpDSV, RenderTarget::EDiffuseLight, LIGHT_BUFFER_SIZE);
@@ -114,10 +110,10 @@ void DeferredPass::RenderDefferedLighting(std::unique_ptr<GraphicsEngine>& p_gra
 	GetRenderTargetManager()->Deactivate(pImmContext, RenderTarget::EColor, GEOMETRY_BUFFER_SIZE);
 
 
-	mpScreen->RenderScreen(pImmContext, mpShaderTable.at(ShaderID::EDefferedLighting).get(), Vector2(0.5f * SCREEN_WIDTH, 0.5f * SCREEN_HEIGHT), Vector2(SCREEN_WIDTH, SCREEN_HEIGHT));
+	mpScreen->RenderScreen(p_device, mpShaderTable.at(ShaderID::EDefferedLighting).get(), Vector2(0.5f * SCREEN_WIDTH, 0.5f * SCREEN_HEIGHT), Vector2(SCREEN_WIDTH, SCREEN_HEIGHT));
 
 
-	p_graphics->ActivateBackBuffer();
+	p_device->ActivateBackBuffer();
 
 
 	GetRenderTargetManager()->Deactivate(pImmContext, RenderTarget::EDiffuseLight, LIGHT_BUFFER_SIZE, GBufferID::EDiffuse);

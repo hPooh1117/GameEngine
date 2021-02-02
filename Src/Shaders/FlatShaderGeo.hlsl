@@ -1,5 +1,5 @@
 #include "H_DataFormat.hlsli"
-#include "H_PointLight.hlsli"
+#include "HF_GlobalVariables.hlsli"
 #include "H_Functions.hlsli"
 
 
@@ -143,7 +143,7 @@ float4 PSmain(PS_Input input) : SV_TARGET
 	float influence;
 	float3 PD = (float3)0;
 	float3 PS = (float3)0;
-	for (int i = 0; i < POINTMAX; i++) {
+	for (uint i = 0; i < POINTMAX; i++) {
 		if (point_lights[i].type == 0) continue;
 		PL = input.w_pos - point_lights[i].pos.xyz;
 		float d = length(PL);

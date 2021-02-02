@@ -7,7 +7,7 @@
 class Texture;
 class Sprite;
 class Shader;
-class GraphicsEngine;
+class GraphicsDevice;
 class Blender;
 
 class MultiRenderTarget : public UIClient
@@ -74,10 +74,10 @@ public:
 	MultiRenderTarget(
 		D3D::DevicePtr& p_device);
 
-	void ActivateGBuffer(std::unique_ptr<GraphicsEngine>& p_graphics);
-	void ActivateDefferedLight(std::unique_ptr<GraphicsEngine>& p_graphics);
-	void ActivateScreen(std::unique_ptr<GraphicsEngine>& p_graphics);
-	void Deactivate(std::unique_ptr<GraphicsEngine>& p_graphics);
+	void ActivateGBuffer(std::unique_ptr<GraphicsDevice>& p_graphics);
+	void ActivateDefferedLight(std::unique_ptr<GraphicsDevice>& p_graphics);
+	void ActivateScreen(std::unique_ptr<GraphicsDevice>& p_graphics);
+	void Deactivate(std::unique_ptr<GraphicsDevice>& p_graphics);
 	void Render(D3D::DeviceContextPtr& imm_context, std::unique_ptr<Blender>& p_blender);
 	void RenderScreen(D3D::DeviceContextPtr& imm_context, std::unique_ptr<Blender>& p_blender);
 	void RenderUI() override;

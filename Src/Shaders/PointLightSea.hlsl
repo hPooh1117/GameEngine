@@ -121,7 +121,7 @@ float4 PSmain(PS_InputBump input) : SV_TARGET
 	float3 PD = (float3)0;
 	float3 PS = (float3)0;
 
-	for (int i = 0; i < SPOTMAX; ++i)
+	for (uint i = 0; i < SPOTMAX; ++i)
 	{
 		if (point_lights[i].type == 0) continue;
 		PL = input.w_pos - point_lights[i].pos.xyz;

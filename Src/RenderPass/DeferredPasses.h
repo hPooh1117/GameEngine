@@ -1,7 +1,6 @@
 #pragma once
 #include "RenderPasses.h"
 
-class GraphicsEngine;
 class RenderTarget;
 class Sprite;
 
@@ -41,10 +40,10 @@ public:
 	DeferredPass();
 	virtual ~DeferredPass() = default;
 
-	virtual void Initialize(D3D::DevicePtr& p_device) override;
+	virtual void Initialize(Graphics::GraphicsDevice* p_device) override;
 
-	void InitializeGBuffer(D3D::DevicePtr& p_device);
-	void RenderDefferedLighting(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time);
+	void InitializeGBuffer(Graphics::GraphicsDevice* p_device);
+	void RenderDefferedLighting(Graphics::GraphicsDevice* p_graphics, float elapsed_time);
 	void RenderUI(bool b_open);
 	void RenderUIForAnotherScreen();
 

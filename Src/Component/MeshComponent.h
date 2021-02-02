@@ -10,6 +10,8 @@
 
 //#include "./Renderer/Shader.h"
 #include "./Renderer/D3D_Helper.h"
+#include "./Renderer/TextureHelper.h"
+
 #include "./RenderPass/ShaderIDTable.h"
 
 #include "./Utilities/Vector.h"
@@ -22,87 +24,6 @@ class Texture;
 class CameraController;
 class LightController;
 
-#pragma region OLDIMPL
-//class MeshComponent : public Component
-//{
-//public:
-//	using ShaderID = unsigned int;
-//	using CameraPtr = std::shared_ptr<CameraController>;
-//
-//	enum MeshID : unsigned int
-//	{
-//		EBasicCube,
-//		EBasicCylinder,
-//		EBasicSphere,
-//		EBasicCapsule,
-//		EBasicLine,
-//
-//		EPlane,
-//
-//		EStaticMesh,
-//		ESkinnedMesh,
-//
-//		MESH_ID_MAX,
-//	};
-//
-//
-//private:
-//	//std::shared_ptr<Mesh> m_mesh;
-//	std::shared_ptr<Mesh>   m_pMesh = nullptr;
-//	std::shared_ptr<Shader> m_pShader = nullptr;
-//	std::shared_ptr<Shader> m_pShaderForShadow = nullptr;
-//
-//	MeshID    mMeshId;
-//	ShaderID  mShaderID;
-//	Vector4   mMatColor;
-//	bool      m_bIsSolid;
-//	std::shared_ptr<ColliderComponent> m_pColData;
-//	std::unordered_map<unsigned int, std::shared_ptr<Texture>> m_pTextureTable;
-//
-//private:
-//	MeshComponent(const std::shared_ptr<Actor>& owner);
-//
-//public:
-//	~MeshComponent();
-//
-//	static std::shared_ptr<MeshComponent> Create(const std::shared_ptr<Actor>& owner);
-//
-//	virtual bool Create() override;
-//	virtual void Destroy() override;
-//
-//	virtual void Update(float elapsed_time);
-//
-//	void RenderMesh(D3D::DeviceContextPtr& imm_context, float elapsed_time, const CameraPtr& camera);
-//	void RenderShadow(D3D::DeviceContextPtr& imm_context, float elapsed_time, const CameraPtr& p_camera);
-//
-//	bool Load(int mesh_id, const std::shared_ptr<MeshRenderer>& renderer);
-//	bool Load(const char* filename, int mesh_id, const std::shared_ptr<MeshRenderer>& renderer);
-//	bool Load(const wchar_t* filename, int mesh_id, const std::shared_ptr<MeshRenderer>& renderer);
-//
-//	bool AddShaderResource(
-//		Microsoft::WRL::ComPtr<ID3D11Device>& pDevice,
-//		const wchar_t* filename, 
-//		unsigned int slot);
-//
-//	bool AddMotion(std::string name, const char* filename);
-//	void Play(std::string name);
-//
-//	void        SetAdditionalResource(Microsoft::WRL::ComPtr<ID3D11DeviceContext>& imm_context);
-//	void        SetTopology(D3D11_PRIMITIVE_TOPOLOGY type);
-//	inline void SetShader(const std::shared_ptr<Shader>& shader, bool isForShadow = false) {
-//		isForShadow ? m_pShaderForShadow = shader : m_pShader = shader;
-//	}
-//	inline void SetColor(const Vector4& color) { mMatColor = color; }
-//	inline void SetSolidMode() { m_bIsSolid = true; }
-//	inline void SetWireframeMode() { m_bIsSolid = false; }
-//	inline void SetColliderData(const std::shared_ptr<ColliderComponent> col) { m_pColData = col; }
-//	inline std::shared_ptr<Mesh>& GetMesh() { return m_pMesh; }
-//	static constexpr int          GetID() { return ComponentID::kRender; }
-//	inline int                    GetMeshID() { return mMeshId; }
-//	inline bool IsUsingShadow() { return m_pShaderForShadow != nullptr; }
-//public:
-//};
-#pragma endregion
 
 enum MeshTypeID
 {
@@ -130,7 +51,7 @@ enum FbxType
 	ENUM_FBXTYPE_MAX,
 };
 
-enum ShaderUsage
+enum class ShaderUsage
 {
 	EMain,
 	EShader,
@@ -155,6 +76,7 @@ enum class TextureConfig
 
 struct TextureData
 {
+	TextureID id;
 	unsigned int slot;
 	std::wstring filename;
 };
@@ -178,7 +100,7 @@ private:
 	std::wstring                                   mMeshFileName; 
 	unsigned int                                   mFbxType;
 	UINT                                           mMeshID;
-	MaterialData                                   mMaterialData;
+	Material                                   mMaterialData;
 	
 	bool                                           mbIsSolid;
 	std::string									   mCurrentMotionKey;
@@ -212,11 +134,11 @@ public:
 	bool RegisterMesh(UINT mesh_type_id, UINT shader_id, const wchar_t* mesh_filename, UINT coord_system = FbxType::EDefault);
 	bool RegisterTexture(const wchar_t* tex_filename, TextureConfig textureConfig);
 	bool RegisterMotion(const char* name, const wchar_t* motion_filename);
-	bool RegisterAdditionalShader(ShaderID shader_id, unsigned int usage);
+	bool RegisterAdditionalShader(UINT shader_id, ShaderUsage usage);
 
 
 	UINT                      GetMeshTypeID() { return mMeshID; }
-	const DirectX::XMMATRIX&  GetWorldMatrix();
+	const DirectX::XMMATRIX   GetWorldMatrix();
 	const DirectX::XMFLOAT4&  GetMaterialColor();
 	bool                      GetIsSolid() { return mbIsSolid; }
 	UINT                      GetShaderID(u_int usage);
@@ -227,7 +149,7 @@ public:
 	const std::string&        GetCurrentName() { return mCurrentMotionKey; }
 	bool					  GetWasChangedMotion() { return mbChangedMotion; }
 	int                       GetAnimeBlendTime() { return mAnimeBlendTime; }
-	const MaterialData&		  GetMaterialData() { return mMaterialData; }
+	const Material&		  GetMaterialData() { return mMaterialData; }
 
 	void SetMaterialColor(const Vector4& color);
 	void SetMaterialColor(const Vector3& color);

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -40,13 +40,13 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -85,9 +85,17 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)Build\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)Build\Temp\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)Build\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)Build\Temp\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -135,6 +143,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)Src;$(SolutionDir)Src\Engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -149,6 +159,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)Src;$(SolutionDir)Src\Engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -164,20 +176,25 @@
     <ClInclude Include="..\..\Engine\Camera.h" />
     <ClInclude Include="..\..\Engine\CameraController.h" />
     <ClInclude Include="..\..\Engine\ComputeExecuter.h" />
-    <ClInclude Include="..\..\Engine\CustomLight.h" />
     <ClInclude Include="..\..\Engine\DataStructures.h" />
+    <ClInclude Include="..\..\Engine\EntityComponentSystem.h" />
     <ClInclude Include="..\..\Engine\GameSystem.h" />
-    <ClInclude Include="..\..\Engine\Light.h" />
+    <ClInclude Include="..\..\Engine\HierarchyComponent.h" />
+    <ClInclude Include="..\..\Engine\LayerComponent.h" />
     <ClInclude Include="..\..\Engine\LightController.h" />
     <ClInclude Include="..\..\Engine\MainCamera.h" />
+    <ClInclude Include="..\..\Engine\NameComponent.h" />
     <ClInclude Include="..\..\Engine\OrthoView.h" />
     <ClInclude Include="..\..\Engine\Particle.h" />
     <ClInclude Include="..\..\Engine\ParticleManager.h" />
     <ClInclude Include="..\..\Engine\PhysicsManager.h" />
     <ClInclude Include="..\..\Engine\QuadTree.h" />
+    <ClInclude Include="..\..\Engine\Scene_ECS.h" />
     <ClInclude Include="..\..\Engine\Settings.h" />
     <ClInclude Include="..\..\Engine\Singleton.h" />
+    <ClInclude Include="..\..\Engine\TestEngine.h" />
     <ClInclude Include="..\..\Engine\TraceCamera.h" />
+    <ClInclude Include="..\..\Engine\TransformComponent.h" />
     <ClInclude Include="..\..\Engine\UIClient.h" />
     <ClInclude Include="..\..\Engine\UIRenderer.h" />
   </ItemGroup>
@@ -187,15 +204,19 @@
     <ClCompile Include="..\..\Engine\Source\AudioSystem.cpp" />
     <ClCompile Include="..\..\Engine\Source\CameraController.cpp" />
     <ClCompile Include="..\..\Engine\Source\ComputeExecuter.cpp" />
-    <ClCompile Include="..\..\Engine\Source\CustomLight.cpp" />
     <ClCompile Include="..\..\Engine\Source\GameSystem.cpp" />
     <ClCompile Include="..\..\Engine\Source\LightController.cpp" />
     <ClCompile Include="..\..\Engine\Source\MainCamera.cpp" />
+    <ClCompile Include="..\..\Engine\Source\NameComponent.cpp" />
     <ClCompile Include="..\..\Engine\Source\OrthoView.cpp" />
     <ClCompile Include="..\..\Engine\Source\ParticleManager.cpp" />
     <ClCompile Include="..\..\Engine\Source\PhysicsManager.cpp" />
+    <ClCompile Include="..\..\Engine\Source\SceneSerializer.cpp" />
+    <ClCompile Include="..\..\Engine\Source\Scene_ECS.cpp" />
     <ClCompile Include="..\..\Engine\Source\Singleton.cpp" />
+    <ClCompile Include="..\..\Engine\Source\TestEngine.cpp" />
     <ClCompile Include="..\..\Engine\Source\TraceCamera.cpp" />
+    <ClCompile Include="..\..\Engine\Source\TransformComponent.cpp" />
     <ClCompile Include="..\..\Engine\Source\UIRenderer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

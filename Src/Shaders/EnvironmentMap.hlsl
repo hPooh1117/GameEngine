@@ -1,6 +1,7 @@
 #include "H_DataFormat.hlsli"
 #include "H_Functions.hlsli"
-#include "H_DirectionalLight.hlsli"
+#include "HF_GlobalVariables.hlsli"
+
 
 //--------------------------------------------------
 // テクスチャ

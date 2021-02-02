@@ -5,6 +5,7 @@
 static constexpr unsigned int NUM_POINT_LIGHT = 64;
 static constexpr unsigned int NUM_SPOT_LIGHT  = 4;
 
+
 struct PointLightGPU
 {
 	float index = 0.0f;
@@ -55,7 +56,7 @@ struct CBufferForLight
 };
 
 
-struct MaterialData
+struct Material
 {
 	DirectX::XMFLOAT4 mat_color;
 	DirectX::XMFLOAT3 specularColor;

@@ -1,7 +1,7 @@
 #pragma once
 #include "Scene.h"
-
-class Sprite;
+#include "./Renderer/Sprite.h"
+#include "./Renderer/Shader.h"
 
 class SceneLoading : public Scene
 {
@@ -12,15 +12,15 @@ private:
 	std::shared_ptr<Shader> m_pBasicQuad;
 
 public:
-	SceneLoading(SceneManager* p_manager, D3D::DevicePtr& p_device);
+	SceneLoading(SceneManager* p_manager, Graphics::GraphicsDevice* p_device);
 	virtual ~SceneLoading() = default;
 
 	virtual void InitializeScene();
 
 	virtual void Update(float elapsed_time);
-	virtual void PreCompute(std::unique_ptr<GraphicsEngine>& p_graphics) override;
+	virtual void PreCompute(Graphics::GraphicsDevice* p_graphics) override;
 
-	virtual void Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time);
+	virtual void Render(Graphics::GraphicsDevice* p_graphics, float elapsed_time);
 	virtual void RenderUI() override;
 };
 

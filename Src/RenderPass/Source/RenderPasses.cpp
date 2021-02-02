@@ -2,12 +2,7 @@
 
 #include "./Engine/GameSystem.h"
 #include "./Engine/UIRenderer.h"
-#include "./Renderer/DepthStencilView.h"
-#include "./Renderer/GraphicsEngine.h"
 #include "./Renderer/Mesh.h"
-#include "./Renderer/NewMeshRenderer.h"
-#include "./Renderer/RenderTarget.h"
-#include "./Renderer/Shader.h"
 #include "./Renderer/Skybox.h"
 #include "./Renderer/Texture.h"
 #include "./Renderer/VertexDecleration.h"
@@ -53,7 +48,7 @@ RenderPass::RenderPass()
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-void RenderPass::InitializeCommonShader(D3D::DevicePtr& device)
+void RenderPass::InitializeCommonShader(Graphics::GraphicsDevice* device)
 {
 	AddVertexAndPixelShader(device, ShaderID::ESprite, L"FromGBuffer.hlsl", L"FromGBuffer.hlsl", "VSmain", "PSmain", VEDType::VED_SPRITE);
 	AddVertexAndPixelShader(device, ShaderID::ESkyboxRevised, L"SkyBox.hlsl", L"SkyBox.hlsl", "VSmain", "PSmain", VEDType::VED_DEFAULT);
@@ -63,7 +58,7 @@ void RenderPass::InitializeCommonShader(D3D::DevicePtr& device)
 //--------------------------------------------------------------------------------------------------------------------------------
 
 void RenderPass::AddVertexAndPixelShader(
-	D3D::DevicePtr& device,
+	Graphics::GraphicsDevice* device,
 	UINT        id,
 	const wchar_t* vs,
 	const wchar_t* ps,
@@ -79,12 +74,12 @@ void RenderPass::AddVertexAndPixelShader(
 	}
 	std::wstring vsFile = SHADER_FILE_PATH + std::wstring(vs);
 	std::wstring psFile = SHADER_FILE_PATH + std::wstring(ps);
-
+	auto pDevice = device->GetDevicePtr();
 
 	mpShaderTable[id] = std::make_unique<Shader>();
 	//mpShaderTable[id]->createShader(device, vsFile, psFile, vs_entry, ps_entry, vedType);
-	mpShaderTable[id]->CreateShader(device, ShaderType::EVertexShader, vsFile, vs_entry, vedType);
-	mpShaderTable[id]->CreateShader(device, ShaderType::EPixelShader, psFile, ps_entry);
+	mpShaderTable[id]->CreateShader(pDevice, Graphics::EVertexShader, vsFile, vs_entry, vedType);
+	mpShaderTable[id]->CreateShader(pDevice, Graphics::EPixelShader, psFile, ps_entry);
 
 	mpShaderNameTable.emplace(id, vs);
 }
@@ -92,7 +87,7 @@ void RenderPass::AddVertexAndPixelShader(
 //--------------------------------------------------------------------------------------------------------------------------------
 
 void RenderPass::AddGeometryShader(
-	D3D::DevicePtr& device,
+	Graphics::GraphicsDevice* device,
 	UINT           id,
 	const wchar_t* gs,
 	const char* gs_entry)
@@ -103,18 +98,18 @@ void RenderPass::AddGeometryShader(
 		Log::Warning("[RENDER PASS] Vertex Shader and Pixel Shader doesn't exist. (%s)", SHADER_NAME_TABLE[id].c_str());
 		return;
 	}
-
+	auto pDevice = device->GetDevicePtr();
 	std::wstring gsFile = SHADER_FILE_PATH + std::wstring(gs);
 
 	//mpShaderTable[id]->CreateGeometryShader(device, gsFile, gs_entry);
-	mpShaderTable[id]->CreateShader(device, ShaderType::EGeometryShader, gsFile, gs_entry);
+	mpShaderTable[id]->CreateShader(pDevice, Graphics::EGeometryShader, gsFile, gs_entry);
 
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
 void RenderPass::AddDomainAndHullShader(
-	D3D::DevicePtr& device,
+	Graphics::GraphicsDevice* device,
 	UINT           id,
 	const wchar_t* ds,
 	const wchar_t* hs,
@@ -128,12 +123,12 @@ void RenderPass::AddDomainAndHullShader(
 		return;
 	}
 
-
+	auto pDevice = device->GetDevicePtr();
 	std::wstring hsFile = SHADER_FILE_PATH + std::wstring(hs);
 
 	//mpShaderTable[id]->CreateHullAndDomain(device, hsFile, hs_entry, ds_entry);
-	mpShaderTable[id]->CreateShader(device, ShaderType::EHullShader, hsFile, hs_entry);
-	mpShaderTable[id]->CreateShader(device, ShaderType::EDomainShader, hsFile, ds_entry);
+	mpShaderTable[id]->CreateShader(pDevice, Graphics::EHullShader, hsFile, hs_entry);
+	mpShaderTable[id]->CreateShader(pDevice, Graphics::EDomainShader, hsFile, ds_entry);
 
 
 }
@@ -182,11 +177,11 @@ void RenderPass::CheckActivatedShaders()
 	for (auto& shader : mpShaderTable)
 	{
 		isActivated = shader.second->GetIsActivated();
-		Log::Info("ShaderID : %d -> %s", shader.first, isActivated > 0 ? "Activated" : "Useless");
+		Log::Info("ShaderID : %d -> %s", shader.first, isActivated == true ? "Activated" : "Useless");
 	}
 }
 
-void RenderPass::ShowShaderList(std::unique_ptr<GraphicsEngine>& p_graphics, const char* current_pass)
+void RenderPass::ShowShaderList(Graphics::GraphicsDevice* device, const char* current_pass)
 {
 	if (ImGui::BeginMenu(current_pass))
 	{
@@ -207,7 +202,7 @@ void RenderPass::ShowShaderList(std::unique_ptr<GraphicsEngine>& p_graphics, con
 
 }
 
-void RenderPass::ReloadShaderFile(std::unique_ptr<GraphicsEngine>& p_graphics)
+void RenderPass::ReloadShaderFile(Graphics::GraphicsDevice* p_graphics)
 {
 	if (mbWannaReloadShader)
 	{
@@ -226,22 +221,23 @@ void RenderPass::Clear()
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-const std::unique_ptr<Shader>& RenderPass::GetShaderPtr(UINT shader_id)
+Shader* RenderPass::GetShaderPtr(UINT shader_id)
 {
 	auto it = mpShaderTable.find(shader_id);
-	if (it != mpShaderTable.end()) return it->second;
-	return std::unique_ptr<Shader>();
+	if (it != mpShaderTable.end()) return it->second.get();
+	return nullptr;
 }
 
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-void RenderPass::SetShader(D3D::DeviceContextPtr& p_imm_context, ShaderID id)
+void RenderPass::SetShader(Graphics::GraphicsDevice* device, UINT id)
 {
-	mpShaderTable.at(id)->ActivateShaders(p_imm_context);
+	
+	mpShaderTable.at(id)->ActivateShaders(device->GetImmContextPtr());
 }
 
-//void RenderPass::SetBackBuffer(std::unique_ptr<GraphicsEngine>& p_graphics)
+//void RenderPass::SetBackBuffer(std::unique_ptr<GraphicsDevice>& p_graphics)
 //{
 //	p_graphics->ActivateBackBuffer();
 //}

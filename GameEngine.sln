@@ -33,12 +33,24 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenderPass", "Src\SolutionItems\RenderPasses\RenderPasses.vcxproj", "{EBD2A057-C1DE-4A2C-8B81-9497E7E0E964}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "VS", "VS", "{7A66177F-ED37-4F74-93F4-67078970131C}"
+	ProjectSection(SolutionItems) = preProject
+		Src\Shaders\VS_Basic2D.hlsl = Src\Shaders\VS_Basic2D.hlsl
+		Src\Shaders\VS_Basic3DMesh.hlsl = Src\Shaders\VS_Basic3DMesh.hlsl
+		Src\Shaders\VS_BasicSkinnedMesh.hlsl = Src\Shaders\VS_BasicSkinnedMesh.hlsl
+		Src\Shaders\VS_BumpMap3DMesh.hlsl = Src\Shaders\VS_BumpMap3DMesh.hlsl
+		Src\Shaders\VS_Displacement3DMesh.hlsl = Src\Shaders\VS_Displacement3DMesh.hlsl
+		Src\Shaders\VS_Lighting3DMesh.hlsl = Src\Shaders\VS_Lighting3DMesh.hlsl
+		Src\Shaders\VS_LightingSkinnedMesh.hlsl = Src\Shaders\VS_LightingSkinnedMesh.hlsl
+		Src\Shaders\VS_Skybox.hlsl = Src\Shaders\VS_Skybox.hlsl
+		Src\Shaders\VS_Tesselation3DMesh.hlsl = Src\Shaders\VS_Tesselation3DMesh.hlsl
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CS", "CS", "{52F121F6-C65E-4295-B3AB-DAB4B5C12D31}"
 	ProjectSection(SolutionItems) = preProject
 		Src\Shaders\ComputeSample.hlsl = Src\Shaders\ComputeSample.hlsl
 		Src\Shaders\CS_ConvertToHSV.hlsl = Src\Shaders\CS_ConvertToHSV.hlsl
 		Src\Shaders\CS_Desaturate.hlsl = Src\Shaders\CS_Desaturate.hlsl
+		Src\Shaders\CS_DownSampling1.hlsl = Src\Shaders\CS_DownSampling1.hlsl
 		Src\Shaders\CS_Equirectangular2Cube.hlsl = Src\Shaders\CS_Equirectangular2Cube.hlsl
 		Src\Shaders\CS_GaussianBlur.hlsl = Src\Shaders\CS_GaussianBlur.hlsl
 		Src\Shaders\CS_GPUSkinning.hlsl = Src\Shaders\CS_GPUSkinning.hlsl
@@ -59,27 +71,22 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Header", "Header", "{9505C8
 		Src\Shaders\H_DirectionalLight.hlsli = Src\Shaders\H_DirectionalLight.hlsli
 		Src\Shaders\H_Functions.hlsli = Src\Shaders\H_Functions.hlsli
 		Src\Shaders\H_Light.hlsli = Src\Shaders\H_Light.hlsli
-		Src\Shaders\H_PointLight.hlsli = Src\Shaders\H_PointLight.hlsli
 		Src\Shaders\H_ShadowMap.hlsli = Src\Shaders\H_ShadowMap.hlsli
-		Src\Shaders\H_SpotLight.hlsli = Src\Shaders\H_SpotLight.hlsli
 		Src\Shaders\H_ToGBuffer.hlsli = Src\Shaders\H_ToGBuffer.hlsli
+		Src\Shaders\HF_GlobalVariables.hlsli = Src\Shaders\HF_GlobalVariables.hlsli
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PS", "PS", "{F19D5CD0-2835-49DF-BA32-73C7764CC093}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Deffered Rendering", "Deffered Rendering", "{96A1D2C2-130C-4258-88C5-612681C3846A}"
 	ProjectSection(SolutionItems) = preProject
-		Src\Shaders\DefferedDirectionalLight.hlsl = Src\Shaders\DefferedDirectionalLight.hlsl
 		Src\Shaders\DefferedLighting.hlsl = Src\Shaders\DefferedLighting.hlsl
 		Src\Shaders\DefferedPointLight.hlsl = Src\Shaders\DefferedPointLight.hlsl
 		Src\Shaders\DefferedSkybox.hlsl = Src\Shaders\DefferedSkybox.hlsl
 		Src\Shaders\SSAO.hlsl = Src\Shaders\SSAO.hlsl
-		Src\Shaders\ToGBuffer.hlsl = Src\Shaders\ToGBuffer.hlsl
 		Src\Shaders\ToGBufferNormal.hlsl = Src\Shaders\ToGBufferNormal.hlsl
 		Src\Shaders\ToGBufferSea.hlsl = Src\Shaders\ToGBufferSea.hlsl
 		Src\Shaders\ToGBufferShadow.hlsl = Src\Shaders\ToGBufferShadow.hlsl
-		Src\Shaders\ToGBufferSimple.hlsl = Src\Shaders\ToGBufferSimple.hlsl
-		Src\Shaders\ToGBufferSSAO.hlsl = Src\Shaders\ToGBufferSSAO.hlsl
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OldImpl", "OldImpl", "{52C39AF8-709A-4D21-9837-972B6779335D}"
@@ -127,18 +134,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Forward Rendering", "Forwar
 	ProjectSection(SolutionItems) = preProject
 		Src\Shaders\BasicShader.hlsl = Src\Shaders\BasicShader.hlsl
 		Src\Shaders\BasicTesselation1.hlsl = Src\Shaders\BasicTesselation1.hlsl
-		Src\Shaders\CubemapConvolution.hlsl = Src\Shaders\CubemapConvolution.hlsl
 		Src\Shaders\CustomLight.hlsl = Src\Shaders\CustomLight.hlsl
 		Src\Shaders\DisplacementMapping.hlsl = Src\Shaders\DisplacementMapping.hlsl
-		Src\Shaders\environment.hlsli = Src\Shaders\environment.hlsli
-		Src\Shaders\environment_ps.hlsl = Src\Shaders\environment_ps.hlsl
-		Src\Shaders\environment_vs.hlsl = Src\Shaders\environment_vs.hlsl
 		Src\Shaders\EnvironmentMap.hlsl = Src\Shaders\EnvironmentMap.hlsl
-		Src\Shaders\EquirectangularToCube.hlsl = Src\Shaders\EquirectangularToCube.hlsl
 		Src\Shaders\FlatShaderGeo.hlsl = Src\Shaders\FlatShaderGeo.hlsl
 		Src\Shaders\Fog.hlsl = Src\Shaders\Fog.hlsl
 		Src\Shaders\ForwardBRDF.hlsl = Src\Shaders\ForwardBRDF.hlsl
-		Src\Shaders\FromGBuffer.hlsl = Src\Shaders\FromGBuffer.hlsl
 		Src\Shaders\FurShaderGeo.hlsl = Src\Shaders\FurShaderGeo.hlsl
 		Src\Shaders\HemiSphere.hlsl = Src\Shaders\HemiSphere.hlsl
 		Src\Shaders\Lambert.hlsl = Src\Shaders\Lambert.hlsl
@@ -159,6 +160,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Forward Rendering", "Forwar
 		Src\Shaders\SpotLightSea.hlsl = Src\Shaders\SpotLightSea.hlsl
 		Src\Shaders\ToonGeo.hlsl = Src\Shaders\ToonGeo.hlsl
 		Src\Shaders\UseCubeMap.hlsl = Src\Shaders\UseCubeMap.hlsl
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DirectXTex", "Src\3rdParty\DirectXTex\DirectXTex_Desktop_2019.vcxproj", "{371B9FA9-4C90-4AC6-A123-ACED756D6C77}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentations", "Documentations", "{64598B29-DF07-414F-9863-C663F48FCF16}"
+	ProjectSection(SolutionItems) = preProject
+		About MSSAO.txt = About MSSAO.txt
 	EndProjectSection
 EndProject
 Global
@@ -267,6 +275,18 @@ Global
 		{EBD2A057-C1DE-4A2C-8B81-9497E7E0E964}.Release|x64.Build.0 = Release|x64
 		{EBD2A057-C1DE-4A2C-8B81-9497E7E0E964}.Release|x86.ActiveCfg = Release|Win32
 		{EBD2A057-C1DE-4A2C-8B81-9497E7E0E964}.Release|x86.Build.0 = Release|Win32
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Debug|x64.ActiveCfg = Debug|x64
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Debug|x64.Build.0 = Debug|x64
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Debug|x86.ActiveCfg = Debug|Win32
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Debug|x86.Build.0 = Debug|Win32
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Profile|x64.ActiveCfg = Profile|x64
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Profile|x64.Build.0 = Profile|x64
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Profile|x86.ActiveCfg = Profile|Win32
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Profile|x86.Build.0 = Profile|Win32
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Release|x64.ActiveCfg = Release|x64
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Release|x64.Build.0 = Release|x64
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Release|x86.ActiveCfg = Release|Win32
+		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

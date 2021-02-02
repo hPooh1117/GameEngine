@@ -5,6 +5,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "./Renderer/GraphicsDevice.h"
 #include "Particle.h"
 
 class ParticleManager final
@@ -16,7 +17,7 @@ private:
 	std::unique_ptr<PlaneBatch> m_plane_batch;
 
 public:
-	ParticleManager(Microsoft::WRL::ComPtr<ID3D11Device>& device, const wchar_t* filename);
+	ParticleManager(Graphics::GraphicsDevice* p_device, const wchar_t* filename);
 
 	void LoadTexture(Microsoft::WRL::ComPtr<ID3D11Device>& device, const wchar_t* filename);
 
@@ -24,7 +25,7 @@ public:
 	void Update(float elapsed_time);
 
 	void Render(
-		Microsoft::WRL::ComPtr<ID3D11DeviceContext>& imm_context,
+		Graphics::GraphicsDevice* p_device,
 		const std::shared_ptr<CameraController>& camera,
 		const std::shared_ptr<Shader>& shader);
 

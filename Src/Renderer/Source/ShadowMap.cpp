@@ -1,21 +1,21 @@
 #include "ShadowMap.h"
+//#include "GraphicsDevice.h"
+//#include "Shader.h"
+//#include "Texture.h"
 
-#include "Shader.h"
-#include "GraphicsEngine.h"
-#include "./Utilities/misc.h"
 #include "./Engine/OrthoView.h"
-#include "./Engine/CameraController.h"
-#include "./Engine/DirectionalLight.h"
-#include "./Engine/LightController.h"
+//#include "./Engine/CameraController.h"
+//#include "./Engine/DirectionalLight.h"
+//#include "./Engine/LightController.h"
 #include "./Application/Helper.h"
-#include "Texture.h"
 
+#include "./Utilities/misc.h"
 #include "./Utilities/ImguiSelf.h"
 #include "./Utilities/Util.h"
 
 using namespace DirectX;
 
-ShadowMap::ShadowMap(D3D::DevicePtr& p_device)
+ShadowMap::ShadowMap(Graphics::GraphicsDevice* device)
 	:mDistanceToLight(-40.0f)
 {
 	//m_pShadowTex = std::make_unique<Texture>();
@@ -71,12 +71,12 @@ ShadowMap::ShadowMap(D3D::DevicePtr& p_device)
 	cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	cbDesc.CPUAccessFlags = 0;
 
-	p_device->CreateBuffer(&cbDesc, nullptr, m_pCBufferForShadow.GetAddressOf());
+	device->GetDevicePtr()->CreateBuffer(&cbDesc, nullptr, m_pCBufferForShadow.GetAddressOf());
 
 }
 
 //void ShadowMap::Activate(
-//	std::unique_ptr<GraphicsEngine>& p_graphics,
+//	std::unique_ptr<GraphicsDevice>& p_graphics,
 //	std::shared_ptr<Light>& p_light,
 //	std::shared_ptr<CameraController>& p_camera)
 //{
@@ -95,7 +95,7 @@ ShadowMap::ShadowMap(D3D::DevicePtr& p_device)
 //		m_pRTVShadowMap.GetAddressOf(),
 //		m_pDSVShadowMap.Get());
 //
-//	p_graphics->SetViewport(SCREEN_WIDTH, SCREEN_HEIGHT);
+//	p_graphics->RSSetViewports(SCREEN_WIDTH, SCREEN_HEIGHT);
 //
 //
 //	Vector3 lightDir = std::static_pointer_cast<DirectionalLight>(p_light)->GetLightDirection().getXYZ();
@@ -110,11 +110,11 @@ ShadowMap::ShadowMap(D3D::DevicePtr& p_device)
 //}
 
 void ShadowMap::Activate(
-	const std::unique_ptr<GraphicsEngine>& p_graphics,
+	Graphics::GraphicsDevice* device,
 	LightController* p_light,
 	CameraController* p_camera)
 {
-	D3D::DeviceContextPtr& immContext = p_graphics->GetImmContextPtr();
+	D3D::DeviceContextPtr& immContext = device->GetImmContextPtr();
 
 	//float clearColor[4] = { 1,1,1,1 };
 	//immContext->ClearRenderTargetView(m_pRTVShadowMap.Get(), clearColor);
@@ -129,7 +129,7 @@ void ShadowMap::Activate(
 	//	m_pRTVShadowMap.GetAddressOf(),
 	//	m_pDSVShadowMap.Get());
 
-	//p_graphics->SetViewport(SCREEN_WIDTH, SCREEN_HEIGHT);
+	//p_graphics->RSSetViewports(SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	Vector4 light = p_light->GetLightDirection();
 	Vector3 lightDir = light.getXYZ();
@@ -145,7 +145,7 @@ void ShadowMap::Activate(
 
 }
 
-void ShadowMap::Deactivate(std::unique_ptr<GraphicsEngine>& p_graphics)
+void ShadowMap::Deactivate(Graphics::GraphicsDevice* device)
 {
 	//p_graphics->ActivateBackBuffer();
 

@@ -1,5 +1,5 @@
 #include "H_DataFormat.hlsli"
-#include "H_PointLight.hlsli"
+#include "HF_GlobalVariables.hlsli"
 #include "H_Functions.hlsli"
 
 //----------------------------------

@@ -1,3 +1,9 @@
+#pragma once
+#include "Texture.h"
+#include "Shader.h"
+#include "D3D_Helper.h"
+#include "GraphicsDevice.h"
+#include "./Utilities/Vector.h"
 
 #include <sstream>
 #include <memory>
@@ -5,11 +11,7 @@
 #include <string>
 
 #include <DirectXMath.h>
-#include "D3D_Helper.h"
-#include "./Utilities/Vector.h"
 
-class Texture;
-class Shader;
 
 class Sprite
 {
@@ -21,23 +23,23 @@ private:
         DirectX::XMFLOAT4 color;
     };
 
-
 private:
     // メンバー変数
-    Microsoft::WRL::ComPtr<ID3D11Buffer>             m_pVertexBuffer;
-    Microsoft::WRL::ComPtr<ID3D11RasterizerState>    m_pRasterizerState;
+    //Microsoft::WRL::ComPtr<ID3D11Buffer>             m_pVertexBuffer;
+    //Microsoft::WRL::ComPtr<ID3D11RasterizerState>    m_pRasterizerState;
+    std::unique_ptr<Graphics::GPUBuffer> mpVertexBuffer;
 
 private:
-    std::unique_ptr<Texture> m_pTexture;
+    std::unique_ptr<Texture> mpTexture;
 
 public:
-    Sprite(D3D::DevicePtr& device); // テクスチャなし
-    Sprite(D3D::DevicePtr& device, const wchar_t*);
+    Sprite(Graphics::GraphicsDevice* p_device); // テクスチャなし
+    Sprite(Graphics::GraphicsDevice* p_device, const wchar_t*);
     ~Sprite();
 
     // メンバー関数
     void Render(
-        D3D::DeviceContextPtr& imm_context,
+        Graphics::GraphicsDevice* p_device,
         Shader* p_shader,
         const Vector2& pos,
         const Vector2& size,
@@ -47,7 +49,7 @@ public:
         const Vector4& color);
 
     void Render(
-        D3D::DeviceContextPtr& imm_context,
+        Graphics::GraphicsDevice* p_device,
         Shader* p_shader,
         std::unique_ptr<Texture>& p_texture,
         const Vector2& pos,
@@ -58,15 +60,15 @@ public:
         const Vector4& color);
 
     void RenderScreen(
-        D3D::DeviceContextPtr& imm_context,
+        Graphics::GraphicsDevice* p_device,
         Shader* p_shader,
         const Vector2& pos,
         const Vector2& size);
 
     
     void TextOutput(
-        D3D::DeviceContextPtr& imm_context,
-        const std::string& str, 
+        Graphics::GraphicsDevice* p_device,
+        const std::string& str,
         Shader* p_shader,
         const Vector2& pos, 
         const Vector2& size,
@@ -84,7 +86,7 @@ private:
     Microsoft::WRL::ComPtr<ID3D11VertexShader>       mVertexShader;
     Microsoft::WRL::ComPtr<ID3D11PixelShader>        mPixelShader;
     Microsoft::WRL::ComPtr<ID3D11InputLayout>        mInputLayout;
-    Microsoft::WRL::ComPtr<ID3D11Buffer>             mVertexBuffer;
+    Microsoft::WRL::ComPtr<ID3D11Buffer>             mpVertexBuffer;
     Microsoft::WRL::ComPtr<ID3D11RasterizerState>    mRasterizerState;
     Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> mSRView;            
     Microsoft::WRL::ComPtr<ID3D11SamplerState>       mSamplerState;      
@@ -106,17 +108,17 @@ private:
 
 public:
     SpriteBatch(
-        Microsoft::WRL::ComPtr<ID3D11Device>& device,
+        Graphics::GraphicsDevice* p_device,
         const wchar_t*, 
         const size_t maxInstances = 256);
     
     ~SpriteBatch();
 
     // メンバー関数
-    void Begin(Microsoft::WRL::ComPtr<ID3D11DeviceContext>& imm_context);
+    void Begin(Graphics::GraphicsDevice* p_device);
     
     void Render(
-        D3D::DeviceContextPtr& imm_context,
+        Graphics::GraphicsDevice* p_device,
         const DirectX::XMFLOAT2&,
         const DirectX::XMFLOAT2&,
         const DirectX::XMFLOAT2&, 
@@ -125,13 +127,13 @@ public:
         const DirectX::XMFLOAT4&);
 
     void RenderText(
-        D3D::DeviceContextPtr& imm_context,
+        Graphics::GraphicsDevice* p_device,
         const std::string& text,
         const DirectX::XMFLOAT2& pos,
         const DirectX::XMFLOAT2& size,
         const DirectX::XMFLOAT4& color);
   
-    void End(Microsoft::WRL::ComPtr<ID3D11DeviceContext>& imm_context);
+    void End(Graphics::GraphicsDevice* p_device);
 
     // 頂点フォーマット
     struct Vertex {

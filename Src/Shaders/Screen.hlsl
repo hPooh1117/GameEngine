@@ -1,4 +1,6 @@
 #include "H_ShadowMap.hlsli"
+#include "H_Functions.hlsli"
+#include "HF_GlobalVariables.hlsli"
 
 //--------------------------------------------
 //	テクスチャ
@@ -13,17 +15,7 @@ Texture2D skybox_texture : register(t7);
 Texture2D ambient_texture : register(t10);
 
 Texture2D blurredAO_texture : register(t15);
-//--------------------------------------------
-//	グローバル変数
-//--------------------------------------------
-cbuffer CBPerMatrix : register(b0)
-{
-	row_major float4x4 matWVP;
-	row_major float4x4 world;
 
-	float4 mat_color;
-
-};
 
 static const int BLUR_SIZE = 5;
 
@@ -137,12 +129,12 @@ PS_Output PSmain(PS_Input input)
 
 
 	float3 albedo = albedo_texture.Sample(decal_sampler, input.texcoord).xyz;
-	float3 shadow = shadow_texture.Sample(decal_sampler, input.texcoord).xyz;
+	float3 shadow = HasShadowMap(gTextureConfig) > 0 ? shadow_texture.Sample(decal_sampler, input.texcoord).xyz : 1.0;
 	float3 skybox = skybox_texture.Sample(decal_sampler, input.texcoord).xyz;
 
 
 	//output.result = float4(D * result + S * result, 1) * color;
-	output.result = float4((D * result * albedo * shadow + S * result * albedo * shadow + skybox), 1);
+	output.result = float4((D + S) * result * albedo * shadow + skybox * light_color.rgb, 1);
 	output.postEffect = float4(A, 1);
 	return output;
 }

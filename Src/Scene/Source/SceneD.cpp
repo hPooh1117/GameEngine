@@ -23,8 +23,9 @@
 #include "./Component/MeshComponent.h"
 
 #include "./Renderer/Sprite.h"
-#include "./Renderer/GraphicsEngine.h"
 #include "./Renderer/Blender.h"
+#include "./Renderer/NewMeshRenderer.h"
+#include "./Renderer/Renderer.h"
 #include "./Renderer/Shader.h"
 #include "./Renderer/Skybox.h"
 
@@ -36,28 +37,16 @@ using namespace DirectX;
 
 //----------------------------------------------------------------------------------------------------------------------------
 
-SceneD::SceneD(SceneManager* manager, Microsoft::WRL::ComPtr<ID3D11Device>& device)
-	:Scene(manager, device)
+SceneD::SceneD(SceneManager* manager, Graphics::GraphicsDevice* p_device)
+	:Scene(manager, p_device)
 {
 	mNextScene = SceneID::SCENE_E;
 
-	//mFont = std::make_unique<SpriteBatch>(device, L"./Data/Fonts/font0.png");
-
-
-
-	//m_phong_shader = std::make_unique<Shader>();
-	//m_phong_shader->createShader(
-	//	device,
-	//	L"./Src/Shaders/Lambert.hlsl",
-	//	L"./Src/Shaders/Lambert.hlsl",
-	//	"VSmain", "PSmain", VEDType::VED_DEFAULT
-	//);
-
 
 	int count = 0;
-// ----------------------------------------------------------------------------------------------
-// アクター・コンポーネント作成
-// ----------------------------------------------------------------------------------------------
+	// ----------------------------------------------------------------------------------------------
+	// アクター・コンポーネント作成
+	// ----------------------------------------------------------------------------------------------
 	Actor* pPlayer = new Actor();
 	pPlayer->AddComponent<CCPlayerMove>();
 	pPlayer->AddComponent<MeshComponent>();
@@ -91,6 +80,17 @@ SceneD::SceneD(SceneManager* manager, Microsoft::WRL::ComPtr<ID3D11Device>& devi
 	pField->SetScale(20.0f, 0.5f, 20.0f);
 	ENGINE.GetActorManagerPtr()->AddActor(pField, count++);
 
+	Actor* pUfo = new Actor();
+	pUfo->SetPosition(Vector3(0, 3.0f, 0));
+	pUfo->SetScale(0.1f, 0.1f, 0.1f);
+	pUfo->AddComponent<CCPlayerMove>();
+	pUfo->AddComponent<MeshComponent>();
+	pUfo->GetComponent<MeshComponent>()->RegisterMesh(MeshTypeID::E_SkinnedMesh, ShaderID::ELambertSkinned, L"./Data/Models/ufooo/yh_g_walk.fbx", FbxType::EMaya);
+	pUfo->GetComponent<MeshComponent>()->RegisterMotion("move", L"./Data/Models/ufooo/yh_g_walk.fbx");
+	pUfo->GetComponent<MeshComponent>()->Play("move");
+	pUfo->AddComponent<SphereColliderComponent>();
+	ENGINE.GetActorManagerPtr()->AddActor(pUfo, count++);
+
 
 	mpAudioSystem = std::make_unique<AudioSystem>();
 	mpAudioSystem->loadMusic(0, L"./Data/Musics/Bird_Ambience.wav");
@@ -112,6 +112,8 @@ SceneD::SceneD(SceneManager* manager, Microsoft::WRL::ComPtr<ID3D11Device>& devi
 	};
 	ENGINE.SetRendererSettings(renderSettings);
 
+	ENGINE.GetRenderer()->GetMeshRenderer()->SetSkybox(SkyboxTextureID::EFactoryCatWalk);
+
 }
 
 void SceneD::InitializeScene()
@@ -122,42 +124,37 @@ void SceneD::InitializeScene()
 
 void SceneD::Update(float elapsed_time)
 {
-	//m_pCameraController->Update(elapsed_time);
-
-	//m_pLightController->Update(elapsed_time);
-
-	ENGINE.GetActorManagerPtr()->Update(elapsed_time);
-
 	mpPhysics->DetectCollision(ENGINE.GetActorManagerPtr().get(), elapsed_time);
 
 }
 
-void SceneD::PreCompute(std::unique_ptr<GraphicsEngine>& p_graphics)
+void SceneD::PreCompute(Graphics::GraphicsDevice* p_graphics)
 {
 }
 
 //----------------------------------------------------------------------------------------------------------------------------
 
-void SceneD::Render(std::unique_ptr<GraphicsEngine>& p_graphics,
+void SceneD::Render(Graphics::GraphicsDevice* p_graphics,
 	float elapsed_time)
 {
 }
 
 void SceneD::RenderUI()
 {
+	auto* ui = ENGINE.GetRenderer()->GetUIRenderer();
 	Actor* actor = ENGINE.GetActorManagerPtr()->GetActor(0);
 
-	ENGINE.GetUIRenderer()->SetText("player position :" +
+	ui->SetText("player position :" +
 		std::to_string(actor->GetPosition().x) + ". " +
 		std::to_string(actor->GetPosition().y) + ". " +
 		std::to_string(actor->GetPosition().z));
-	ENGINE.GetUIRenderer()->SetText("player velocity :" +
+	ui->SetText("player velocity :" +
 		std::to_string(actor->GetComponent<MoveComponent>()->GetVelocity().x) + ". " +
 		std::to_string(actor->GetComponent<MoveComponent>()->GetVelocity().y) + ". " +
 		std::to_string(actor->GetComponent<MoveComponent>()->GetVelocity().z));
-	ENGINE.GetUIRenderer()->SetText("collision counter :" +
+	ui->SetText("collision counter :" +
 		std::to_string(mpPhysics->GetCollisionCounter() / 2));
-	ENGINE.GetUIRenderer()->SetText("GamePad Connection : " +
+	ui->SetText("GamePad Connection : " +
 		std::to_string(InputPtr.IsConnected(0)));
 
 }

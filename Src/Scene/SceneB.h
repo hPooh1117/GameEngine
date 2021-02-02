@@ -17,14 +17,14 @@ struct SimpleBuffer
 class SceneB : public Scene
 {
 public:
-    SceneB(SceneManager* manager, Microsoft::WRL::ComPtr<ID3D11Device>& device);
+    SceneB(SceneManager* manager, Graphics::GraphicsDevice* p_device);
 
 
     virtual void InitializeScene() override;
     virtual void Update(float elapsed_time) override;
-    virtual void PreCompute(std::unique_ptr<GraphicsEngine>& p_graphics) override;
+    virtual void PreCompute(Graphics::GraphicsDevice* p_graphics) override;
 
-    virtual void Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time) override;
+    virtual void Render(Graphics::GraphicsDevice* p_graphics, float elapsed_time) override;
     virtual void RenderUI() override;
 
     ~SceneB();

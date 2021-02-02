@@ -8,16 +8,15 @@
 
 #include "./Renderer/Blender.h"
 #include "./Renderer/Shader.h"
-#include "./Renderer/GraphicsEngine.h"
 #include "./Renderer/Blender.h"
 #include "./Renderer/Skybox.h"
 
-//#include "./Renderer/GraphicsEngine.h"
+//#include "./Renderer/GraphicsDevice.h"
 #include "./Renderer/Sprite.h"
 //#include "./Renderer/Shader.h"
 //#include "./Renderer/VertexDecleration.h"
 
-SceneLoading::SceneLoading(SceneManager* p_manager, D3D::DevicePtr& p_device) :Scene(p_manager, p_device)
+SceneLoading::SceneLoading(SceneManager* p_manager, Graphics::GraphicsDevice* p_device) :Scene(p_manager, p_device)
 {
 	//mpSprScreen = std::make_shared<Sprite>(p_device, L"./Data/Images/Loading/waiya_w.png");
 
@@ -25,9 +24,10 @@ SceneLoading::SceneLoading(SceneManager* p_manager, D3D::DevicePtr& p_device) :S
 
 	mpSprLoadingString = std::make_unique<Sprite>(p_device, L"./Data/Images/Loading/loading_bk.png");
 
+
 	m_pBasicQuad = std::make_shared<Shader>();
 	m_pBasicQuad->createShader(
-		p_device,
+		p_device->GetDevicePtr(),
 		L"./Src/Shaders/sprite_vs.hlsl",
 		L"./Src/Shaders/sprite_ps.hlsl",
 		"main", "main", VEDType::VED_SPRITE);
@@ -45,21 +45,21 @@ void SceneLoading::Update(float elapsed_time)
 
 }
 
-void SceneLoading::PreCompute(std::unique_ptr<GraphicsEngine>& p_graphics)
+void SceneLoading::PreCompute(Graphics::GraphicsDevice* p_graphics)
 {
 }
 
-void SceneLoading::Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time)
+void SceneLoading::Render(Graphics::GraphicsDevice* p_device, float elapsed_time)
 {
 	static unsigned int timer = 0;
 
-	D3D::DeviceContextPtr immContext = p_graphics->GetImmContextPtr();
+	D3D::DeviceContextPtr immContext = p_device->GetImmContextPtr();
 
-	p_graphics->SetDepthStencil(GraphicsEngine::DS_FALSE);
+	p_device->OMSetDepthStencilState(Graphics::DS_FALSE);
 
-	p_graphics->mBlender.SetBlendState(immContext, Blender::BLEND_ALPHA);
+	p_device->mBlender.SetBlendState(immContext, Blender::BLEND_ALPHA);
 
-	p_graphics->ActivateBackBuffer();
+	p_device->ActivateBackBuffer();
 
 	static float angle = 0.0f;
 	angle += 30.0f * elapsed_time;
@@ -70,7 +70,7 @@ void SceneLoading::Render(std::unique_ptr<GraphicsEngine>& p_graphics, float ela
 
 
 	mpSprGene->Render(
-		immContext,
+		p_device,
 		m_pBasicQuad.get(),
 		Vector2(SCREEN_WIDTH * 0.5f, SCREEN_HEIGHT * 0.5f),
 		Vector2(1280.0f, 720.0f),
@@ -81,7 +81,7 @@ void SceneLoading::Render(std::unique_ptr<GraphicsEngine>& p_graphics, float ela
 
 
 	mpSprLoadingString->Render(
-		immContext,
+		p_device,
 		m_pBasicQuad.get(),
 		Vector2(SCREEN_WIDTH * 0.7f, SCREEN_HEIGHT * 0.73f),
 		Vector2(640.0f, 360.0f),

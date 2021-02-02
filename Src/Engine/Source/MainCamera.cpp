@@ -61,7 +61,7 @@ void MainCamera::MoveCamera()
 			delta.x = delta3D.x * X.x + delta3D.y * Y.x + delta3D.z * Z.x;
 			delta.y = delta3D.x * X.y + delta3D.y * Y.y + delta3D.z * Z.y;
 			delta.z = delta3D.x * X.z + delta3D.y * Y.z + delta3D.z * Z.z;
-			mPos = Math::Lerp(mPos, mPos + delta * 0.06f, 0.8f);
+			mPos = MathOp::Lerp(mPos, mPos + delta * 0.06f, 0.8f);
 		}
 
 		// マウスホイールでカメラの前後平行移動

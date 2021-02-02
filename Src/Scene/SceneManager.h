@@ -4,8 +4,9 @@
 #include "SceneHelper.h"
 #include "./Application/Helper.h"
 #include "./Renderer/D3D_Helper.h"
+#include "./Renderer/GraphicsDevice.h"
 
-class GraphicsEngine;
+
 class Scene;
 namespace Settings{ struct Renderer; }
 
@@ -16,17 +17,17 @@ public:
 
 private:
     std::stack<std::unique_ptr<Scene>>    mSceneStack;
-    std::unique_ptr<Scene>                m_pLoadingScene;
+    std::unique_ptr<Scene>                mpLoadingScene;
     SceneID                               mCurrentScene;
     SceneID                               mNextScene;
-    bool                                  mClearFlag;
-    bool                                  m_bIsLoading;
+    bool                                  mbClearFlag;
+    bool                                  mbIsLoading;
     bool                                  mbIsInitialized;
 private:
-    D3D::DevicePtr  m_pDevice;
+    Graphics::GraphicsDevice* mpGraphicsDevice;
 
 public:
-    SceneManager(D3D::DevicePtr& p_device);
+    SceneManager(Graphics::GraphicsDevice* p_device);
     ~SceneManager();
 
     void CreateScene(SceneID scene_id);
@@ -37,13 +38,13 @@ public:
     void ExecuteCurrentScene(float elapsed_time);
     void LoadNextScene();
 
-    void RenderLoadingScene(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time);
-    void RenderCurrentScene(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time);
+    void RenderLoadingScene(Graphics::GraphicsDevice* device, float elapsed_time);
+    void RenderCurrentScene(Graphics::GraphicsDevice* device, float elapsed_time);
     void RenderUIForCurrentScene();
-    void PreComputeForNextScene(std::unique_ptr<GraphicsEngine>& p_graphics);
+    void PreComputeForNextScene(Graphics::GraphicsDevice* device);
     void RenderUI();
 
-    bool IsLoading() { return m_bIsLoading; }
+    bool IsLoading() { return mbIsLoading; }
     bool IsInitialized() { return mbIsInitialized; }
 
     const Settings::Renderer& GetNextSceneSettings();

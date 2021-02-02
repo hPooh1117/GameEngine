@@ -15,9 +15,9 @@
 
 #include "./Renderer/Blender.h"
 #include "./Renderer/ComputedTexture.h"
-#include "./Renderer/GraphicsEngine.h"
 #include "./Renderer/NewMeshRenderer.h"
 #include "./Renderer/ResourceManager.h"
+#include "./Renderer/Renderer.h"
 #include "./Renderer/Skybox.h"
 #include "./Renderer/Shader.h"
 #include "./Renderer/Texture.h"
@@ -30,13 +30,14 @@
 
 //----------------------------------------------------------------------------------------------------------------------------
 
-SceneTest::SceneTest(SceneManager* p_manager, Microsoft::WRL::ComPtr<ID3D11Device>& p_device) :
+SceneTest::SceneTest(SceneManager* p_manager, Graphics::GraphicsDevice* p_device) :
 	Scene(p_manager, p_device),
-	mbAutoSetParameter(true)
+	mbAutoSetParameter(true),
+	mpPrefilter(std::make_unique<PrefilterForPBR>())
 {
 	mNextScene = SceneID::SCENE_A;
 	mPreComputeState = 0;
-	ENGINE.GetMeshRenderer()->SetSkybox(SkyboxTextureID::EFootprintCourt);
+	ENGINE.GetRenderer()->GetMeshRenderer()->SetSkybox(SkyboxTextureID::EFootprintCourt);
 
 	int count = 0;
 	Actor* pPaintedMetal = new Actor();
@@ -159,33 +160,6 @@ SceneTest::SceneTest(SceneManager* p_manager, Microsoft::WRL::ComPtr<ID3D11Devic
 	};
 	ENGINE.SetRendererSettings(renderSettings);
 
-	//ID3D11ShaderResourceView* srv = nullptr;
-	//D3D11_TEXTURE2D_DESC desc = {};
-	//ResourceManager::LoadTexFile(p_device, L"./Data/Images/PBR/cgbookcase/blue-green-hexagonal-tiles-01/Blue_green_hexagonal_tiles_01_3K_Normal.png", &srv, &desc);
-
-	mpIrradianceTex = std::make_unique<ComputedTexture>();
-	mpIrradianceTex->CreateSampler(p_device, D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP);
-	mpIrradianceTex->CreateTextureCube(p_device, 32, 32, DXGI_FORMAT_R16G16B16A16_FLOAT, 1);
-	mpIrradianceTex->CreateTextureUAV(p_device, 0);
-	mpIrradianceTex->CreateShader(p_device, L"./Src/Shaders/CS_PreComputingIrradiance.hlsl", "CSmain");
-
-	mpSpecularMapTex = std::make_unique<ComputedTexture>();
-	mpSpecularMapTex->CreateSampler(p_device, D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP);
-	mpSpecularMapTex->CreateTextureCube(p_device, 1024, 1024, DXGI_FORMAT_R16G16B16A16_FLOAT);
-	mpSpecularMapTex->CreateShader(p_device, L"Src/Shaders/CS_PreFilteringForSpecular.hlsl", "CSmain");
-
-
-	mpEnvironmentTex = std::make_unique<ComputedTexture>();
-	mpEnvironmentTex->CreateSampler(p_device, D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP);
-	mpEnvironmentTex->CreateTextureCube(p_device, 1024, 1024, DXGI_FORMAT_R16G16B16A16_FLOAT);
-	mpEnvironmentTex->CreateTextureUAV(p_device, 0);
-	mpEnvironmentTex->CreateShader(p_device, L"./Src/Shaders/CS_Equirectangular2Cube.hlsl", "CSmain");
-
-	mpSpecularBRDF_LUT = std::make_unique<ComputedTexture>();
-	mpSpecularBRDF_LUT->CreateSampler(p_device, D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_CLAMP);
-	mpSpecularBRDF_LUT->CreateTexture(p_device, 256, 256, DXGI_FORMAT_R16G16_FLOAT, 1);
-	mpSpecularBRDF_LUT->CreateTextureUAV(p_device, 0);
-	mpSpecularBRDF_LUT->CreateShader(p_device, L"./Src/Shaders/CS_SpecularBRDF.hlsl", "CSmain");
 
 	Actor* temp = new Actor();
 	temp->AddComponent<MeshComponent>();
@@ -194,8 +168,7 @@ SceneTest::SceneTest(SceneManager* p_manager, Microsoft::WRL::ComPtr<ID3D11Devic
 	temp->SetScale(4.0f, 4.0f, 4.0f);
 	ENGINE.GetActorManagerPtr()->AddActor(temp, count++);
 
-	mpSkyTex = std::make_unique<Texture>();
-	mpSkyTex->Load(p_device, L"./Data/Images/Environment/Footprint_Court/Footprint_Court_2k.hdr");
+	mpPrefilter->Initialize(p_device);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------
@@ -222,81 +195,30 @@ void SceneTest::Update(float elapsed_time)
 
 //----------------------------------------------------------------------------------------------------------------------------
 
-void SceneTest::PreCompute(std::unique_ptr<GraphicsEngine>& p_graphics)
+void SceneTest::PreCompute(Graphics::GraphicsDevice* p_graphics)
 {
 }
 
 //----------------------------------------------------------------------------------------------------------------------------
 
-void SceneTest::Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time)
+void SceneTest::Render(Graphics::GraphicsDevice* p_device, float elapsed_time)
 {
-	D3D::DevicePtr pDevice = p_graphics->GetDevicePtr();
-	D3D::DeviceContextPtr pImmContext = p_graphics->GetImmContextPtr();
-
-	
-
-	
-	switch(mPreComputeState++)
-	{
-	case 0:
-		mpEnvironmentTex->Compute(pImmContext, mpSkyTex->GetSRV(), 6);
-		pImmContext->GenerateMips(mpEnvironmentTex->GetSRV().Get());
-		Log::Info("Pre-Computed Equirectangular To Cube. (state : %d)", mPreComputeState);
-		break;
-	case 1:
-	{
-		const UINT MipLevels = mpSpecularMapTex->GetMipLevels();
-		// ミップマップレベル0の環境マップをコピー
-		for (int arraySlice = 0; arraySlice < 6; ++arraySlice)
-		{
-			const UINT subresourceIndex = D3D11CalcSubresource(0, arraySlice, MipLevels);
-			pImmContext->CopySubresourceRegion(mpSpecularMapTex->GetTexture2D().Get(), subresourceIndex, 0, 0, 0, mpEnvironmentTex->GetTexture2D().Get(), subresourceIndex, nullptr);
-		}
-
-		// 他のミップマップレベルの環境マップをプリフィルタリング
-		const float deltaRoughness = 1.0f / std::max<float>(static_cast<float>(MipLevels - 1), 1.0f);
-
-		for (UINT level = 1, size = 512; level < MipLevels; ++level, size /= 2)
-		{
-			const UINT numGroups = std::max<UINT>(1, size / 32);
-			mpSpecularMapTex->CreateTextureUAV(pDevice, level);
-			mpSpecularMapTex->SetCBuffer(pImmContext, level * deltaRoughness);
-			mpSpecularMapTex->Compute(pImmContext, mpEnvironmentTex->GetSRV(), numGroups, numGroups, 6);
-		}
-		Log::Info("Pre-Computed SpecularIBL Filter. (state : %d)", mPreComputeState);
-		break;
-	}
-	case 2:
-		mpIrradianceTex->Compute(pImmContext, mpSpecularMapTex->GetSRV(), 6);
-		Log::Info("Pre-Computed Diffuse Irardiance. (state : %d)", mPreComputeState);
-		break;
-	case 3:
-		mpSpecularBRDF_LUT->Compute(pImmContext, 1);
-		Log::Info("Pre-Computed Specular Look-Up Texture. (state : %d)", mPreComputeState);
-		break;
-	}
-
-	//D3D::DeviceContextPtr pImmContext = p_graphics->GetImmContextPtr();
-
-	mpIrradianceTex->Set(pImmContext, 10);
-	mpSpecularMapTex->Set(pImmContext, 11);
-	mpSpecularBRDF_LUT->Set(pImmContext, 12);
-	mpEnvironmentTex->Set(pImmContext, 13);
-
+	mpPrefilter->PreCompute(p_device);
+	mpPrefilter->SetModifiedTextures(p_device);
 }
 
 void SceneTest::RenderUI()
 {
-	ENGINE.GetUIRenderer()->SetNextWindowSettings(Vector2(0, SCREEN_HEIGHT - 200), Vector2(300, 200));
-	ENGINE.GetUIRenderer()->SetNextUIConfig(false);
+	auto* ui = ENGINE.GetRenderer()->GetUIRenderer();
+	ui->SetNextWindowSettings(Vector2(0, SCREEN_HEIGHT - 200), Vector2(300, 200));
+	ui->SetNextUIConfig(false);
 
-	ENGINE.GetUIRenderer()->BeginRenderingNewWindow("PBR");
+	ui->BeginRenderingNewWindow("PBR");
 	ImGui::Checkbox("Auto Mode", &mbAutoSetParameter);
 	ENGINE.GetActorManagerPtr()->GetActor(EPBRSphereParam)->GetComponent<MeshComponent>()->RenderUI();
-	ImGui::Image((void*)mpSpecularBRDF_LUT->GetSRV().Get(), ImVec2(320, 320));
 
 
-	ENGINE.GetUIRenderer()->FinishRenderingWindow();
+	ui->FinishRenderingWindow();
 
 }
 

@@ -128,7 +128,7 @@ PS_Output_AO PSmain(PS_Input_Shadow_AO input)
 	//output.depth = float4(depth, depth, depth, 1.0f);
 
 	// Plan B
-	output.depth = float4(input.depth.x / input.depth.y, 0, 0, 1);
+	output.depth = input.depth.x / input.depth.y;
 	//output.depth.r = LinearizeDepth(output.depth.r, 0.1, 100.0);
 	return output;
 }

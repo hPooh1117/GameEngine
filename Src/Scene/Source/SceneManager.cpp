@@ -22,11 +22,11 @@
 
 //----------------------------------------------------------------------------------------------------------------------------
 
-SceneManager::SceneManager(D3D::DevicePtr& p_device)
+SceneManager::SceneManager(Graphics::GraphicsDevice* p_device)
 	:mCurrentScene(SceneID::SCENE_A),
-	mClearFlag(false),
-	m_bIsLoading(false),
-	m_pDevice(p_device),
+	mbClearFlag(false),
+	mbIsLoading(false),
+	mpGraphicsDevice(p_device),
 	mbIsInitialized(false)
 {
 	mNextScene = mCurrentScene;
@@ -55,25 +55,25 @@ void SceneManager::CreateScene(SceneID scene_id)
 		//	mSceneStack.emplace(std::make_unique<SceneTitle>(this, m_pDevice));
 		//	break;
 	case SceneID::SCENE_A:
-		mSceneStack.emplace(std::make_unique<SceneA>(this, m_pDevice));
+		mSceneStack.emplace(std::make_unique<SceneA>(this, mpGraphicsDevice));
 		break;
 	case SceneID::SCENE_B:
-		mSceneStack.emplace(std::make_unique<SceneB>(this, m_pDevice));
+		mSceneStack.emplace(std::make_unique<SceneB>(this, mpGraphicsDevice));
 		break;
 	case SceneID::SCENE_C:
-		mSceneStack.emplace(std::make_unique<SceneC>(this, m_pDevice));
+		mSceneStack.emplace(std::make_unique<SceneC>(this, mpGraphicsDevice));
 		break;
 	case SceneID::SCENE_D:
-		mSceneStack.emplace(std::make_unique<SceneD>(this, m_pDevice));
+		mSceneStack.emplace(std::make_unique<SceneD>(this, mpGraphicsDevice));
 		break;
 	case SceneID::SCENE_E:
-		mSceneStack.emplace(std::make_unique<SceneE>(this, m_pDevice));
+		mSceneStack.emplace(std::make_unique<SceneE>(this, mpGraphicsDevice));
 		break;
 	case SceneID::SCENE_F:
-		mSceneStack.emplace(std::make_unique<SceneF>(this, m_pDevice));
+		mSceneStack.emplace(std::make_unique<SceneF>(this, mpGraphicsDevice));
 		break;
 	case SceneID::SCENE_TEST:
-		mSceneStack.emplace(std::make_unique<SceneTest>(this, m_pDevice));
+		mSceneStack.emplace(std::make_unique<SceneTest>(this, mpGraphicsDevice));
 		break;
 	}
 
@@ -82,7 +82,7 @@ void SceneManager::CreateScene(SceneID scene_id)
 void SceneManager::InitializeLoadingScene()
 {
 	Log::Info("Initializing Scene...");
-	m_pLoadingScene = std::make_unique<SceneLoading>(this, m_pDevice);
+	mpLoadingScene = std::make_unique<SceneLoading>(this, mpGraphicsDevice);
 	
 }
 
@@ -90,14 +90,14 @@ void SceneManager::InitializeLoadingScene()
 
 void SceneManager::InitializeCurrentScene()
 {
-	m_bIsLoading = true;
+	mbIsLoading = true;
 
 	CreateScene(mCurrentScene);
 
 	mSceneStack.top()->SetCurrntSceneID(mCurrentScene);
 	mSceneStack.top()->InitializeScene();
 	Log::Info("Initialized %s", mSceneStack.top()->GetCurrentSceneName().c_str());
-	m_bIsLoading = false;
+	mbIsLoading = false;
 	mbIsInitialized = true;
 }
 
@@ -105,7 +105,7 @@ void SceneManager::InitializeCurrentScene()
 
 void SceneManager::ExecuteLoadingScene(float elapsed_time)
 {
-	m_pLoadingScene->Update(elapsed_time);
+	mpLoadingScene->Update(elapsed_time);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------
@@ -132,22 +132,22 @@ void SceneManager::LoadNextScene()
 	mSceneStack.top()->SetCurrntSceneID(mNextScene);
 	mSceneStack.top()->InitializeScene();
 	Log::Info("Initialized %s", mSceneStack.top()->GetCurrentSceneName().c_str());
-	m_bIsLoading = false;
+	mbIsLoading = false;
 	mbIsInitialized = true;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------
 
-void SceneManager::RenderLoadingScene(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time)
+void SceneManager::RenderLoadingScene(Graphics::GraphicsDevice* device, float elapsed_time)
 {
-	m_pLoadingScene->Render(p_graphics, elapsed_time);
+	mpLoadingScene->Render(device, elapsed_time);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------
 
-void SceneManager::RenderCurrentScene(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time)
+void SceneManager::RenderCurrentScene(Graphics::GraphicsDevice* device, float elapsed_time)
 {
-	mSceneStack.top()->Render(p_graphics, elapsed_time);
+	mSceneStack.top()->Render(device, elapsed_time);
 
 }
 
@@ -156,9 +156,9 @@ void SceneManager::RenderUIForCurrentScene()
 	mSceneStack.top()->RenderUI();
 }
 
-void SceneManager::PreComputeForNextScene(std::unique_ptr<GraphicsEngine>& p_graphics)
+void SceneManager::PreComputeForNextScene(Graphics::GraphicsDevice* device)
 {
-	mSceneStack.top()->PreCompute(p_graphics);
+	mSceneStack.top()->PreCompute(device);
 }
 
 void SceneManager::RenderUI()
@@ -192,11 +192,11 @@ void SceneManager::ChangeScene(const SceneID& nextScene, bool clearCurrentScene)
 {
 	if (clearCurrentScene == true)
 	{
-		mClearFlag = true;
+		mbClearFlag = true;
 		mNextScene = nextScene;
 	}
 
-	m_bIsLoading = true;
+	mbIsLoading = true;
 	mbIsInitialized = false;
 }
 

@@ -11,11 +11,10 @@
 #include "./Utilities/misc.h"
 #include "./Utilities/ImGuiSelf.h"
 
-#pragma comment(lib, "d3dcompiler.lib")
 
 
 
-const char* Shader::SHADER_MODEL_TABLE[SHADER_TYPE_MAX] = {
+const char* Shader::SHADER_MODEL_TABLE[Graphics::SHADER_STAGE_MAX] = {
 	"",
 	"vs_5_0",
 	"ps_5_0",
@@ -49,7 +48,7 @@ bool Shader::createShader(
 
 
 	//// compile and Create vertex shader
-	result = ResourceManager::CompileHLSLFile(vs_filename, vs_funcname, SHADER_MODEL_TABLE[EVertexShader], vsBlob);
+	result = ResourceManager::CompileHLSLFile(vs_filename, vs_funcname, SHADER_MODEL_TABLE[Graphics::EVertexShader], vsBlob);
 	if (FAILED(result))
 	{
 		char vsfile_multibyte[256];
@@ -68,7 +67,7 @@ bool Shader::createShader(
 
 
 	// compile and Create pixel shader
-	result = ResourceManager::CompileHLSLFile(ps_filename, ps_funcname, SHADER_MODEL_TABLE[EPixelShader], psBlob);
+	result = ResourceManager::CompileHLSLFile(ps_filename, ps_funcname, SHADER_MODEL_TABLE[Graphics::EPixelShader], psBlob);
 	if (FAILED(result))
 	{
 		char psfile_multibyte[256];
@@ -85,8 +84,8 @@ bool Shader::createShader(
 	);
 	_ASSERT_EXPR_A(SUCCEEDED(result), hr_trace(result));
 
-	mFuncNameTable.emplace(EVertexShader, vs_funcname);
-	mFuncNameTable.emplace(EPixelShader, ps_funcname);
+	mFuncNameTable.emplace(Graphics::EVertexShader, vs_funcname);
+	mFuncNameTable.emplace(Graphics::EPixelShader, ps_funcname);
 
 
 	return true;
@@ -101,11 +100,11 @@ bool Shader::CreateGeometryShader(
 
 	Microsoft::WRL::ComPtr<ID3DBlob> gsBlob = nullptr;
 
-	result = ResourceManager::CompileHLSLFile(gs_name, gs_func, SHADER_MODEL_TABLE[EGeometryShader], gsBlob);
+	result = ResourceManager::CompileHLSLFile(gs_name, gs_func, SHADER_MODEL_TABLE[Graphics::EGeometryShader], gsBlob);
 	device->CreateGeometryShader(gsBlob->GetBufferPointer(), gsBlob->GetBufferSize(), NULL, mpGS.GetAddressOf());
 	_ASSERT_EXPR_A(SUCCEEDED(result), hr_trace(result));
 
-	mFuncNameTable.emplace(EGeometryShader, gs_func);
+	mFuncNameTable.emplace(Graphics::EGeometryShader, gs_func);
 
 	return true;
 }
@@ -121,16 +120,16 @@ bool Shader::CreateHullAndDomain(
 	Microsoft::WRL::ComPtr<ID3DBlob> hsBlob = nullptr;
 	Microsoft::WRL::ComPtr<ID3DBlob> dsBlob = nullptr;
 
-	result = ResourceManager::CompileHLSLFile(hlsl_name, hs_func, SHADER_MODEL_TABLE[EHullShader], hsBlob);
+	result = ResourceManager::CompileHLSLFile(hlsl_name, hs_func, SHADER_MODEL_TABLE[Graphics::EHullShader], hsBlob);
 	device->CreateHullShader(hsBlob->GetBufferPointer(), hsBlob->GetBufferSize(), NULL, mpHS.GetAddressOf());
 	_ASSERT_EXPR_A(SUCCEEDED(result), hr_trace(result));
 
-	result = ResourceManager::CompileHLSLFile(hlsl_name, ds_func, SHADER_MODEL_TABLE[EDomainShader], dsBlob);
+	result = ResourceManager::CompileHLSLFile(hlsl_name, ds_func, SHADER_MODEL_TABLE[Graphics::EDomainShader], dsBlob);
 	device->CreateDomainShader(dsBlob->GetBufferPointer(), dsBlob->GetBufferSize(), NULL, mpDS.GetAddressOf());
 	_ASSERT_EXPR_A(SUCCEEDED(result), hr_trace(result));
 
-	mFuncNameTable.emplace(EHullShader, hs_func);
-	mFuncNameTable.emplace(EDomainShader, ds_func);
+	mFuncNameTable.emplace(Graphics::EHullShader, hs_func);
+	mFuncNameTable.emplace(Graphics::EDomainShader, ds_func);
 
 	return true;
 }
@@ -144,12 +143,12 @@ bool Shader::CreateComputeShader(
 
 	Microsoft::WRL::ComPtr<ID3DBlob> csBlob = nullptr;
 
-	result = ResourceManager::CompileHLSLFile(hlsl_name, cs_func, SHADER_MODEL_TABLE[EComputeShader], csBlob);
+	result = ResourceManager::CompileHLSLFile(hlsl_name, cs_func, SHADER_MODEL_TABLE[Graphics::EComputeShader], csBlob);
 	device->CreateComputeShader(csBlob->GetBufferPointer(), csBlob->GetBufferSize(), NULL, mpCS.GetAddressOf());
 	_ASSERT_EXPR_A(SUCCEEDED(result), hr_trace(result));
 
 
-	mFuncNameTable.emplace(EComputeShader, cs_func);
+	mFuncNameTable.emplace(Graphics::EComputeShader, cs_func);
 
 	return true;
 }
@@ -165,12 +164,12 @@ bool Shader::CreateComputeShader(
 	Microsoft::WRL::ComPtr<ID3DBlob> csBlob = nullptr;
 
 
-	result = ResourceManager::CompileHLSLFile(hlsl_name, cs_func, SHADER_MODEL_TABLE[EComputeShader], csBlob, shader_macros);
+	result = ResourceManager::CompileHLSLFile(hlsl_name, cs_func, SHADER_MODEL_TABLE[Graphics::EComputeShader], csBlob, shader_macros);
 	device->CreateComputeShader(csBlob->GetBufferPointer(), csBlob->GetBufferSize(), NULL, mpCS.GetAddressOf());
 	_ASSERT_EXPR_A(SUCCEEDED(result), hr_trace(result));
 
 
-	mFuncNameTable.emplace(EComputeShader, cs_func);
+	mFuncNameTable.emplace(Graphics::EComputeShader, cs_func);
 
 	return true;
 }
@@ -229,12 +228,12 @@ bool Shader::CreateShader(
 
 	switch (shader_type)
 	{
-	case EVertexShader:   CreateVertexShader(device, blob);   break;
-	case EPixelShader:    CreatePixelShader(device, blob);    mFuncNameTable.emplace(shader_type, func); return true;
-	case EHullShader:     CreateHullShader(device, blob);     mFuncNameTable.emplace(shader_type, func); return true;
-	case EDomainShader:   CreateDomainShader(device, blob);   mFuncNameTable.emplace(shader_type, func); return true;
-	case EGeometryShader: CreateGeometryShader(device, blob); mFuncNameTable.emplace(shader_type, func); return true;
-	case EComputeShader:  CreateComputeShader(device, blob);  mFuncNameTable.emplace(shader_type, func); return true;
+	case Graphics::EVertexShader:   CreateVertexShader(device, blob);   break;
+	case Graphics::EPixelShader:    CreatePixelShader(device, blob);    mFuncNameTable.emplace(shader_type, func); return true;
+	case Graphics::EHullShader:     CreateHullShader(device, blob);     mFuncNameTable.emplace(shader_type, func); return true;
+	case Graphics::EDomainShader:   CreateDomainShader(device, blob);   mFuncNameTable.emplace(shader_type, func); return true;
+	case Graphics::EGeometryShader: CreateGeometryShader(device, blob); mFuncNameTable.emplace(shader_type, func); return true;
+	case Graphics::EComputeShader:  CreateComputeShader(device, blob);  mFuncNameTable.emplace(shader_type, func); return true;
 	default: return false;
 	}
 
@@ -246,33 +245,6 @@ bool Shader::CreateShader(
 	return true;
 }
 
-//bool Shader::CreateShader(
-//	D3D::DevicePtr& device,
-//	UINT shader_type,
-//	const std::wstring& hlsl,
-//	const std::string& func)
-//{
-//	Microsoft::WRL::ComPtr<ID3DBlob> blob;
-//
-//	if (FAILED(ResourceManager::CompileHLSLFile(hlsl, mFuncNameTable.at(shader_type), SHADER_MODEL_TABLE[shader_type], blob)))
-//	{
-//		Log::Error("Couldn't compile.");
-//		return false;
-//	}
-//
-//
-//	switch (shader_type)
-//	{
-//	case EPixelShader:    CreatePixelShader(device, blob);    break;
-//	case EHullShader:     CreateHullShader(device, blob);     break;
-//	case EDomainShader:   CreateDomainShader(device, blob);   break;
-//	case EGeometryShader: CreateGeometryShader(device, blob); break;
-//	case EComputeShader:  CreateComputeShader(device, blob);  break;
-//	default: 
-//	}
-//
-//	return true;
-//}
 
 // 既にロードされたシェーダを編集する目的。ランタイム中の新規作成は想定しない。
 bool Shader::ReloadShader(D3D::DevicePtr& device, const std::wstring& hlsl)
@@ -281,8 +253,8 @@ bool Shader::ReloadShader(D3D::DevicePtr& device, const std::wstring& hlsl)
 
 	UINT type = ChooseShaderType();
 
-	if (type == ENoneShader)     return false;
-	if (type == SHADER_TYPE_MAX) return true;
+	if (type == Graphics::ENoneShader)     return false;
+	if (type == Graphics::SHADER_STAGE_MAX) return true;
 
 	// 指定した種類のシェーダが存在しなければ終了
 	auto it = mFuncNameTable.find(type);
@@ -304,12 +276,12 @@ bool Shader::ReloadShader(D3D::DevicePtr& device, const std::wstring& hlsl)
 
 	switch (type)
 	{
-	case EVertexShader:   CreateVertexShader(device, blob);   break;
-	case EPixelShader:    CreatePixelShader(device, blob);    return true;
-	case EHullShader:     CreateHullShader(device, blob);     return true;
-	case EDomainShader:   CreateDomainShader(device, blob);   return true;
-	case EGeometryShader: CreateGeometryShader(device, blob); return true;
-	case EComputeShader:  CreateComputeShader(device, blob);  return true;
+	case Graphics::EVertexShader:   CreateVertexShader(device, blob);   break;
+	case Graphics::EPixelShader:    CreatePixelShader(device, blob);    return true;
+	case Graphics::EHullShader:     CreateHullShader(device, blob);     return true;
+	case Graphics::EDomainShader:   CreateDomainShader(device, blob);   return true;
+	case Graphics::EGeometryShader: CreateGeometryShader(device, blob); return true;
+	case Graphics::EComputeShader:  CreateComputeShader(device, blob);  return true;
 	default: return true;
 	}
 
@@ -356,12 +328,12 @@ void Shader::CreateVertexShader(D3D::DevicePtr& device, D3D::BlobPtr& blob)
 	if (FAILED(result))
 	{
 		Log::Error("Couldn't create VERTEX shader.");
-		mbCreated[EVertexShader] = false;
+		mbCreated[Graphics::EVertexShader] = false;
 
 		return;
 	}
 	mpVS = vs;
-	mbCreated[EVertexShader] = true;
+	mbCreated[Graphics::EVertexShader] = true;
 }
 
 void Shader::CreateHullShader(D3D::DevicePtr& device, D3D::BlobPtr& blob)
@@ -407,11 +379,11 @@ void Shader::CreatePixelShader(D3D::DevicePtr& device, D3D::BlobPtr& blob)
 	if (FAILED(result))
 	{
 		Log::Error("Couldn't create PIXEL shader.");
-		mbCreated[EPixelShader] = false;
+		mbCreated[Graphics::EPixelShader] = false;
 		return;
 	}
 	mpPS = ps;
-	mbCreated[EPixelShader] = true;
+	mbCreated[Graphics::EPixelShader] = true;
 }
 
 void Shader::CreateComputeShader(D3D::DevicePtr& device, D3D::BlobPtr& blob)
@@ -450,7 +422,7 @@ UINT Shader::ChooseShaderType()
 		if (ImGui::Button("Cancel"))
 		{
 			ImGui::CloseCurrentPopup();
-			chosen = SHADER_TYPE_MAX;
+			chosen = Graphics::SHADER_STAGE_MAX;
 		}
 		ImGui::EndPopup();
 	}

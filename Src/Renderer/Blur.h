@@ -4,8 +4,9 @@
 
 
 #include "D3D_Helper.h"
+#include "GraphicsDevice.h"
+#include "./Renderer/Shader.h"
 
-class Shader;
 class Texture;
 class ComputedTexture;
 struct ShaderMacro;
@@ -43,6 +44,8 @@ private:
 	//D3D::BufferPtr mpCBuffer;
 	std::unique_ptr<ComputedTexture> mpBlurTex[BLUR_PASS_MAX];
 	std::unique_ptr<ComputedTexture> mpBlurWideTex[BLUR_PASS_MAX];
+
+	std::unique_ptr<Shader> mpCS_Blur[BLUR_PASS_MAX + BLUR_PASS_MAX];
 public:
 	BlurExecuter();
 	~BlurExecuter() = default;
@@ -51,7 +54,7 @@ public:
 	void CreateShader(D3D::DevicePtr& p_device);
 	void ChangeSetting(UINT strength, UINT kernel_range);
 	void ActivateBlur(D3D::DeviceContextPtr& p_imm_context, bool b_horizontal);
-	void ExecuteBlur(D3D::DeviceContextPtr& p_imm_context, const D3D::SRVPtr& srv, UINT slot = 0);
+	void ExecuteBlur(Graphics::GraphicsDevice* p_device, const D3D::SRVPtr& srv, UINT slot = 0);
 	void Deactivate(D3D::DeviceContextPtr& p_imm_context);
 
 	void RenderUI();

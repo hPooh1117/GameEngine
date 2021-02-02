@@ -2,7 +2,7 @@
 #include "H_BumpMapping.hlsli"
 #include "H_2DSprite.hlsli"
 #include "H_Functions.hlsli"
-#include "H_Light.hlsli"
+#include "HF_GlobalVariables.hlsli"
 #include "H_ShadowMap.hlsli"
 
 Texture2D albedo_texture : register(t0);
@@ -99,7 +99,7 @@ PS_Output_Light PSmain(PS_InputD input)
 	float3 PD = (float3)0;
 	float3 PS = (float3)0;
 
-	int i;
+	uint i;
 	float distance = 0.0;
 	float range = 0.0;
 
@@ -164,7 +164,7 @@ PS_Output_Light PSmain(PS_InputD input)
 
 	output.diffuse = float4(D + PD/* + SpotDiffuse*/, 1) * reflect;
 	output.specular = float4(S + PS/* + SpotSpecular*/, 1) * reflect;
-	output.prelighting = float4(output.diffuse.rgb + output.specular.rgb + A * reflect.rgb, 1) * albedo * shadow + skyboxAlbedo * light_color;
+	output.prelighting = float4(output.diffuse.rgb + output.specular.rgb, 1) * albedo * shadow/* * light_color*/;
 	
 
 	//output.prelighting = float4(P, 1);

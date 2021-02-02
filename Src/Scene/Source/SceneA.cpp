@@ -16,23 +16,28 @@
 
 #include "./Component/MoveRotationComponent.h"
 
-#include "./Renderer/Skybox.h"
-#include "./Renderer/GraphicsEngine.h"
-#include "./Renderer/sprite.h"
 #include "./Renderer/Blender.h"
 #include "./Renderer/NewMeshRenderer.h"
+#include "./Renderer/Renderer.h"
 #include "./Renderer/Shader.h"
+#include "./Renderer/Skybox.h"
+#include "./Renderer/sprite.h"
+#include "./Renderer/Mesh.h"
+#include "./Renderer/FbxSdkLoader.h"
 
 
 
 using namespace DirectX;
 
+std::vector<MeshData> meshes; // will be deleted.
 
-SceneA::SceneA(SceneManager* manager, Microsoft::WRL::ComPtr<ID3D11Device>& device) :Scene(manager, device)
+
+
+SceneA::SceneA(SceneManager* manager, Graphics::GraphicsDevice* p_device) :Scene(manager, p_device)
 {
 	mNextScene = SceneID::SCENE_B;
 
-	ENGINE.GetMeshRenderer()->SetSkybox(SkyboxTextureID::EWalkOfFame);
+	ENGINE.GetRenderer()->GetMeshRenderer()->SetSkybox(SkyboxTextureID::EWalkOfFame);
 
 	int count = 0;
 	// ----------------------------------------------------------------------------------------------
@@ -88,6 +93,12 @@ SceneA::SceneA(SceneManager* manager, Microsoft::WRL::ComPtr<ID3D11Device>& devi
 	pGrid->GetComponent<MeshComponent>()->RegisterMesh(MeshTypeID::E_BasicLine, ShaderID::ELine, nullptr, FbxType::EDefault);
 	ENGINE.GetActorManagerPtr()->AddActor(pGrid, count++);
 
+	//Actor* pCube = new Actor();
+	//pCube->SetScale(1.0f, 1.0f, 1.0f);
+	//pCube->SetPosition(Vector3(0.0f, 10.0f, 0.0f));
+	//pCube->AddComponent<MeshComponent>();
+	//pCube->GetComponent<MeshComponent>()->RegisterMesh(MeshTypeID::E_SkinnedMesh, ShaderID::EFlat, L"./Data/Models/TestCube/001_cube.fbx", FbxType::EDefault);
+	//ENGINE.GetActorManagerPtr()->AddActor(pCube, count++);
 
 	// ----------------------------------------------------------------------------------------------
 	// í«â¡ê›íË
@@ -106,6 +117,7 @@ SceneA::SceneA(SceneManager* manager, Microsoft::WRL::ComPtr<ID3D11Device>& devi
 	};
 	ENGINE.SetRendererSettings(renderSettings);
 
+	Init(p_device);
 }
 
 void SceneA::InitializeScene()
@@ -116,20 +128,32 @@ void SceneA::Update(float elapsed_time)
 {
 }
 
-void SceneA::PreCompute(std::unique_ptr<GraphicsEngine>& p_graphics)
+void SceneA::PreCompute(Graphics::GraphicsDevice* p_graphics)
 {
 }
 
 void SceneA::Render(
-	std::unique_ptr<GraphicsEngine>& p_graphics,
+	Graphics::GraphicsDevice* p_device,
 	float elapsed_time)
 {
+
 }
 
 void SceneA::RenderUI()
 {
 }
 
+
+void SceneA::Init(Graphics::GraphicsDevice* p_device)
+{
+	//FbxSdkLoader loader;
+	//loader.Load(L"./Data/Models/TestCube/001_cube.fbx");
+	//Log::Info("Finish loading meshes.");
+	//loader.GetMeshData(meshes);
+	//Log::Info("Mesh Size : %d", meshes.size());
+	
+
+}
 
 SceneA::~SceneA()
 {

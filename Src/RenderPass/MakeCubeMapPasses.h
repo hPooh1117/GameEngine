@@ -2,7 +2,6 @@
 #include "RenderPasses.h"
 #include "./Utilities/Vector.h"
 
-class GraphicsEngine;
 class SubView;
 
 class MakeCubeMapPass : public RenderPass
@@ -26,9 +25,9 @@ public:
 	MakeCubeMapPass();
 	~MakeCubeMapPass() = default;
 
-	virtual void Initialize(D3D::DevicePtr& device) override;
+	virtual void Initialize(Graphics::GraphicsDevice* device) override;
 
-	void MakeCubeMap(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time);
+	void MakeCubeMap(Graphics::GraphicsDevice* device, float elapsed_time);
 
 	void RenderUI(bool b_open);
 

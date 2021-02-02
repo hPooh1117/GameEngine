@@ -3,21 +3,20 @@
 
 #include "Window.h"
 
-class GraphicsEngine;
+#include "./Renderer/GraphicsDevice.h"
 
 
 class Application : public Window
 {
 private:
-    std::unique_ptr<GraphicsEngine> m_pGraphicsEngine;
-    //std::unique_ptr<GameSystem> m_pGameSystem;
+    std::unique_ptr<Graphics::GraphicsDevice> mpGraphicsDevice;
     
 
 public:
     Application();
 
 
-    virtual bool Init() override;
+    virtual bool Initialize() override;
     
     virtual void Update(float elapsed_time) override;
     virtual void Render(float elapsed_time) override;

@@ -4,17 +4,31 @@
 
 #include "Input.h"
 
+
 #include "./Engine/GameSystem.h"
 #include "./Engine/Settings.h"
 #include "./Engine/Singleton.h"
+#include "./Engine/TestEngine.h"
 
 #include "./Renderer/RenderTarget.h"
 
-#include "./Renderer/GraphicsEngine.h"
 #include "./Renderer/Swapchain.h"
 
 #include "./Utilities/Log.h"
 
+#ifdef _DEBUG
+#pragma comment(lib, "DirectXTex.lib")
+#pragma comment(lib, "DirectXTK.lib")
+#pragma comment(lib, "libfbxsdk-md.lib")
+
+#else
+#pragma comment(lib, "DirectXTex.lib")
+#pragma comment(lib, "DirectXTK.lib")
+#pragma comment(lib, "libfbxsdk-md.lib")
+
+#endif
+
+//#define IMPLEMENT_ECS
 
 using namespace DirectX;
 
@@ -24,7 +38,7 @@ Application::Application()
 	
 }
 
-bool Application::Init()
+bool Application::Initialize()
 {
 #ifdef _DEBUG
 	Settings::Logger logger = {true, false};
@@ -35,22 +49,25 @@ bool Application::Init()
 
 
 	Log::Initialize(logger);
+	
+	Window::Initialize();
+	
 
-	Window::Init();
+	mpGraphicsDevice = std::make_unique<Graphics::GraphicsDevice>();
 
-	m_pGraphicsEngine = std::make_unique<GraphicsEngine>();
-
-
-	if (m_pGraphicsEngine->Initialize(mHwnd))
+	if (mpGraphicsDevice->Initialize(mHwnd))
 	{
 		Log::Info("[RENDERER] DirectX11 is Initialized.");
 	}
 
 	Window::ShowAndUpdateWindow();
 
-	//m_pGameSystem = std::make_unique<GameSystem>(m_pGraphicsEngine->GetDevicePtr());
-	ENGINE.Initialize(m_pGraphicsEngine);
 
+#ifndef IMPLEMENT_ECS
+	ENGINE.Initialize(mpGraphicsDevice);
+#else 
+	TEST.Initialize();
+#endif // IMPLEMENT_ECS
 	return true;
 
 }
@@ -58,11 +75,16 @@ bool Application::Init()
 
 void Application::Update(float elapsed_time)
 {
+	
+
+
 	InputPtr.HandleInput(mHwnd);
 
-	//m_pGameSystem->Update(elapsed_time);
-	ENGINE.Update(m_pGraphicsEngine, elapsed_time);
-
+#ifndef IMPLEMENT_ECS
+	ENGINE.Update(mpGraphicsDevice, elapsed_time);
+#else 
+	TEST.Update(elapsed_time);
+#endif
 	
 
 	//Input::Update();
@@ -70,19 +92,24 @@ void Application::Update(float elapsed_time)
 
 void Application::Render(float elapsed_time)
 {
-	//m_pGraphicsEngine->BeginRender();
-	//m_pGameSystem->RenderCurrentScene(m_pGraphicsEngine, elapsed_time);
-	ENGINE.Render(m_pGraphicsEngine, elapsed_time);
 
-	m_pGraphicsEngine->EndRender();
+#ifndef IMPLEMENT_ECS
+	ENGINE.Render(mpGraphicsDevice, elapsed_time);
+#else 
+	m_pGraphicsEngine->BeginRender();
+	TEST.Render();
+#endif //IMPLEMENT_ECS
+	mpGraphicsDevice->EndRender();
 }
 
 void Application::OnSize()
 {
 	RECT rc = this->GetClientWindowRect();
-	m_pGraphicsEngine->GetSwapchain()->Resize(m_pGraphicsEngine->GetDevicePtr(), rc.right - rc.left, rc.bottom - rc.top);
+	mpGraphicsDevice->GetSwapchain()->Resize(mpGraphicsDevice->GetDevicePtr(), rc.right - rc.left, rc.bottom - rc.top);
 
-	ENGINE.SetCurrentWindowSize(m_pGraphicsEngine->GetDevicePtr(), rc.right - rc.left, rc.bottom - rc.top);
+#ifndef IMPLEMENT_ECS
+	ENGINE.SetCurrentWindowSize(mpGraphicsDevice->GetDevicePtr(), rc.right - rc.left, rc.bottom - rc.top);
+#endif //IMPLEMENT_ECS
 }
 
 

@@ -1,11 +1,13 @@
 #pragma once
 #include "Mesh.h"
+#include "Texture.h"
+#include "ComputedTexture.h"
+#include "Shader.h"
+
 #include <string>
 #include <array>
 #include <algorithm>
 
-class Texture;
-class ComputedTexture;
 
 enum SkyboxTextureID
 {
@@ -31,31 +33,30 @@ private:
     unsigned int mCurrentID;
     std::array<std::unique_ptr<Texture>, SKYBOXID_MAX> mpTextures;
     std::array<std::unique_ptr<ComputedTexture>, SKYBOXID_MAX> mpComputedTexs;
-
-    Microsoft::WRL::ComPtr<ID3D11Buffer>            mpVertexBuffer;
-    Microsoft::WRL::ComPtr<ID3D11Buffer>            mpIndexBuffer;
-    D3D::SamplerStatePtr                            mpClampSampler;
+    std::unique_ptr<Shader> mpCS_Equirectangular2Cube;
+    std::unique_ptr<Graphics::GPUBuffer> mpVertexBuffer;
+    std::unique_ptr<Graphics::GPUBuffer> mpIndexBuffer;
     bool mbIsDrawing = true;
     bool mbHasComputed = false;
 public:
 	Skybox();
     virtual ~Skybox();
 
-    bool Initialize(D3D::DevicePtr& device,
+    bool Initialize(Graphics::GraphicsDevice* p_device,
         const wchar_t* filename = L"\0",
         float radius = BOX_SIZE);
-    virtual void CreateBuffers(D3D::DevicePtr& device) override;
+    virtual void CreateBuffers(Graphics::GraphicsDevice* p_device) override;
     virtual void Render(
-        D3D::DeviceContextPtr& imm_context,
+        Graphics::GraphicsDevice* p_device,
         float elapsed_time,
         const DirectX::XMMATRIX& world,
         CameraController* camera,
         Shader* shader,
-        const MaterialData& mat_data,
+        const Material& mat_data,
         bool isShadow = false,
         bool isSolid = true
     ) override;
-    void ConvertEquirectToCubeMap(D3D::DeviceContextPtr& imm_context);
+    void ConvertEquirectToCubeMap(Graphics::GraphicsDevice* p_device);
 
     void RenderUI();
 

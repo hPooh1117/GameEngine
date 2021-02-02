@@ -29,7 +29,7 @@ protected:
 	Vector3			    mPosition;
 	Vector3			    mScale;
 	DirectX::XMFLOAT4X4 mOrientation = {};
-	ColliderType mType = ColliderType::kC_None;
+	unsigned int        mType = static_cast<unsigned int>(ColliderType::kC_None);
 
 
 public:
@@ -85,7 +85,7 @@ public:
 
 
 	static constexpr int GetID() { return ComponentID::kCollider; }
-	inline ColliderType& GetType() { return mType; }
+	inline unsigned int  GetType() { return mType; }
 
 	inline Vector3& GetCenterPosition() { return mPosition; }
 

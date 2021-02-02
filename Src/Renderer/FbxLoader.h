@@ -1,9 +1,4 @@
 #pragma once
-#ifdef _DEBUG
-#pragma comment(lib, "libfbxsdk-md.lib")
-#else
-#pragma comment(lib, "libfbxsdk-md.lib")
-#endif
 
 
 
@@ -21,7 +16,7 @@ class PerfTimer;
 class FbxLoader
 {
 public:
-    DirectX::XMFLOAT4X4 m_coordinate_conversion =
+    DirectX::XMFLOAT4X4 mCoordinateConversion =
     {
         1, 0, 0, 0,
         0, 0, 1, 0,
@@ -42,30 +37,39 @@ private:
 
 private:
     //static std::unordered_map < std::string, std::vector<MyFbxMesh>> mModelTable;
-    unsigned int mNumberOfBones    = 0;
-    unsigned int mNumberOfVertices = 0;
+    UINT mNumberOfBones     = 0;
+    UINT mNumberOfVertices  = 0;
+    UINT mNumberOfMaterials = 0;
 
     std::unique_ptr<PerfTimer> m_pTimer;
 public:
     FbxLoader();
     ~FbxLoader();
 
-    
+    bool Load(D3D::DevicePtr& device,
+        const char* filename,
+        std::vector<MyFbxMesh>& mesh_container);
+
+private:
     bool LoadFbxFile(Microsoft::WRL::ComPtr<ID3D11Device>& device,
         const char* fbxfilename, 
         std::vector<MyFbxMesh>& mesh_container);
-
-
+    void TrangulateGeometries(FbxManager* manager, FbxScene* scene);
+    void SearchMeshNodeRecursively(std::vector<FbxNode*>& nodes, FbxScene* scene);
     void LoadPosition(FbxMesh* mesh, std::vector<FbxInfo::Vertex>& vertices);
     void LoadNormal(FbxMesh* mesh, std::vector<FbxInfo::Vertex>& vertices);
     void LoadUV(FbxMesh* mesh, std::vector<FbxInfo::Vertex>& vertices);
     void LoadVertexColor(FbxMesh* mesh);
-    void LoadBones(FbxMesh* mesh, MyFbxMesh& my_mesh);
+    void LoadSkins(FbxMesh* mesh, MyFbxMesh& my_mesh);
     int  FindBones(std::string& name, MyFbxMesh& my_mesh);
     void LoadKeyFrames(std::string name, int bone, FbxNode* bone_node, FbxMesh* mesh, MyFbxMesh& my_mesh);
     void LoadMaterial(int index, FbxSurfaceMaterial* material);
     void LoadCGFX(Microsoft::WRL::ComPtr<ID3D11Device>& device, MyFbxMesh& mesh, FbxSurfaceMaterial* material, const std::string& filename);
+    void FetchBoneInfluences(
+        const FbxMesh* fbx_mesh,
+        std::vector<BoneInfluencesPerControlPoint>& influences);
 
+public:
     bool AddMotion(std::string& name, const char* filename, std::vector<MyFbxMesh>& meshes);
 
     void SerializeAndSaveMeshes(const std::string filename, std::vector<MyFbxMesh>& mesh_container);
@@ -74,9 +78,6 @@ public:
     bool LoadSerializedMesh(Microsoft::WRL::ComPtr<ID3D11Device>& device, const std::string filename, std::vector<MyFbxMesh>& mesh_container);
     bool LoadSerializedMotion(std::string& name, const std::string& filename, std::vector<MyFbxMesh>& meshes);
 
-    void FetchBoneInfluences(
-        const FbxMesh* fbx_mesh, 
-        std::vector<BoneInfluencesPerControlPoint>& influences);
 
     //void fetchBoneMatrices(
     //    const FbxMesh* fbx_mesh,

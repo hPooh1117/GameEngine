@@ -20,7 +20,7 @@ namespace Settings
 	{
 		bool bCastShadow;
 		bool bEnableAO;
-		bool bIsDeffered;
+		bool bIsDeferred;
 		bool bCubeMap;
 	};
 

@@ -8,6 +8,9 @@
 //-----------------------------------------------------------------------------------------------
 
 PerfTimer::PerfTimer()
+	:mbIsStopped(false),
+	mDt(std::chrono::duration<float, std::milli>()),
+	mPausedTime(std::chrono::duration<float, std::milli>())
 {
 }
 
@@ -20,7 +23,7 @@ float PerfTimer::GetTotalTime() const
 	//--*-------*----------*------*---------|
 	//			<---------->
 	//			   Paused
-	if (m_bIsStopped)	totalTime = (mStopTime - mBaseTime) - mPausedTime;
+	if (mbIsStopped)	totalTime = (mStopTime - mBaseTime) - mPausedTime;
 
 	// Base			Stop	  Start			Curr
 	//--*------------*----------*------------|
@@ -50,7 +53,7 @@ float PerfTimer::GetDeltaTime()
 void PerfTimer::Reset()
 {
 	mBaseTime = mPrevTime = GetNow();
-	m_bIsStopped = true;
+	mbIsStopped = true;
 	mDt = Duration_t::zero();
 }
 
@@ -58,11 +61,11 @@ void PerfTimer::Reset()
 
 void PerfTimer::Start()
 {
-	if (m_bIsStopped)
+	if (mbIsStopped)
 	{
 		mPausedTime = mStartTime - mStopTime;
 		mPrevTime = GetNow();
-		m_bIsStopped = false;
+		mbIsStopped = false;
 	}
 	Tick();
 }
@@ -72,10 +75,10 @@ void PerfTimer::Start()
 void PerfTimer::Stop()
 {
 	Tick();
-	if (!m_bIsStopped)
+	if (!mbIsStopped)
 	{
 		mStopTime = GetNow();
-		m_bIsStopped = true;
+		mbIsStopped = true;
 	}
 }
 
@@ -83,7 +86,7 @@ void PerfTimer::Stop()
 
 float PerfTimer::Tick()
 {
-	if (m_bIsStopped)
+	if (mbIsStopped)
 	{
 		mDt = Duration_t::zero();
 		return mDt.count();

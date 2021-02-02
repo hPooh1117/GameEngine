@@ -19,8 +19,8 @@
 #include "./Renderer/Sprite.h"
 #include "./Renderer/Blender.h"
 #include "./Renderer/Shader.h"
-#include "./Renderer/GraphicsEngine.h"
 #include "./Renderer/Skybox.h"
+#include "./Renderer/Renderer.h"
 #include "./Renderer/RenderTarget.h"
 #include "./Renderer/NewMeshRenderer.h"
 
@@ -29,7 +29,7 @@
 
 //----------------------------------------------------------------------------------------------------------------------------
 
-SceneF::SceneF(SceneManager* manager, D3D::DevicePtr& device) :Scene(manager, device)
+SceneF::SceneF(SceneManager* manager, Graphics::GraphicsDevice* p_device) :Scene(manager, p_device)
 {
 	mNextScene = SceneID::SCENE_A;
 
@@ -38,7 +38,8 @@ SceneF::SceneF(SceneManager* manager, D3D::DevicePtr& device) :Scene(manager, de
 	ENGINE.GetLightPtr()->SetLightColor(Vector4(0.9f, 0.9f, 0.9f, 1.0f));
 	ENGINE.GetLightPtr()->SetShininess(30.0f);
 
-	ENGINE.GetMeshRenderer()->SetSkybox(SkyboxTextureID::EFootprintCourt);
+
+	ENGINE.GetRenderer()->GetMeshRenderer()->SetSkybox(SkyboxTextureID::EGray0);
 
 
 	Settings::Renderer renderSettings = {
@@ -104,33 +105,34 @@ void SceneF::Update(float elapsed_time)
 	Vector3 pos = ENGINE.GetCameraPtr()->GetCameraPosition();
 	pos.y = ENGINE.GetActorManagerPtr()->GetActor(ActorID::EField)->GetPosition().y - pos.y;
 
-	MakeCubeMapPass* pRenderPass = (MakeCubeMapPass*)ENGINE.GetRenderPass(RenderPassID::ECubeMapPass);
+	MakeCubeMapPass* pRenderPass = (MakeCubeMapPass*)ENGINE.GetRenderer()->GetRenderPass(RenderPassID::ECubeMapPass);
 	Actor* sphere = ENGINE.GetActorManagerPtr()->GetActor(ActorID::ESphere);
 	pRenderPass->SetOriginPoint(sphere->GetPosition(), sphere->GetScaleValue() * 0.5f);
 
 }
 
-void SceneF::PreCompute(std::unique_ptr<GraphicsEngine>& p_graphics)
+void SceneF::PreCompute(Graphics::GraphicsDevice* p_graphics)
 {
 
 }
 
 //----------------------------------------------------------------------------------------------------------------------------
 
-void SceneF::Render(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time)
+void SceneF::Render(Graphics::GraphicsDevice* p_graphics, float elapsed_time)
 {
 }
 
 void SceneF::RenderUI()
 {
+	auto* ui = ENGINE.GetRenderer()->GetUIRenderer();
 	Actor* player = ENGINE.GetActorManagerPtr()->GetActor(ActorID::EFemale);
-	ENGINE.GetUIRenderer()->SetNextWindowSettings(Vector2(0, SCREEN_HEIGHT - 200), Vector2(300, 200));
-	ENGINE.GetUIRenderer()->BeginRenderingNewWindow("Motion");
+	ui->SetNextWindowSettings(Vector2(0, SCREEN_HEIGHT - 200), Vector2(300, 200));
+	ui->BeginRenderingNewWindow("Motion");
 	if (ImGui::Button("Idle")) player->GetComponent<MeshComponent>()->Play("Idle");
 	if (ImGui::Button("Walking")) player->GetComponent<MeshComponent>()->Play("Walking");
 	if (ImGui::Button("Running")) player->GetComponent<MeshComponent>()->Play("Running");
 
-	ENGINE.GetUIRenderer()->FinishRenderingWindow();
+	ui->FinishRenderingWindow();
 
 }
 

@@ -8,7 +8,7 @@
 #include "UIClient.h"
 
 #include "./Renderer/D3D_Helper.h"
-
+#include "./Renderer/GraphicsDevice.h"
 #include "./Utilities/Vector.h"
 
 class Sprite;
@@ -23,6 +23,9 @@ struct SpriteFontData
 
 class UIRenderer
 {
+public:
+	static constexpr UINT FONT_SPACE = 16;
+
 private:
 	std::map < std::string, std::shared_ptr<UIClient>> mUIClientsTable;
 	std::unique_ptr<Sprite>                            mpSpriteFont;
@@ -36,7 +39,7 @@ private:
 
 public:
 	UIRenderer() = default;
-	UIRenderer(D3D::DevicePtr& p_device);
+	UIRenderer(Graphics::GraphicsDevice* device);
 	~UIRenderer() = default;
 
 	void UpdateFrame();
@@ -45,8 +48,8 @@ public:
 	void FinishRenderingWindow();
 	void Execute();
 
-	void RenderSpriteFontQueue(D3D::DeviceContextPtr& p_imm_context);
-	void RenderFullScreenQuad(D3D::DeviceContextPtr& p_imm_context);
+	void RenderSpriteFontQueue(Graphics::GraphicsDevice* device);
+	void RenderFullScreenQuad(Graphics::GraphicsDevice* device);
 
 	void ClearUIClients();
 	void ClearFontQueue();

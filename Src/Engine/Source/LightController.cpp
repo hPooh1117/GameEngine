@@ -51,7 +51,7 @@ bool LightController::Init(unsigned int pointLightNum, unsigned int spotLightNum
 
 
 	// 使用するライトの情報を保持
-	mLightConfig += directional_enable > 0 * EDirectionalLight;
+	mLightConfig += (directional_enable == true) * EDirectionalLight;
 	mLightConfig += pointLightNum > 0 * EPointLight;
 	mLightConfig += spotLightNum > 0 * ESpotLight;
 

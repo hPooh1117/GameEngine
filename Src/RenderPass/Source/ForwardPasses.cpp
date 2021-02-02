@@ -6,10 +6,10 @@
 
 #include "./Renderer/Blender.h"
 #include "./Renderer/DepthStencilView.h"
-#include "./Renderer/GraphicsEngine.h"
 #include "./Renderer/Mesh.h"
 #include "./Renderer/NewMeshRenderer.h"
 #include "./Renderer/RenderTarget.h"
+#include "./Renderer/Renderer.h"
 #include "./Renderer/Shader.h"
 #include "./Renderer/Skybox.h"
 #include "./Renderer/Texture.h"
@@ -30,20 +30,22 @@ ForwardPass::ForwardPass()
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-void ForwardPass::Initialize(D3D::DevicePtr& device)
+void ForwardPass::Initialize(Graphics::GraphicsDevice* device)
 {
-	GetRenderTargetManager()->Create(device, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, RenderTarget::EForward);
+	auto pDevice = device->GetDevicePtr();
+
+	GetRenderTargetManager()->Create(pDevice, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, RenderTarget::EForward);
 
 	if (mbIsInitialized) return;
 
-	mpDSV->Create(device, SCREEN_WIDTH, SCREEN_HEIGHT);
+	mpDSV->Create(pDevice, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 
 	InitializeCommonShader(device);
 
 	AddVertexAndPixelShader(device, ShaderID::ELambert, L"Lambert.hlsl", L"Lambert.hlsl", "VSmain", "PSmain", VEDType::VED_DEFAULT);
 
-	//AddVertexAndPixelShader(device, ShaderID::ELambertSkinned,            L"Lambert.hlsl",                 L"Lambert.hlsl",               "VSmainSkinning", "PSmain", VEDType::VED_SKINNED_MESH);
+	AddVertexAndPixelShader(device, ShaderID::ELambertSkinned,            L"Lambert.hlsl",                 L"Lambert.hlsl",               "VSmainSkinning", "PSmain", VEDType::VED_SKINNED_MESH);
 
 	//AddVertexAndPixelShader(device, ShaderID::EPhong,                     L"Phong.hlsl",                   L"Phong.hlsl",                 "VSmain", "PSmain", VEDType::VED_DEFAULT);
 
@@ -92,21 +94,21 @@ void ForwardPass::Initialize(D3D::DevicePtr& device)
 
 //--------------------------------------------------------------------------------------------------------------------------------
 
-void ForwardPass::RenderForwardLighting(std::unique_ptr<GraphicsEngine>& p_graphics, float elapsed_time)
+void ForwardPass::RenderForwardLighting(Graphics::GraphicsDevice* device, float elapsed_time)
 {
-	D3D::DeviceContextPtr pImmContext = p_graphics->GetImmContextPtr();
+	D3D::DeviceContextPtr pImmContext = device->GetImmContextPtr();
 
-	p_graphics->mBlender.SetBlendState(pImmContext, Blender::BLEND_ALPHA);
+	device->mBlender.SetBlendState(pImmContext, Blender::BLEND_ALPHA);
 
 	GetRenderTargetManager()->Activate(pImmContext, mpDSV, RenderTarget::EForward, 1);
 
 
-	ENGINE.GetMeshRenderer()->Render(p_graphics, elapsed_time, RenderPassID::EForwardPass);
+	ENGINE.GetRenderer()->GetMeshRenderer()->Render(device, elapsed_time, RenderPassID::EForwardPass);
 
 
-	p_graphics->SetDepthStencil(GraphicsEngine::DS_TRUE);
+	device->OMSetDepthStencilState(Graphics::DS_TRUE);
 
-	p_graphics->ActivateBackBuffer();
+	device->ActivateBackBuffer();
 
 
 	GetRenderTargetManager()->Deactivate(pImmContext, RenderTarget::EForward, 1);

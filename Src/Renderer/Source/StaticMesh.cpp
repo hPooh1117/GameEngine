@@ -2,27 +2,24 @@
 
 #include <fstream>
 
-#include "Texture.h"
 #include "ResourceManager.h"
-#include "Shader.h"
-
-//#include "./Engine/MainCamera.h"
-#include "./Engine/CameraController.h"
-#include "./Engine/Light.h"
 
 #include "./Utilities/misc.h"
 
 using namespace DirectX;
 
-StaticMesh::StaticMesh(Microsoft::WRL::ComPtr<ID3D11Device>& device, const wchar_t* OBJFile, bool isFlippingV):Mesh()
+StaticMesh::StaticMesh(Graphics::GraphicsDevice* p_device, const wchar_t* OBJFile, bool isFlippingV)
+    :Mesh(),
+    mpVertexBuffer(std::make_unique<Graphics::GPUBuffer>()),
+    mpIndexBuffer(std::make_unique<Graphics::GPUBuffer>())
 {
     HRESULT hr = S_OK;
+    auto& pDevice = p_device->GetDevicePtr();
 
-
-    LoadOBJFile(device, OBJFile, isFlippingV);
+    LoadOBJFile(p_device, OBJFile, isFlippingV);
 
     //--> Create Constant Buffer
-    hr = device->CreateBuffer(
+    hr = pDevice->CreateBuffer(
         &CD3D11_BUFFER_DESC(
             sizeof(CBufferForMesh),
             D3D11_BIND_CONSTANT_BUFFER,
@@ -36,7 +33,7 @@ StaticMesh::StaticMesh(Microsoft::WRL::ComPtr<ID3D11Device>& device, const wchar
         );
     _ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
-    hr = device->CreateBuffer(
+    hr = pDevice->CreateBuffer(
         &CD3D11_BUFFER_DESC(
             sizeof(CBufferForMaterial),
             D3D11_BIND_CONSTANT_BUFFER,
@@ -46,71 +43,23 @@ StaticMesh::StaticMesh(Microsoft::WRL::ComPtr<ID3D11Device>& device, const wchar
             0
         ),
         nullptr,
-        m_pConstantBufferMaterial.GetAddressOf()
+        mpConstantBufferMaterial.GetAddressOf()
     );
     _ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
 
 
-
-    ////--> Set InputLayouts
-    //D3D11_INPUT_ELEMENT_DESC inputLayouts[] = {
-    //    { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-    //    { "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-    //    { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,       0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-    //};
-
-    //ResourceManager::CreateVSFromFile(device, "./Data/Shaders/phong_obj_vs.cso", mVertexShader.GetAddressOf(), mInputLayout.GetAddressOf(), inputLayouts, ARRAYSIZE(inputLayouts));
-    //ResourceManager::CreatePSFromFile(device, "./Data/Shaders/phong_ps.cso", mPixelShader.GetAddressOf());
 
     for (auto &material : mMaterials)
     {
         std::unique_ptr<Texture> tex = std::make_unique<Texture>();
         if (material.map_Kd == L"\0")
         {
-            tex->Load(device);
+            tex->Load(pDevice);
             continue;
         }
-        tex->Load(device, material.map_Kd.data());
+        tex->Load(pDevice, material.map_Kd.data());
         material.texture = std::move(tex);
     }
-
-
-
-    //-->Create RasterizerState
-    hr = device->CreateRasterizerState(
-        &CD3D11_RASTERIZER_DESC(
-            D3D11_FILL_WIREFRAME,     // D3D11_FILL_MODE FillMode;
-            D3D11_CULL_BACK,          // D3D11_CULL_MODE CullMode;
-            FALSE,                    // BOOL FrontCounterClockwise;
-            0,                        // INT DepthBias;
-            0.0f,                     // FLOAT DepthBiasClamp;
-            0.0f,                     // FLOAT SlopeScaledDepthBias;
-            TRUE,                    // BOOL DepthClipEnable;
-            FALSE,                    // BOOL ScissorEnable;
-            FALSE,                    // BOOL MultisampleEnable;
-            FALSE                     // BOOL AntialiasedLineEnable;
-            ),
-        m_pRasterizerWire.GetAddressOf()
-        );
-    _ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
-
-    hr = device->CreateRasterizerState(
-        &CD3D11_RASTERIZER_DESC(
-            D3D11_FILL_SOLID,         // D3D11_FILL_MODE FillMode;
-            D3D11_CULL_BACK,          // D3D11_CULL_MODE CullMode;
-            FALSE,                    // BOOL FrontCounterClockwise;
-            0,                        // INT DepthBias;
-            0.0f,                     // FLOAT DepthBiasClamp;
-            0.0f,                     // FLOAT SlopeScaledDepthBias;
-            TRUE,                     // BOOL DepthClipEnable;
-            FALSE,                    // BOOL ScissorEnable;
-            FALSE,                    // BOOL MultisampleEnable;
-            FALSE                     // BOOL AntialiasedLineEnable;
-            ),
-        m_pRasterizerSolid.GetAddressOf()
-        );
-    _ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
-
 
 
 
@@ -122,93 +71,64 @@ StaticMesh::~StaticMesh()
 }
 
 
-void StaticMesh::CreateBuffers(Microsoft::WRL::ComPtr<ID3D11Device>& device)
+void StaticMesh::CreateBuffers(Graphics::GraphicsDevice* p_device)
 {
-    HRESULT hr = S_OK;
+    // VERTEX BUFFER
+    Graphics::GPUBufferDesc desc = {};
+    desc.ByteWidth = sizeof(Vertex) * mVertices.size();
+    desc.Usage = Graphics::USAGE_IMMUTABLE;
+    desc.BindFlags = Graphics::BIND_VERTEX_BUFFER;
+    desc.CPUAccessFlags = 0;
+    desc.MiscFlags = 0;
+    desc.StructureByteStride = 0;
+    mpVertexBuffer->desc = desc;
 
-    //--> Create Vertex Buffer
-    D3D11_SUBRESOURCE_DATA vSrData = {};
-    vSrData.pSysMem = mVertices.data();
-    vSrData.SysMemPitch = 0;
-    vSrData.SysMemSlicePitch = 0;
+    Graphics::SubresourceData data = {};
+    data.pSysMem = mVertices.data();
+    data.SysMemPitch = 0;
+    data.SysMemSlicePitch = 0;
+    p_device->CreateBuffer(&desc, &data, mpVertexBuffer.get());
 
-    //hr = pDev->CreateBuffer(&vertBufDesc, &vSrData, mVertexBuffer.GetAddressOf());
-    //_ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
-    hr = device->CreateBuffer(
-        &CD3D11_BUFFER_DESC(
-            sizeof(Vertex) * mVertices.size(),
-            D3D11_BIND_VERTEX_BUFFER,
-            D3D11_USAGE_IMMUTABLE,
-            0,
-            0,
-            0
-        ),
-        &vSrData,
-        m_pVertexBuffer.GetAddressOf()
-    );
-    _ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
-
-
-
-    D3D11_SUBRESOURCE_DATA iSrData = {};
-    iSrData.pSysMem = mIndices.data();
-    iSrData.SysMemPitch = 0;
-    iSrData.SysMemSlicePitch = 0;
-
-    //hr = pDev->CreateBuffer(&idxBuffDesc, &iSrData, mIndexBuffer.GetAddressOf());
-    //_ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
-
-    hr = device->CreateBuffer(
-        &CD3D11_BUFFER_DESC(
-            sizeof(u_int) * mIndices.size(),
-            D3D11_BIND_INDEX_BUFFER,
-            D3D11_USAGE_IMMUTABLE,
-            0,
-            0,
-            0
-        ),
-        &iSrData,
-        m_pIndexBuffer.GetAddressOf()
-    );
-    _ASSERT_EXPR_A(SUCCEEDED(hr), hr_trace(hr));
+    // INDEX BUFFER
+    desc.ByteWidth = sizeof(uint32_t) * mIndices.size();
+    desc.BindFlags = Graphics::BIND_INDEX_BUFFER;
+    mpIndexBuffer->desc = desc;
+    data.pSysMem = mIndices.data();
+    p_device->CreateBuffer(&desc, &data, mpIndexBuffer.get());
 
 }
 
 void StaticMesh::Render(
-    D3D::DeviceContextPtr& imm_context,
+    Graphics::GraphicsDevice* p_device,
     float elapsed_time,
     const DirectX::XMMATRIX& world,
     CameraController* camera,
     Shader* shader,
-    const MaterialData& mat_data,
+    const Material& mat_data,
     bool isShadow,
     bool isSolid
 )
 {
-
     HRESULT hr = S_OK;
-
-    if (shader != nullptr) shader->ActivateShaders(imm_context);
+    auto& ImmContext = p_device->GetImmContextPtr();
+    if (shader != nullptr) shader->ActivateShaders(ImmContext);
 
     UINT stride = sizeof(Vertex);
     UINT offset = 0;
-    imm_context->IASetVertexBuffers(0, 1, m_pVertexBuffer.GetAddressOf(), &stride, &offset);
-    imm_context->IASetIndexBuffer(m_pIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-    imm_context->IASetPrimitiveTopology(mTopologyType);
-    //imm_context->IASetInputLayout(mInputLayout.Get());
-    isSolid
-        ? imm_context->RSSetState(m_pRasterizerSolid.Get())
-        : imm_context->RSSetState(m_pRasterizerWire.Get());
-    //imm_context->VSSetShader(mVertexShader.Get(), NULL, 0);
-    //imm_context->RSSetViewports(numViewport, &viewport);
-    //imm_context->PSSetShader(mPixelShader.Get(), NULL, 0);
+    Graphics::GPUBuffer* vb = mpVertexBuffer.get();
+    p_device->BindVertexBuffer(&vb, 0, 1, &stride, &offset);
+    p_device->BindIndexBuffer(mpIndexBuffer.get(), Graphics::IndexBufferFormat::INDEXFORMAT_32BIT, 0);
+    p_device->BindPrimitiveTopology(mToplogyID);
+
+    isSolid ? p_device->RSSetState(Graphics::RS_BACK)
+        : p_device->RSSetState(Graphics::RS_WIRE_BACK);
 
     CBufferForMesh meshData = {};
     DirectX::XMStoreFloat4x4(&meshData.world, world);
-    DirectX::XMStoreFloat4x4(&meshData.WVP, world * (isShadow ? camera->GetOrthoView() * camera->GetOrthoProj(imm_context) : camera->GetViewMatrix() * camera->GetProjMatrix(imm_context)));
-    XMStoreFloat4x4(&meshData.invViewProj, camera->GetInvProjViewMatrix(imm_context));
+    DirectX::XMStoreFloat4x4(&meshData.WVP, world * (isShadow ? camera->GetOrthoView() * camera->GetOrthoProj(ImmContext) : camera->GetViewMatrix() * camera->GetProjMatrix(ImmContext)));
+    XMStoreFloat4x4(&meshData.invViewProj, camera->GetInvProjViewMatrix(ImmContext));
     DirectX::XMStoreFloat4x4(&meshData.invView, camera->GetInvViewMatrix());
-    DirectX::XMStoreFloat4x4(&meshData.invProj, camera->GetInvProjMatrix(imm_context));
+    DirectX::XMStoreFloat4x4(&meshData.invProj, camera->GetInvProjMatrix(ImmContext));
 
 
 
@@ -224,40 +144,38 @@ void StaticMesh::Render(
         matData.diffuse = mat_data.diffuse;
         matData.specular = mat_data.specular;
 
-        imm_context->UpdateSubresource(mpConstantBufferMesh.Get(), 0, nullptr, &meshData, 0, 0);
-        imm_context->UpdateSubresource(m_pConstantBufferMaterial.Get(), 0, nullptr, &matData, 0, 0);
+        ImmContext->UpdateSubresource(mpConstantBufferMesh.Get(), 0, nullptr, &meshData, 0, 0);
+        ImmContext->UpdateSubresource(mpConstantBufferMaterial.Get(), 0, nullptr, &matData, 0, 0);
 
-        imm_context->VSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
-        imm_context->HSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
-        imm_context->DSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
-        imm_context->GSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
-        imm_context->PSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
+        ImmContext->VSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
+        ImmContext->HSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
+        ImmContext->DSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
+        ImmContext->GSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
+        ImmContext->PSSetConstantBuffers(0, 1, mpConstantBufferMesh.GetAddressOf());
 
-        imm_context->VSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());
-        imm_context->HSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());
-        imm_context->DSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());
-        imm_context->GSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());
-        imm_context->PSSetConstantBuffers(1, 1, m_pConstantBufferMaterial.GetAddressOf());
+        ImmContext->VSSetConstantBuffers(1, 1, mpConstantBufferMaterial.GetAddressOf());
+        ImmContext->HSSetConstantBuffers(1, 1, mpConstantBufferMaterial.GetAddressOf());
+        ImmContext->DSSetConstantBuffers(1, 1, mpConstantBufferMaterial.GetAddressOf());
+        ImmContext->GSSetConstantBuffers(1, 1, mpConstantBufferMaterial.GetAddressOf());
+        ImmContext->PSSetConstantBuffers(1, 1, mpConstantBufferMaterial.GetAddressOf());
 
-        material.texture->Set(imm_context);
+        material.texture->Set(ImmContext);
 
         for (auto &subset : mSubsets)
         {
             if (material.newmtl == subset.usemtl)
             {
-                imm_context->DrawIndexed(subset.index_count, subset.index_start, 0);
+                p_device->DrawIndexed(subset.index_count, subset.index_start, 0);
             }
         }
     }
-
-
 }
 
-void StaticMesh::LoadOBJFile(Microsoft::WRL::ComPtr<ID3D11Device>& device, const wchar_t *filename, bool isFlippingV)
+void StaticMesh::LoadOBJFile(Graphics::GraphicsDevice* p_device, const wchar_t *filename, bool isFlippingV)
 {
-    //std::vector<Vertex> vertices;
-    //std::vector<WORD> indices;
-    u_int currentIndex = 0;
+    uint32_t currentIndex = 0;
+
+    auto pDevice = p_device->GetDevicePtr();
 
     std::vector<XMFLOAT3> positions;
     std::vector<XMFLOAT3> normals;
@@ -344,15 +262,13 @@ void StaticMesh::LoadOBJFile(Microsoft::WRL::ComPtr<ID3D11Device>& device, const
             deltaUV1 = uv1 - uv0;
             deltaUV2 = uv2 - uv0;
 
+            // position, texcoordÇ©ÇÁtangent, binormalÇÃéZèo
             r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
             tangent = (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y)* r;
             binormal = (deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV2.x) * r;
             
             for (auto i = 0; i < 3; ++i)
             {
-                //vertices[i].tangent = tangent;
-                //vertices[i].binormal = binormal;
-
                 mVertices.emplace_back(vertices[i]);
                 mIndices.emplace_back(currentIndex++);
             }
@@ -375,16 +291,6 @@ void StaticMesh::LoadOBJFile(Microsoft::WRL::ComPtr<ID3D11Device>& device, const
             current_subset.index_start = mIndices.size();
             mSubsets.emplace_back(current_subset);
         }
-        //else if (0 == wcscmp(command, L"g"))
-        //{
-        //    wchar_t usemtl[MAX_PATH] = { 0 };
-        //    file >> usemtl;
-
-        //    subset current_subset = {};
-        //    current_subset.usemtl = usemtl;
-        //    current_subset.indexStart = indices.size();
-        //    mSubsets.push_back(current_subset);
-        //}
         else
         {
             file.ignore(1024, L'\n');
@@ -399,9 +305,9 @@ void StaticMesh::LoadOBJFile(Microsoft::WRL::ComPtr<ID3D11Device>& device, const
     }
 
 
-    LoadMTLFile(device, filename, mtl_filenames);
+    LoadMTLFile(pDevice, filename, mtl_filenames);
 
-    CreateBuffers(device/*, vertices.data(), indices.data(), vertices.size(), indices.size()*/);
+    CreateBuffers(p_device);
 }
 
 void StaticMesh::LoadMTLFile(Microsoft::WRL::ComPtr<ID3D11Device>& device, const wchar_t *objfilename, std::vector<std::wstring>& mtlFilenames)
@@ -411,13 +317,12 @@ void StaticMesh::LoadMTLFile(Microsoft::WRL::ComPtr<ID3D11Device>& device, const
     ResourceManager::CreateFilenameToRefer(mtlFilename, objfilename, mtlFilenames[0].c_str());
 
     std::wifstream file(mtlFilename);
-    /*_ASSERT_EXPR(file, L"MTL file doesn't exist.");*/
 
     if (!file.is_open())
     {
         for (auto& subset : mSubsets)
         {
-            mMaterials.emplace_back(Material());
+            mMaterials.emplace_back(MaterialData());
             mMaterials.back().map_Kd = L"\0";
         }
     }
@@ -445,7 +350,7 @@ void StaticMesh::LoadMTLFile(Microsoft::WRL::ComPtr<ID3D11Device>& device, const
             wchar_t newmtl[256];
             file >> newmtl;
             
-            mMaterials.emplace_back(Material());
+            mMaterials.emplace_back(MaterialData());
             mMaterials.back().newmtl = newmtl;
         }
         else if (wcscmp(command, L"Ka") == 0)

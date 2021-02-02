@@ -108,9 +108,9 @@ void CameraController::SetMatrix(D3D::DeviceContextPtr& p_imm_context)
 
     //    float t = static_cast<float>(mBlendingTime) / static_cast<float>(mBlendingTimeMax);
 
-    //    pos = Math::Lerp(itForPrev->GetPosition(), itForCurrent->GetPosition(), t);
-    //    target = Math::Lerp(itForPrev->GetTargetVector(), itForCurrent->GetTargetVector(), t);
-    //    up = Math::Lerp(itForPrev->GetUpVector(), itForCurrent->GetUpVector(), t);
+    //    pos = MathOp::Lerp(itForPrev->GetPosition(), itForCurrent->GetPosition(), t);
+    //    target = MathOp::Lerp(itForPrev->GetTargetVector(), itForCurrent->GetTargetVector(), t);
+    //    up = MathOp::Lerp(itForPrev->GetUpVector(), itForCurrent->GetUpVector(), t);
     //}
     //else
     //{
